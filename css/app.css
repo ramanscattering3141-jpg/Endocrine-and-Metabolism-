@@ -497,3 +497,84 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
 .a-prot { fill: var(--c-enzyme); }
 .a-meter { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; } .a-meter i { display: block; height: 100%; background: var(--c-enzyme); transition: width .3s; }
 .anim-readout { margin-top: 10px; }
+
+/* ---------- signaling cascade explorer ---------- */
+.casc-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 6px 0 10px; }
+.casc-bar .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.casc-bar .seg button { border: 0; background: transparent; color: var(--muted); padding: 5px 12px; font: inherit; font-size: .84rem; cursor: pointer; }
+.casc-bar .seg button.on { background: var(--accent); color: #fff; }
+.casc-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.casc-side .casc-outs { columns: 3 260px; column-gap: 22px; } .casc-side .casc-sb { break-inside: avoid; }
+.casc-svg { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); }
+.casc-cap { background: var(--panel2); border-radius: 10px; padding: 9px 12px; margin-bottom: 10px; font-size: .9rem; }
+.casc-cap .walk-nav { display: flex; gap: 8px; align-items: center; margin-bottom: 4px; }
+.casc-col { font-size: 10.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; fill: var(--muted); }
+.casc-band rect { fill: var(--bc); fill-opacity: .06; stroke: var(--bc); stroke-opacity: .25; cursor: pointer; transition: opacity .2s; }
+.casc-band rect.casc-btab { fill-opacity: .1; }
+.casc-band.dim { opacity: .35; }
+.casc-blabel { font-size: 11.5px; font-weight: 700; fill: var(--bc); cursor: pointer; }
+.casc-rec rect { fill: color-mix(in srgb, var(--c-receptor) 22%, var(--panel)); stroke: var(--c-receptor); stroke-width: 2; cursor: pointer; }
+.casc-rec.dim { opacity: .35; }
+.casc-rlabel { font-size: 12px; font-weight: 700; fill: var(--text); pointer-events: none; }
+.casc-node { cursor: pointer; transition: opacity .2s; }
+.casc-node rect { fill: var(--panel); stroke: var(--c-kinase); stroke-width: 1.6; }
+.casc-node text { font-weight: 600; fill: var(--text); pointer-events: none; }
+.casc-node.t-receptor rect { stroke: var(--c-receptor); } .casc-node.t-messenger rect { stroke: var(--c-messenger); } .casc-node.t-enzyme rect { stroke: var(--c-enzyme); }
+.casc-node.t-tf rect { stroke: var(--c-tf); } .casc-node.t-gene rect { stroke: var(--c-tf); stroke-dasharray: 4 2; } .casc-node.t-transporter rect { stroke: var(--c-transporter); }
+.casc-node.t-process rect { stroke: var(--c-process); } .casc-node.t-hormone rect { stroke: var(--c-hormone); } .casc-node.t-ion rect { stroke: var(--c-ion); } .casc-node.t-metabolite rect { stroke: var(--c-metabolite); }
+.casc-node.t-outcome rect { stroke: var(--bc); stroke-width: 2; fill: color-mix(in srgb, var(--bc) 10%, var(--panel)); }
+.casc-node.up rect { fill: color-mix(in srgb, var(--up) 14%, var(--panel)); } .casc-node.down rect { fill: color-mix(in srgb, var(--dn) 14%, var(--panel)); }
+.casc-node.weak rect { fill-opacity: .9; }
+.casc-node.mixed rect { fill: color-mix(in srgb, #f4c430 16%, var(--panel)); }
+.casc-node.forced rect { stroke-width: 3; stroke-dasharray: 5 3; }
+.casc-node.dim { opacity: .25; } .casc-node.hl rect { stroke-width: 3; }
+.casc-badge { font-size: 13px; font-weight: 800; }
+.casc-node.up .casc-badge { fill: var(--up); } .casc-node.down .casc-badge { fill: var(--dn); } .casc-node.flat .casc-badge { fill: var(--faint); } .casc-node.mixed .casc-badge { fill: #d4a017; }
+.casc-time rect { fill: var(--panel2); stroke: var(--line); } .casc-time text { font-size: 9.5px !important; font-weight: 600; fill: var(--muted); }
+.casc-link { fill: none; stroke: var(--faint); stroke-width: 1.4; stroke-opacity: .55; transition: opacity .2s; }
+.casc-link.on { stroke: var(--c-stim); stroke-opacity: .85; stroke-width: 1.9; }
+.casc-link.neg { stroke-dasharray: 5 3; } .casc-link.neg.on { stroke: var(--c-inhib); }
+.casc-link.fb { stroke-dasharray: 2 4; }
+.casc-link.dim { opacity: .12; }
+.casc-dot { pointer-events: none; } .casc-dot.pos { fill: var(--c-stim); } .casc-dot.neg { fill: var(--c-inhib); }
+.casc-side .casc-sb { border-left: 3px solid var(--bc); padding-left: 8px; margin: 8px 0; }
+.casc-sbh { font-size: .74rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--bc); margin-bottom: 3px; }
+.casc-o { display: grid; grid-template-columns: 18px 1fr auto; gap: 6px; align-items: baseline; font-size: .84rem; padding: 2px 0; }
+.casc-o .q { font-weight: 800; } .casc-o.up .q { color: var(--up); } .casc-o.down .q { color: var(--dn); } .casc-o.flat .q { color: var(--faint); }
+.casc-o .tm { font-size: .7rem; color: var(--muted); background: var(--panel2); border-radius: 8px; padding: 0 6px; }
+.casc-fdesc { margin-top: 10px; font-size: .84rem; background: var(--panel2); padding: 8px; border-radius: 8px; }
+
+/* ---------- sexual differentiation ---------- */
+.sd-controls .sd-row { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; margin: 4px 0; }
+.sd-ctl { display: inline-flex; flex-direction: column; gap: 2px; font-size: .78rem; color: var(--muted); }
+.sd-chk { font-size: .85rem; }
+.sd-wrap { padding: 10px; }
+.sd-svg { width: 100%; height: auto; display: block; }
+.sd-box rect { fill: var(--panel); stroke: var(--line); stroke-width: 1.6; transition: fill .3s, stroke .3s; }
+.sd-box.on rect { stroke: var(--c-stim); fill: color-mix(in srgb, var(--c-stim) 12%, var(--panel)); }
+.sd-box.part rect { stroke: #d4a017; fill: color-mix(in srgb, #f4c430 14%, var(--panel)); }
+.sd-box.off rect { stroke: var(--faint); stroke-dasharray: 5 3; }
+.sd-box.bad rect { stroke: var(--c-inhib); fill: color-mix(in srgb, var(--c-inhib) 10%, var(--panel)); }
+.sd-box.warn rect { stroke: var(--c-drug); fill: color-mix(in srgb, var(--c-drug) 10%, var(--panel)); }
+.sd-box.m rect { stroke: var(--tr1); fill: color-mix(in srgb, var(--tr1) 12%, var(--panel)); }
+.sd-box.f rect { stroke: var(--tr3); fill: color-mix(in srgb, var(--tr3) 12%, var(--panel)); }
+.sd-title { font-size: 11px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; fill: var(--muted); }
+.sd-val { font-size: 15px; font-weight: 700; fill: var(--text); }
+.sd-sub { font-size: 10.5px; fill: var(--muted); }
+.sd-link { fill: none; stroke: var(--faint); stroke-width: 1.6; stroke-dasharray: 4 4; }
+.sd-link.on { stroke: var(--c-stim); stroke-dasharray: none; stroke-width: 2.2; }
+.sd-link.neg.on { stroke: var(--c-inhib); }
+.sd-llab { font-size: 10.5px; font-weight: 600; fill: var(--muted); }
+.sd-dot { fill: var(--c-hormone); pointer-events: none; }
+/* ---------- testing lab ---------- */
+.tl-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 1000px) { .tl-grid { grid-template-columns: 1fr; } }
+.tl-gl { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 10px 0 4px; }
+.tl-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.tl-btn { font-size: .82rem; } .tl-btn.done { opacity: .55; }
+.tl-res { border-left: 3px solid var(--line); background: var(--panel); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+.tl-res.ab { border-left-color: var(--c-drug); }
+.tl-rn { font-size: .78rem; color: var(--muted); font-weight: 600; } .tl-rv { font-weight: 700; margin: 2px 0; }
+.tl-dx select { max-width: 100%; }
+.sig-table td, .sig-table th { font-size: .82rem; }
+.sd-svg { max-width: 1100px; margin: 0 auto; }

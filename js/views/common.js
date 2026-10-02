@@ -46,6 +46,7 @@
     if (opts.anim && EP.anim[opts.anim]) { el.appendChild(h('h2', opts.animTitle || 'Animated cell')); EP.anim[opts.anim](el); el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Pathway map')); }
     const api = EP.mountPathway(el, id, { height: opts.height || Math.min(640, Math.round(pw.view.h * 0.78)), focus: params.focus });
     (opts.more || []).forEach((mid) => { el.appendChild(h('h2', EP.pathways[mid].title)); EP.mountPathway(el, mid, { height: Math.round(EP.pathways[mid].view.h * 0.7), focus: params.focus }); });
+    (opts.cascade ? [].concat(opts.cascade) : []).forEach((cid) => { el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Signaling network: ' + EP.cascades[cid].title)); EP.mountCascade(el, cid, { sources: false }); });
     if (opts.net) {
       el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Linked feedback system: ' + EP.networks[opts.net].title));
       EP.mountNetwork(el, opts.net);
@@ -317,6 +318,24 @@
     const R = EP.data.refs;
     el.appendChild(h('div.card', h('h3', 'Primary textbooks'), h('ol', ['kovacs', 'molina', 'petersen2018', 'williams'].map((id) => h('li', { html: EP.refHTML(R[id]) })))));
     el.appendChild(h('div.card', h('h3', 'Peer-reviewed literature (PubMed-verified PMIDs and DOIs)'), h('ol', Object.values(R).filter((r) => r.pmid && r.id !== 'petersen2018').map((r) => h('li', { html: EP.refHTML(r) })))));
+    const COV = [
+      ['Kovacs Ch1', 'Organization of the endocrine system', 'classes,feedback,secretion'], ['Kovacs Ch2', 'Genes and hormones', 'classes'],
+      ['Kovacs Ch3', 'Mechanisms of hormone action', 'receptors,cascades'], ['Kovacs Ch4', 'Assessment of endocrine function', 'testlab'],
+      ['Kovacs Ch5', 'Anterior pituitary & hypothalamus', 'pitmap,hpa,hpt,gh,prl'], ['Kovacs Ch6', 'Posterior pituitary & water', 'posterior,cascades?c=adh,cascades?c=anp'],
+      ['Kovacs Ch7', 'Sexual differentiation', 'sexdiff'], ['Kovacs Ch8', 'Female reproductive function', 'ovary,hpgf,pregnancy'],
+      ['Kovacs Ch9', 'Male reproductive function', 'testis,hpgm,cascades?c=lh'], ['Kovacs Ch10', 'Fertilization, implantation, pregnancy', 'pregnancy'],
+      ['Kovacs Ch11', 'Growth regulation', 'gh,cascades?c=gh,pitmap'], ['Kovacs Ch12', 'The thyroid', 'thyroid,hpt,cascades?c=t3'],
+      ['Kovacs Ch13', 'The adrenal glands', 'steroidogenesis,cortisol,raas,medulla,potassium'], ['Kovacs Ch14', 'Calcium homeostasis', 'calcium,bone,cascades?c=pth'],
+      ['Kovacs Ch15', 'Glucose, lipid and protein metabolism', 'insulin,glucagon,flux,hepatocyte,acetylcoa,fattyacid,aminoacid,lipoprotein,appetite,hypoglycemia'],
+      ['Molina Ch1', 'General principles', 'classes,receptors,testlab'], ['Molina Ch2', 'Hypothalamus & posterior pituitary', 'posterior,pitmap'],
+      ['Molina Ch3', 'Anterior pituitary', 'pitmap,gh,prl'], ['Molina Ch4', 'Thyroid', 'thyroid,hpt'], ['Molina Ch5', 'Parathyroid, Ca²⁺ and PO₄', 'calcium,bone'],
+      ['Molina Ch6', 'Adrenal gland', 'steroidogenesis,cortisol,medulla,testlab,cascades?c=epinephrine'], ['Molina Ch7', 'Endocrine pancreas', 'insulin,glucagon,betacell,hypoglycemia'],
+      ['Molina Ch8', 'Male reproductive system', 'testis,hpgm'], ['Molina Ch9', 'Female reproductive system', 'ovary,hpgf,pregnancy'],
+      ['Molina Ch10', 'Integration of energy and electrolyte balance', 'flux,appetite,potassium,pitmap,organmap'],
+    ];
+    const pageName = (r) => { const id = r.split('?')[0]; const p = EP.pages[id]; const c = r.includes('?c=') && EP.cascades[r.split('?c=')[1]]; return c ? 'Cascade: ' + c.title.split(' ')[0] : p ? p.title.replace(' ★', '') : id; };
+    el.appendChild(h('div.card', h('h3', 'Textbook coverage map'), h('p.small.muted', 'Where each chapter of the two textbooks is taught in this lab.'),
+      h('table.cmp-table.sig-table', h('tr', h('th', 'Chapter'), h('th', 'Topic'), h('th', 'Pages')), COV.map(([c, topic, pages]) => h('tr', h('td', c), h('td', topic), h('td', pages.split(',').map((r, i) => [i ? ' · ' : '', h('a', { href: '#/' + r }, pageName(r))]).flat()))))));
     el.appendChild(h('div.card', h('h3', 'How the simulations work — and what they do not claim'), h('ul.keypoints', { html: [
       'All simulators use one engine: each variable\'s target value is a product of its regulators raised to signed exponents (stimulatory > 0, inhibitory < 0). With every input at its reference value every variable equals 1, so all outputs read as **relative to a reference state** (overnight-fasted adult; normal axis).',
       'Exponents encode the **direction and approximate relative strength** of documented regulatory links from the sources. They are not fitted kinetic constants, so outputs are **qualitative**: "↑↑ markedly increased", not "4.2 µmol/kg/min".',

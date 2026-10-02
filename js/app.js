@@ -12,6 +12,8 @@
     { k: 'A', title: 'Endocrine Fundamentals', pages: [
       { id: 'classes', title: 'Hormone classes & life cycle', render: V.classes, pathways: ['peptidelife', 'steroidlife'], kw: 'peptide steroid amine synthesis storage secretion transport binding protein clearance half-life' },
       { id: 'receptors', title: 'Receptors & second messengers', render: V.receptors, pathways: ['gs', 'gi', 'gq', 'rtk', 'jakstat', 'nuclear'], kw: 'GPCR Gs Gi Gq cAMP PKA IP3 DAG calcium receptor tyrosine kinase JAK STAT nuclear receptor amplification desensitization downregulation upregulation' },
+      { id: 'cascades', title: 'Signaling cascades ★', render: V.cascades, kw: 'signaling cascade branch PI3K Akt mTOR mTORC1 S6K Ras MAPK ERK Grb2 SOS cAMP PKA CREB CRTC2 PFK-2 fructose-2,6-bisphosphate glucocorticoid receptor GRE NF-kB transrepression SGK1 Nedd4-2 ENaC JAK STAT5 STAT3 guanylyl cyclase cGMP McCune-Albright pseudohypoparathyroidism Graves leptin MC4R adrenergic alpha beta' },
+      { id: 'testlab', title: 'Endocrine testing lab ★', render: V.testlab, kw: 'stimulation suppression test dexamethasone cosyntropin metyrapone CRH insulin tolerance water deprivation desmopressin salt loading oral glucose GH PTH infusion TRH diagnosis' },
       { id: 'feedback', title: 'Feedback loops', render: V.feedback, networks: ['motif_neg', 'motif_pos', 'motif_ff'], kw: 'negative positive feedback short loop long loop feed-forward set point' },
       { id: 'secretion', title: 'Pulsatile, circadian & clearance', render: V.secretion, kw: 'pulsatile circadian rhythm half-life clearance GnRH desensitization cortisol rhythm' },
     ] },
@@ -26,18 +28,20 @@
       { id: 'posterior', title: 'Posterior pituitary: ADH & oxytocin', render: V.posterior, networks: ['adh', 'motif_pos'], pathways: ['adhcd'], kw: 'ADH vasopressin oxytocin osmolality diabetes insipidus SIADH aquaporin' },
     ] },
     { k: 'C', title: 'Thyroid', pages: [
-      { id: 'thyroid', title: 'Thyroid hormone synthesis', render: PW('thyroid', { q: 'How does iodide in blood become T4 and T3 — and which step does each drug or disease hit?', more: ['thyroidaction'], net: 'hpt' }), pathways: ['thyroid', 'thyroidaction'], kw: 'iodide NIS pendrin thyroglobulin TPO organification coupling deiodinase D1 D2 D3 TBG T4 T3 reverse T3' },
+      { id: 'thyroid', title: 'Thyroid hormone synthesis', render: PW('thyroid', { q: 'How does iodide in blood become T4 and T3 — and which step does each drug or disease hit?', more: ['thyroidaction'], net: 'hpt', cascade: ['tsh', 't3'] }), pathways: ['thyroid', 'thyroidaction'], kw: 'iodide NIS pendrin thyroglobulin TPO organification coupling deiodinase D1 D2 D3 TBG T4 T3 reverse T3' },
     ] },
     { k: 'D', title: 'Adrenal', pages: [
       { id: 'steroidogenesis', title: 'Steroidogenesis map ★', render: V.steroid, kw: 'cholesterol pregnenolone 21-hydroxylase 11-beta hydroxylase 17-alpha hydroxylase aldosterone synthase CAH zona glomerulosa fasciculata reticularis DHEA androstenedione 17-OHP' },
-      { id: 'cortisol', title: 'Cortisol actions & rhythm', render: PW('cortisolaction', { q: 'Where does cortisol act, and how does it raise glucose?', net: 'hpa', anim: 'gr', animTitle: 'Animated cell: cortisol → GR → gene → protein' }), pathways: ['cortisolaction', 'nuclear'], kw: 'cortisol glucocorticoid receptor gluconeogenesis immune circadian' },
+      { id: 'cortisol', title: 'Cortisol actions & rhythm', render: PW('cortisolaction', { q: 'Where does cortisol act, and how does it raise glucose?', net: 'hpa', cascade: 'cortisol', anim: 'gr', animTitle: 'Animated cell: cortisol → GR → gene → protein' }), pathways: ['cortisolaction', 'nuclear'], kw: 'cortisol glucocorticoid receptor gluconeogenesis immune circadian' },
       { id: 'raas', title: 'RAAS & aldosterone', render: (el, p) => V.axisPage(el, 'raas', p), networks: ['raas'], kw: 'renin angiotensin aldosterone potassium hyperaldosteronism' },
-      { id: 'medulla', title: 'Adrenal medulla & catecholamines', render: PW('catecholamine', { q: 'How does a sympathetic signal become circulating epinephrine — and why does the medulla need cortisol?' }), pathways: ['catecholamine'], kw: 'epinephrine norepinephrine tyrosine hydroxylase PNMT chromaffin alpha beta adrenergic pheochromocytoma metanephrines' },
+      { id: 'potassium', title: 'Potassium balance', render: PW('potassium', { q: 'How do insulin, epinephrine and aldosterone keep plasma K⁺ within a narrow range after a K⁺-rich meal?', cascade: 'aldo' }), pathways: ['potassium'], kw: 'potassium hyperkalemia hypokalemia insulin shift Na/K-ATPase aldosterone ENaC ROMK amiloride Liddle' },
+      { id: 'medulla', title: 'Adrenal medulla & catecholamines', render: PW('catecholamine', { q: 'How does a sympathetic signal become circulating epinephrine — and why does the medulla need cortisol?', cascade: 'epinephrine' }), pathways: ['catecholamine'], kw: 'epinephrine norepinephrine tyrosine hydroxylase PNMT chromaffin alpha beta adrenergic pheochromocytoma metanephrines' },
     ] },
     { k: 'E', title: 'Pancreas & Glucose', pages: [
       { id: 'insulin', title: 'Insulin signaling ★ (prototype)', render: V.insulin, pathways: ['insulin', 'irmech'], kw: 'insulin receptor IRS PI3K PIP3 Akt AS160 TBC1D4 GLUT4 FOXO1 GSK3 mTOR PDE3B insulin resistance' },
       { id: 'glut4', title: 'GLUT4: insulin vs exercise ★', render: V.glut4page, kw: 'GLUT4 translocation exercise contraction AMPK insulin vesicle muscle adipocyte' },
       { id: 'glucagon', title: 'Glucagon simulation ★', render: V.glucagonPage, pathways: ['glucagon'], kw: 'glucagon cAMP PKA glycogenolysis gluconeogenesis ketogenesis muscle liver' },
+      { id: 'hypoglycemia', title: 'Hypoglycemia counterregulation', render: PW('counterreg', { q: 'As glucose falls, which defenses switch on first — and which are lost in type 1 diabetes?' }), pathways: ['counterreg'], kw: 'hypoglycemia counterregulation glucagon epinephrine cortisol GH symptoms neuroglycopenia autonomic' },
       { id: 'betacell', title: 'β-cell & incretins', render: PW('betacell', { q: 'How does a rise in glucose become insulin exocytosis, and how do GLP-1 and epinephrine adjust it?', net: 'motif_ff', anim: 'beta', animTitle: 'Animated β-cell: glucose → K-ATP → Ca²⁺ → exocytosis' }), pathways: ['betacell'], kw: 'beta cell glucokinase KATP sulfonylurea calcium GLP-1 GIP incretin somatostatin' },
     ] },
     { k: 'F', title: 'Calcium, Bone & Mineral', pages: [
@@ -45,9 +49,10 @@
       { id: 'bone', title: 'Bone remodeling', render: PW('bone', { q: 'What decides whether bone is resorbed or formed?' }), pathways: ['bone'], kw: 'osteoblast osteoclast RANK RANKL OPG estrogen bone remodeling denosumab' },
     ] },
     { k: 'G', title: 'Reproductive', pages: [
+      { id: 'sexdiff', title: 'Sexual differentiation ★', render: V.sexdiff, kw: 'sexual differentiation SRY SOX9 SF-1 WT1 AMH müllerian wolffian testosterone DHT 5-alpha reductase androgen insensitivity Turner Klinefelter Swyer CAH aromatase DSD Jost' },
       { id: 'testis', title: 'Testis & androgens', render: V.testisPage, pathways: ['testis', 'androgen'], kw: 'Leydig Sertoli testosterone DHT 5-alpha reductase aromatase spermatogenesis' },
       { id: 'ovary', title: 'Ovary & menstrual cycle', render: V.cycle, pathways: ['ovary'], kw: 'menstrual cycle follicular luteal ovulation LH surge granulosa theca folliculogenesis estradiol progesterone' },
-      { id: 'pregnancy', title: 'Pregnancy & puberty', render: V.pregnancy, pathways: ['placenta'], kw: 'pregnancy hCG placenta progesterone estriol puberty kisspeptin GnRH pulse' },
+      { id: 'pregnancy', title: 'Pregnancy & puberty', render: V.pregnancy, pathways: ['placenta', 'parturition'], kw: 'pregnancy hCG placenta progesterone estriol puberty kisspeptin GnRH pulse' },
     ] },
     { k: 'H', title: 'Metabolism', pages: [
       { id: 'flux', title: 'Metabolic flux simulator ★', render: V.flux, kw: 'flux fed fasting exercise stress organ glucose lactate ketone fatty acid insulin glucagon knobs' },
@@ -55,6 +60,7 @@
       { id: 'acetylcoa', title: 'Acetyl-CoA hub ★', render: (el, p) => V.boundPathway(el, 'acetylcoa', p, 'What happens to acetyl-CoA during fasting — and why can it activate gluconeogenesis without becoming glucose?'), pathways: ['acetylcoa'], kw: 'acetyl-CoA pyruvate carboxylase PDH ketogenesis TCA oxaloacetate bottleneck fatty acid synthesis' },
       { id: 'fattyacid', title: 'Fatty acids & malonyl-CoA', render: (el, p) => V.boundPathway(el, 'fattyacid', p, 'Why does feeding stop fat burning? Follow malonyl-CoA to CPT-1.'), pathways: ['fattyacid'], kw: 'lipolysis HSL ATGL beta oxidation CPT-1 malonyl-CoA ACC fatty acid synthesis triglyceride ketogenesis' },
       { id: 'aminoacid', title: 'Amino acids & urea cycle', render: (el, p) => V.boundPathway(el, 'aminoacid', p, 'Where do the nitrogen and the carbon of an amino acid go?'), pathways: ['aminoacid'], kw: 'amino acids mTOR transamination deamination urea cycle nitrogen alanine glutamine glucagon' },
+      { id: 'appetite', title: 'Appetite & energy balance', render: PW('appetite', { q: 'How do ghrelin, CCK, GLP-1, leptin and insulin set hunger, satiety and energy expenditure?', cascade: 'leptin' }), pathways: ['appetite'], kw: 'appetite hunger satiety ghrelin CCK GLP-1 leptin NPY AgRP POMC MC4R obesity energy expenditure' },
       { id: 'lipoprotein', title: 'Lipoproteins & cholesterol', render: PW('lipoprotein', { q: 'How do dietary and hepatic lipids reach tissues, and where does cholesterol go?' }), pathways: ['lipoprotein'], kw: 'chylomicron VLDL LDL HDL lipoprotein lipase cholesterol statin' },
     ] },
     { k: '★', title: 'Explore & Learn', pages: [

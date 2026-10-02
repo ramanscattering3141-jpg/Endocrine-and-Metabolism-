@@ -273,6 +273,9 @@
       '**Prolactin** rises with estrogen; lactation waits for the fall of progesterone at delivery. Suckling then lowers dopamine (see <a href="#/prl?preset=suck">prolactin</a>).',
       '**Puberty:** kisspeptin/neurokinin B neurons reactivate pulsatile GnRH (sleep-entrained LH pulses first); leptin/energy sufficiency is permissive. Continuous GnRH would desensitize — see <a href="#/secretion">pulsatility</a>.',
     ].map((t) => `<li>${EP.md(t).replace(/&lt;a href=&quot;(.*?)&quot;&gt;(.*?)&lt;\/a&gt;/g, '<a href="$1">$2</a>')}</li>`).join('') })));
+    el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Parturition: what starts labor?'));
+    el.appendChild(h('p.muted', 'In humans plasma progesterone and oxytocin do not change before labor. Instead, a rising placental CRH "clock", fetal-adrenal-derived estrogen, prostaglandins and a functional progesterone withdrawal converge on the myometrium and cervix (Kovacs Ch10).'));
+    EP.mountPathway(el, 'parturition', { height: 500 });
     el.appendChild(EP.sources(['kovacs10', 'kovacs8', 'molina9']));
   };
 })();

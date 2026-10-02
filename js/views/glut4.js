@@ -254,7 +254,10 @@
     EP.mountPathway(el, 'insulin', { height: 640, focus: params.focus });
     el.appendChild(h('h2', '3 · Whole-body read-out'));
     el.appendChild(wholeBody());
-    el.appendChild(h('h2', { style: { marginTop: '18px' } }, '4 · Mechanisms of insulin resistance: the multi-organ cycle'));
+    el.appendChild(h('h2', { style: { marginTop: '18px' } }, '4 · The whole insulin network: PI3K–Akt, mTORC1 and Ras–MAPK'));
+    el.appendChild(h('p.muted', 'One receptor, three branches: metabolic (minutes), anabolic (minutes–hours) and mitogenic (hours–days). Try the PI3K inhibitor, rapamycin or MEK inhibitor to see which outputs depend on which branch.'));
+    EP.mountCascade(el, 'insulin', { sources: false });
+    el.appendChild(h('h2', { style: { marginTop: '18px' } }, '5 · Mechanisms of insulin resistance: the multi-organ cycle'));
     el.appendChild(h('p.muted', 'Petersen & Shulman (2018): adipose insulin resistance raises FFA delivery; hepatic sn-1,2-DAG → PKCε → INSR Thr1160 and muscle DAG → PKCθ → IRS-1 Ser1101 impair signaling; glucose not taken up by muscle feeds hepatic lipogenesis; β-cells compensate until they fail. Step through it, or raise the sliders.'));
     EP.mountPathway(el, 'irmech', { height: 560 });
     el.appendChild(EP.sources(EP.pathways.insulin.refs));
@@ -306,6 +309,8 @@
   V.glucagonPage = function (el, params) {
     el.appendChild(EP.pageHeader('Glucagon simulation', 'Why does glucagon promote glycogenolysis, gluconeogenesis and ketogenesis in the liver — but barely affect skeletal muscle?', { section: 'Pancreas & Glucose', lede: 'Left half: hepatocyte. Right half: skeletal myocyte. Raise glucagon and watch the liver light up while the myocyte stays dark unless epinephrine rises.' }));
     EP.mountPathway(el, 'glucagon', { height: 680, focus: params.focus });
+    el.appendChild(h('h2', 'Glucagon signaling network: every branch and what it produces'));
+    EP.mountCascade(el, 'glucagon', { sources: false });
     el.appendChild(h('h2', 'Liver vs. muscle in the whole-body model'));
     const m = EP.metabolic.create();
     const card = h('div.card');

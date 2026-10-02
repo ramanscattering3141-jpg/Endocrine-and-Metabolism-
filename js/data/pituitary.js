@@ -67,7 +67,7 @@
     E('adh', 'cv', 'V1a vasoconstriction (large volume losses)', ''),
     E('adh', 'brain', 'V1b potentiates CRH at corticotrophs', 'Link between water and stress axes.'),
     E('adh', 'breast', 'Oxytocin: milk ejection', 'Myoepithelial contraction (suckling reflex).'),
-    E('adh', 'repro', 'Oxytocin: uterine contraction (Ferguson reflex)', 'Positive feedback in labour.'),
+    E('adh', 'repro', 'Oxytocin: uterine contraction in the expulsive phase (Ferguson reflex)', 'Oxytocin does not rise before labor; it acts mainly in the expulsive phase and postpartum (Kovacs Ch10).'),
   ];
   // ---------- cross-axis interactions ----------
   const X = (from, to, sign, why) => ({ from, to, sign, why });
@@ -123,7 +123,7 @@
         S('Estrogen drives **lactotroph hyperplasia** → prolactin rises; the pituitary enlarges.', { lacto: 'up', prl: 'up', breast: 'up' }, [['sex', 'lacto']]),
         S('Estrogen ↑ hepatic **TBG and CBG** → total T4 and total cortisol rise while free levels stay near normal.', { metab: 'up' }),
         S('**Placental GH variant** replaces pituitary GH (maternal GH becomes undetectable) and raises IGF-1; hPL adds insulin resistance.', { somato: 'down', gh: 'up', metab: 'up' }),
-        S('Lactation is held back by high progesterone until delivery; oxytocin then drives labour and milk ejection.', { postlobe: 'up', adh: 'up' }),
+        S('Lactation is held back by high placental steroids until delivery; at term, placental CRH, estrogen and prostaglandins initiate labor, oxytocin drives the expulsive phase and later milk ejection.', { postlobe: 'up', adh: 'up' }),
       ] },
     { id: 'mass', label: 'Pituitary macroadenoma (mass effect)', src: 'Kovacs Ch4–5, Ch11',
       steps: [
