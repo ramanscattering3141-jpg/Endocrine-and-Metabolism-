@@ -46,6 +46,11 @@
     svg.appendChild(EP.svgDefs());
     const cap = h('div.g4-cap', '');
     left.append(controls, svg, cap);
+    left.appendChild(EP.colorKey([
+      ['Moving things', [{ fill: 'var(--c-hormone)', rx: 3, label: 'Insulin (hexagons in blood)' }, { dot: 'var(--c-metabolite)', label: 'Glucose' }, { dot: 'var(--c-tf)', label: 'Glucose-6-P (trapped inside by hexokinase II)' }, { fill: 'color-mix(in srgb, var(--c-transporter) 25%, var(--panel))', stroke: 'var(--c-transporter)', rx: 9, label: 'GLUT4 vesicle → GLUT4 in membrane' }]],
+      ['Structures', [{ line: 'var(--c-receptor)', w: 5, label: 'Insulin receptor' }, { fill: 'color-mix(in srgb, #ff6b6b 10%, var(--panel))', label: 'Blood / interstitial fluid' }, { fill: 'var(--panel2)', stroke: 'var(--c-hormone)', sw: 3, rx: 7, label: 'Cell membrane' }, { dot: 'var(--accent2)', label: 'Glycogen granules (muscle)' }, { fill: 'color-mix(in srgb, #ffd166 30%, var(--panel))', stroke: '#ffd166', rx: 8, label: 'Lipid droplet (adipocyte)' }, { fill: 'color-mix(in srgb, var(--c-enzyme) 25%, var(--panel))', stroke: 'var(--c-enzyme)', rx: 8, label: 'Mitochondria' }]],
+      ['Signaling boxes (light up in sequence)', ['receptor', 'kinase', 'messenger', 'ion', 'transporter'].map((x) => ({ node: x, label: EP.TYPE_LABEL[x] }))],
+    ]));
 
     const stepList = h('ol.g4-steps', STEPS.map(([t]) => h('li', t)));
     const fateBox = h('div');
@@ -81,7 +86,7 @@
         gStatic.appendChild(s('text', { x: 560, y: 535, class: 'comp-label' }, 'sarcomeres · SR Ca²⁺ stores'));
         // glycogen granules
         const gg = s('g', { transform: 'translate(250,470)' });
-        for (let i = 0; i < 9; i++) gg.appendChild(s('circle', { cx: (i % 3) * 14, cy: Math.floor(i / 3) * 14, r: 6, fill: 'var(--c-process)', opacity: 0.6 }));
+        for (let i = 0; i < 9; i++) gg.appendChild(s('circle', { cx: (i % 3) * 14, cy: Math.floor(i / 3) * 14, r: 6, fill: 'var(--accent2)', opacity: 0.6 }));
         gg.appendChild(s('text', { x: -8, y: 56, class: 'edge-label' }, 'glycogen'));
         gStatic.appendChild(gg);
       } else {
@@ -214,7 +219,7 @@
       while (spawnAcc > 1) {
         spawnAcc -= 1;
         const viaSlot = active.length && Math.random() > basal / rate ? active[Math.floor(Math.random() * active.length)] : { x: 60 + Math.random() * 200 };
-        const c = s('circle', { r: 4.5, fill: 'var(--c-hormone)', stroke: '#000', 'stroke-opacity': 0.2 });
+        const c = s('circle', { r: 4.5, fill: 'var(--c-metabolite)', stroke: '#000', 'stroke-opacity': 0.25 });
         gParticles.appendChild(c);
         const fate = st.mode === 'muscle' ? (Math.random() < 0.7 ? 'glycogen' : 'glycolysis') : (Math.random() < 0.55 ? 'lipid' : 'glycolysis');
         const dest = fate === 'glycogen' ? [262, 484] : fate === 'lipid' ? [270, 470] : [110, 470];
@@ -222,7 +227,7 @@
       }
       parts = parts.filter((p) => {
         p.t += dt;
-        if (p.phase === 0) { p.y += dt * 70; if (p.y >= 130) { p.phase = 1; p.from = [p.x, p.y]; p.t = 0; p.c.setAttribute('fill', 'var(--c-process)'); } }
+        if (p.phase === 0) { p.y += dt * 70; if (p.y >= 130) { p.phase = 1; p.from = [p.x, p.y]; p.t = 0; p.c.setAttribute('fill', 'var(--c-tf)'); } }
         else { const e = Math.min(1, p.t / 1.8); p.x = EP.lerp(p.from[0], p.dest[0], e); p.y = EP.lerp(p.from[1], p.dest[1], e); if (e >= 1) { fateCount[p.fate] = (fateCount[p.fate] || 0) * 0.98 + 1; p.c.remove(); return false; } }
         p.c.setAttribute('cx', p.x); p.c.setAttribute('cy', p.y);
         return true;

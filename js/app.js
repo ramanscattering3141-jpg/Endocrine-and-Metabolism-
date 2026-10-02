@@ -28,7 +28,7 @@
       { id: 'posterior', title: 'Posterior pituitary: ADH & oxytocin', render: V.posterior, networks: ['adh', 'motif_pos'], pathways: ['adhcd'], kw: 'ADH vasopressin oxytocin osmolality diabetes insipidus SIADH aquaporin' },
     ] },
     { k: 'C', title: 'Thyroid', pages: [
-      { id: 'thyroid', title: 'Thyroid hormone synthesis', render: PW('thyroid', { q: 'How does iodide in blood become T4 and T3 — and which step does each drug or disease hit?', more: ['thyroidaction'], net: 'hpt', cascade: ['tsh', 't3'] }), pathways: ['thyroid', 'thyroidaction'], kw: 'iodide NIS pendrin thyroglobulin TPO organification coupling deiodinase D1 D2 D3 TBG T4 T3 reverse T3' },
+      { id: 'thyroid', title: 'Thyroid hormone synthesis', render: PW('thyroid', { q: 'How does iodide in blood become T4 and T3 — and which step does each drug or disease hit?', more: ['thyroidaction'], net: 'hpt', cascade: ['tsh', 't3'], after: (el, p) => { el.appendChild(EP.h('h2', { style: { marginTop: '18px' } }, 'Thyroid disorders: read the pattern')); EP.mountThyroidStates(el, p); el.appendChild(EP.h('h2', { style: { marginTop: '18px' } }, 'Iodide autoregulation: the Wolff–Chaikoff effect and escape')); EP.mountWolffChaikoff(el); } }), pathways: ['thyroid', 'thyroidaction'], kw: 'iodide NIS pendrin thyroglobulin TPO organification coupling deiodinase D1 D2 D3 TBG T4 T3 reverse T3 thyroiditis Hashimoto subacute Graves toxic nodule Wolff-Chaikoff iodine deficiency radioiodine uptake' },
     ] },
     { k: 'D', title: 'Adrenal', pages: [
       { id: 'steroidogenesis', title: 'Steroidogenesis map ★', render: V.steroid, kw: 'cholesterol pregnenolone 21-hydroxylase 11-beta hydroxylase 17-alpha hydroxylase aldosterone synthase CAH zona glomerulosa fasciculata reticularis DHEA androstenedione 17-OHP' },
@@ -42,6 +42,7 @@
       { id: 'glut4', title: 'GLUT4: insulin vs exercise ★', render: V.glut4page, kw: 'GLUT4 translocation exercise contraction AMPK insulin vesicle muscle adipocyte' },
       { id: 'glucagon', title: 'Glucagon simulation ★', render: V.glucagonPage, pathways: ['glucagon'], kw: 'glucagon cAMP PKA glycogenolysis gluconeogenesis ketogenesis muscle liver' },
       { id: 'hypoglycemia', title: 'Hypoglycemia counterregulation', render: PW('counterreg', { q: 'As glucose falls, which defenses switch on first — and which are lost in type 1 diabetes?' }), pathways: ['counterreg'], kw: 'hypoglycemia counterregulation glucagon epinephrine cortisol GH symptoms neuroglycopenia autonomic' },
+      { id: 'dkahhs', title: 'DKA vs HHS', render: PW('dkahhs', { q: 'Why does absolute insulin deficiency cause ketoacidosis, while a little insulin plus dehydration causes a hyperosmolar state instead?' }), pathways: ['dkahhs'], kw: 'DKA diabetic ketoacidosis HHS hyperosmolar hyperglycemic nonketotic coma osmotic diuresis ketones dehydration' },
       { id: 'betacell', title: 'β-cell & incretins', render: PW('betacell', { q: 'How does a rise in glucose become insulin exocytosis, and how do GLP-1 and epinephrine adjust it?', net: 'motif_ff', anim: 'beta', animTitle: 'Animated β-cell: glucose → K-ATP → Ca²⁺ → exocytosis' }), pathways: ['betacell'], kw: 'beta cell glucokinase KATP sulfonylurea calcium GLP-1 GIP incretin somatostatin' },
     ] },
     { k: 'F', title: 'Calcium, Bone & Mineral', pages: [
@@ -51,7 +52,7 @@
     { k: 'G', title: 'Reproductive', pages: [
       { id: 'sexdiff', title: 'Sexual differentiation ★', render: V.sexdiff, kw: 'sexual differentiation SRY SOX9 SF-1 WT1 AMH müllerian wolffian testosterone DHT 5-alpha reductase androgen insensitivity Turner Klinefelter Swyer CAH aromatase DSD Jost' },
       { id: 'testis', title: 'Testis & androgens', render: V.testisPage, pathways: ['testis', 'androgen'], kw: 'Leydig Sertoli testosterone DHT 5-alpha reductase aromatase spermatogenesis' },
-      { id: 'ovary', title: 'Ovary & menstrual cycle', render: V.cycle, pathways: ['ovary'], kw: 'menstrual cycle follicular luteal ovulation LH surge granulosa theca folliculogenesis estradiol progesterone' },
+      { id: 'ovary', title: 'Ovary & menstrual cycle', render: V.cycle, pathways: ['ovary', 'pcos'], kw: 'menstrual cycle follicular luteal ovulation LH surge granulosa theca folliculogenesis estradiol progesterone' },
       { id: 'pregnancy', title: 'Pregnancy & puberty', render: V.pregnancy, pathways: ['placenta', 'parturition'], kw: 'pregnancy hCG placenta progesterone estriol puberty kisspeptin GnRH pulse' },
     ] },
     { k: 'H', title: 'Metabolism', pages: [

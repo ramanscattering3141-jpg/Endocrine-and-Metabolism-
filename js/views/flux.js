@@ -48,6 +48,12 @@
     const svg = s('svg', { class: 'organmap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ fuel exchange map' });
     svg.appendChild(EP.svgDefs());
     container.appendChild(svg);
+    container.appendChild(EP.colorKey([
+      ['Line colour = what is carried (click to filter, above)', Object.values(GROUPS).map((g) => ({ line: g.color, w: 4, dash: g === GROUPS.hor ? '6 4' : null, label: g.label }))],
+      ['Line style', [{ line: 'var(--m-glc)', w: 7, label: 'Thicker = more flux / signal' }, { line: 'var(--m-glc)', w: 2, label: 'Thin, faded = low' }, { line: 'var(--m-hor)', w: 3, dash: '6 4', label: 'Dashed = hormone signal' }, { dot: 'var(--flowc)', label: 'Moving dots = direction of flow' }]],
+      ['Organ process bars', [{ fill: 'color-mix(in srgb, var(--up) 70%, transparent)', label: 'Bar to the right = above reference' }, { fill: 'color-mix(in srgb, var(--dn) 70%, transparent)', label: 'Bar to the left = below reference' }]],
+      ['Regions', [{ fill: 'color-mix(in srgb, #e05a6a 12%, var(--panel))', stroke: 'color-mix(in srgb, #e05a6a 45%, var(--line))', label: 'Blood (central vessel)' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: 'Organ' }]],
+    ]));
     const gV = s('g'), gP = s('g'), gO = s('g');
     svg.append(gV, gP, gO);
     // blood vessel
@@ -205,6 +211,11 @@
       h('div', h('label.chk', holdG, ' hold glucose constant (clamp)'), ' ', h('label.chk', holdI, ' hold insulin at basal')), h('p.small.muted', 'Threshold: only variables changing by more than ~15% are drawn. Click a node to see why; hover to trace its inputs.')));
     const note = h('div.net-story'); el.appendChild(note);
     const svgWrap = h('div'); el.appendChild(svgWrap);
+    el.appendChild(EP.colorKey([
+      ['Boxes', [{ fill: 'color-mix(in srgb, var(--up) 12%, var(--panel))', stroke: 'var(--up)', rx: 6, label: 'Increased (↑)' }, { fill: 'color-mix(in srgb, var(--dn) 10%, var(--panel))', stroke: 'var(--dn)', dash: '4 3', rx: 6, label: 'Decreased (↓)' }, { fill: 'var(--panel)', stroke: 'var(--line)', rx: 6, label: 'Little change' }, { fill: 'var(--panel)', stroke: 'var(--up)', sw: 3, rx: 6, label: 'Thick border = the perturbation / focus' }]],
+      ['Arrows (main reason each box changed)', [{ line: 'var(--up)', marker: 'stim', label: 'Pushes it up' }, { line: 'var(--dn)', dash: '6 4', marker: 'stim', label: 'Pushes it down' }, { line: 'var(--dn)', dash: '6 4', marker: 'inhib', label: 'Bar end = inhibitory link' }]],
+      ['Columns', [{ fill: 'var(--panel2)', label: 'Left → right: perturbation → hormones → signals → pathways → organ output' }]],
+    ]));
     const cols = h('div.grid2'); const story = h('div.card'); const axisBox = h('div');
     cols.append(story, axisBox); el.appendChild(cols);
     let pert = M.perturbations.find((p) => p.id === params.p) || M.perturbations[0];
@@ -316,7 +327,7 @@
     const tabs = h('div.tabs'); const slot = h('div');
     const list = [['states', 'Fed vs. fasting (any two states)'], ['hormones', 'Insulin vs. glucagon vs. cortisol'], ['failure', 'Primary vs. secondary failure'], ['glut4', 'Insulin vs. exercise GLUT4']];
     list.forEach(([id, l]) => tabs.appendChild(h('button', { 'data-id': id, onclick: () => show(id) }, l)));
-    el.append(tabs, slot);
+    el.append(tabs, slot, EP.colorKey([['Mini bars in the tables', [{ fill: 'var(--up)', label: 'Bar to the right of centre = above the overnight-fasted reference' }, { fill: 'var(--dn)', label: 'Bar to the left = below reference' }, { sym: '↑↓', color: 'var(--muted)', label: 'Symbol column = difference between the two states' }]]], { compact: true }));
     function show(id) {
       tabs.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.id === id));
       EP.teardown(); EP.clear(slot);

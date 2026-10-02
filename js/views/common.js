@@ -47,6 +47,7 @@
     const api = EP.mountPathway(el, id, { height: opts.height || Math.min(640, Math.round(pw.view.h * 0.78)), focus: params.focus });
     (opts.more || []).forEach((mid) => { el.appendChild(h('h2', EP.pathways[mid].title)); EP.mountPathway(el, mid, { height: Math.round(EP.pathways[mid].view.h * 0.7), focus: params.focus }); });
     (opts.cascade ? [].concat(opts.cascade) : []).forEach((cid) => { el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Signaling network: ' + EP.cascades[cid].title)); EP.mountCascade(el, cid, { sources: false }); });
+    if (opts.after) opts.after(el, params);
     if (opts.net) {
       el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Linked feedback system: ' + EP.networks[opts.net].title));
       EP.mountNetwork(el, opts.net);
@@ -250,7 +251,7 @@
     const cv = h('canvas.chart', { width: 1000, height: 260 });
     const mode = { m: 'pulse' };
     const tabs = h('div.tabs', ...[['pulse', 'Pulsatile (physiological)'], ['cont', 'Continuous (agonist)'], ['fast', 'Very fast pulses']].map(([k, l], i) => h('button' + (i ? '' : '.on'), { onclick: (ev) => { mode.m = k; tabs.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === ev.target)); run(); } }, l)));
-    el.append(h('div.card', tabs, cv, h('p.small.muted', 'Schematic simulation (receptor desensitization model, arbitrary units). Continuous GnRH produces a brief flare then suppression of LH — the basis of GnRH-agonist therapy (Kovacs Ch5, Ch8).')));
+    el.append(h('div.card', tabs, cv, EP.colorKey([['Lines', [{ line: 'var(--tr4)', label: 'GnRH input (pulses)' }, { line: 'var(--tr0)', label: 'LH output from gonadotrophs' }]]], { compact: true }), h('p.small.muted', 'Schematic simulation (receptor desensitization model, arbitrary units). Continuous GnRH produces a brief flare then suppression of LH — the basis of GnRH-agonist therapy (Kovacs Ch5, Ch8).')));
     function run() {
       const ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
       const css = getComputedStyle(document.body);
@@ -273,8 +274,9 @@
     el.appendChild(h('h2', 'Clearance: sourced plasma half-lives'));
     const hl = [['Epinephrine', 2, 'Molina Ch6 (<2 min)'], ['Insulin', 5, 'Molina Ch7 (3–8 min)'], ['Glucagon', 7.5, 'Molina Ch7 (5–10 min)'], ['PTH', 4, 'Kovacs Ch14 (<5 min)'], ['Aldosterone', 17.5, 'Molina Ch6 (~15–20 min)'], ['Cortisol', 80, 'Kovacs Ch13 (70–90 min)'], ['T3', 0.75 * 1440, 'Kovacs Ch1 (0.75 day)'], ['T4', 6.7 * 1440, 'Kovacs Ch1 (6.7 days)']];
     const cv2 = h('canvas.chart', { width: 1000, height: 260 });
+    const hlKey = h('div');
     const sel = h('div.statebar', hl.map(([n2], i) => h('button.chip' + (i < 6 ? '.on' : ''), { onclick: (ev) => { ev.target.classList.toggle('on'); draw2(); } }, n2)));
-    el.append(h('div.card', sel, cv2, h('p.small.muted', 'Fraction remaining after secretion stops (log time axis), computed from the textbook half-lives shown in the legend (midpoints of reported ranges). Short half-lives allow minute-to-minute control; T4\'s long half-life buffers thyroid status for weeks.')));
+    el.append(h('div.card', sel, cv2, hlKey, h('p.small.muted', 'Fraction remaining after secretion stops (log time axis), computed from the textbook half-lives shown in the legend (midpoints of reported ranges). Short half-lives allow minute-to-minute control; T4\'s long half-life buffers thyroid status for weeks.')));
     function draw2() {
       const ctx = cv2.getContext('2d'); const W = cv2.width, H = cv2.height; ctx.clearRect(0, 0, W, H);
       const css = getComputedStyle(document.body);
@@ -282,14 +284,15 @@
       const tmax = Math.log10(30 * 1440), tmin = Math.log10(0.5);
       ctx.strokeStyle = css.getPropertyValue('--grid'); ctx.fillStyle = css.getPropertyValue('--muted'); ctx.font = '11px Inter, sans-serif';
       [[1, '1 min'], [10, '10 min'], [60, '1 h'], [1440, '1 day'], [10080, '1 wk']].forEach(([m, l]) => { const x = 50 + (Math.log10(m) - tmin) / (tmax - tmin) * (W - 70); ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, H - 20); ctx.stroke(); ctx.fillText(l, x - 12, H - 6); });
-      let k = 0;
+      let k = 0; const keyItems = [];
       hl.forEach(([name, t12, src], i) => {
         if (!on[i]) return;
         const col = css.getPropertyValue('--tr' + (k % 6)); k++;
         ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
         for (let j = 0; j <= 300; j++) { const lt = tmin + (j / 300) * (tmax - tmin); const t = Math.pow(10, lt); const f = Math.pow(0.5, t / t12); const x = 50 + (j / 300) * (W - 70); const y = 10 + (1 - f) * (H - 40); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
-        ctx.stroke(); ctx.fillStyle = col; ctx.fillText(name + ' — ' + src, W - 300, 20 + k * 14);
+        ctx.stroke(); keyItems.push({ line: `var(--tr${(k - 1) % 6})`, label: `${name} — t½ from ${src}` });
       });
+      EP.clear(hlKey); hlKey.appendChild(EP.colorKey([['Lines (fraction of hormone remaining after secretion stops)', keyItems]], { compact: true }));
     }
     draw2();
     el.appendChild(h('h2', 'Circadian rhythm'));
@@ -326,10 +329,10 @@
       ['Kovacs Ch9', 'Male reproductive function', 'testis,hpgm,cascades?c=lh'], ['Kovacs Ch10', 'Fertilization, implantation, pregnancy', 'pregnancy'],
       ['Kovacs Ch11', 'Growth regulation', 'gh,cascades?c=gh,pitmap'], ['Kovacs Ch12', 'The thyroid', 'thyroid,hpt,cascades?c=t3'],
       ['Kovacs Ch13', 'The adrenal glands', 'steroidogenesis,cortisol,raas,medulla,potassium'], ['Kovacs Ch14', 'Calcium homeostasis', 'calcium,bone,cascades?c=pth'],
-      ['Kovacs Ch15', 'Glucose, lipid and protein metabolism', 'insulin,glucagon,flux,hepatocyte,acetylcoa,fattyacid,aminoacid,lipoprotein,appetite,hypoglycemia'],
+      ['Kovacs Ch15', 'Glucose, lipid and protein metabolism', 'insulin,glucagon,flux,hepatocyte,acetylcoa,fattyacid,aminoacid,lipoprotein,appetite,hypoglycemia,dkahhs'],
       ['Molina Ch1', 'General principles', 'classes,receptors,testlab'], ['Molina Ch2', 'Hypothalamus & posterior pituitary', 'posterior,pitmap'],
       ['Molina Ch3', 'Anterior pituitary', 'pitmap,gh,prl'], ['Molina Ch4', 'Thyroid', 'thyroid,hpt'], ['Molina Ch5', 'Parathyroid, Ca²⁺ and PO₄', 'calcium,bone'],
-      ['Molina Ch6', 'Adrenal gland', 'steroidogenesis,cortisol,medulla,testlab,cascades?c=epinephrine'], ['Molina Ch7', 'Endocrine pancreas', 'insulin,glucagon,betacell,hypoglycemia'],
+      ['Molina Ch6', 'Adrenal gland', 'steroidogenesis,cortisol,medulla,testlab,cascades?c=epinephrine'], ['Molina Ch7', 'Endocrine pancreas', 'insulin,glucagon,betacell,hypoglycemia,dkahhs'],
       ['Molina Ch8', 'Male reproductive system', 'testis,hpgm'], ['Molina Ch9', 'Female reproductive system', 'ovary,hpgf,pregnancy'],
       ['Molina Ch10', 'Integration of energy and electrolyte balance', 'flux,appetite,potassium,pitmap,organmap'],
     ];

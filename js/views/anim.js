@@ -29,6 +29,7 @@
     const svg = s('svg', { class: 'g4-svg anim-svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': def.title });
     const cap = h('div.g4-cap');
     left.append(controls, svg, cap);
+    if (def.key) left.appendChild(EP.colorKey(def.key));
     const stepList = h('ol.g4-steps', def.steps.map(([t], i) => h('li', { onclick: () => go(i), style: { cursor: 'pointer' } }, t)));
     right.append(h('h4', def.listTitle || 'Sequence'), stepList);
     if (def.side) right.appendChild(h('div.small.muted', { style: { marginTop: '10px' }, html: EP.md(def.side) }));
@@ -124,6 +125,12 @@
     const CELLS = { cort: [175, 430, 'Corticotroph', 'var(--tr2)'], thyro: [255, 402, 'Thyrotroph', 'var(--tr3)'], gonado: [330, 440, 'Gonadotroph', 'var(--tr4)'], somato: [190, 478, 'Somatotroph', 'var(--tr0)'], lacto: [292, 488, 'Lactotroph', 'var(--tr1)'] };
     const ME = [360, 232];
     return EP.mountAnim(container, {
+      key: [
+        ['Releasing hormones (dots on the portal route)', RH.map((r) => ({ dot: r.col, label: r.name + (r.inhib ? ' (inhibits)' : '') + ' → ' + CELLS[r.cell][2] }))],
+        ['Other moving dots', [{ dot: 'var(--c-hormone)', label: 'Trophic hormone leaving a cell (coloured like its cell)' }, { dot: 'var(--c-inhib)', label: 'Target-gland hormone feeding back' }, { dot: 'var(--accent)', label: 'ADH / oxytocin granule (with neurophysin)' }, { dot: 'var(--c-messenger)', label: 'Osmoreceptor signal' }]],
+        ['Vessels & regions', [{ line: '#e05561', w: 3, label: 'Artery / capillary plexus' }, { line: '#b04a8a', w: 4, label: 'Hypophyseal portal veins' }, { line: '#6b7fd6', w: 4, label: 'Venous drainage → systemic blood' }, { line: 'var(--accent)', w: 3, label: 'Magnocellular axons (stalk)' }, { band: 'var(--accent2)', label: 'Hypothalamus / stalk' }, { band: 'var(--c-hormone)', label: 'Anterior lobe' }, { band: 'var(--accent)', label: 'Posterior lobe' }]],
+        ['Pituitary cells', [{ fill: 'color-mix(in srgb, var(--tr2) 70%, var(--panel))', stroke: 'var(--tr2)', rx: 9, label: 'Bright = secreting' }, { fill: 'color-mix(in srgb, var(--tr2) 12%, var(--panel))', stroke: 'var(--tr2)', rx: 9, label: 'Faint = quiet' }]],
+      ],
       title: 'Hypothalamic–pituitary portal system and axonal transport', W: 900, H: 580, listTitle: 'Two routes from brain to pituitary',
       steps: [
         ['Parvocellular neurons fire', '**Parvocellular neurons** (PVN, arcuate, preoptic) fire in bursts and send **releasing hormones** down short axons to the **median eminence**.'],
@@ -289,6 +296,11 @@
   // ======================================================================
   EP.anim.beta = function (container) {
     return EP.mountAnim(container, {
+      key: [
+        ['Moving dots', [{ dot: 'var(--m-glc)', label: 'Glucose' }, { dot: 'color-mix(in srgb, var(--m-glc) 60%, var(--panel))', label: 'Glucose-6-P → metabolism' }, { dot: 'var(--c-ion)', label: 'K⁺ leaving (K-ATP open)' }, { dot: 'var(--c-messenger)', label: 'Ca²⁺ entering' }, { dot: 'var(--accent2)', label: 'cAMP (GLP-1 signal)' }, { dot: 'var(--c-hormone)', label: 'Insulin released' }]],
+        ['Membrane proteins (filled = open/active)', [{ fill: 'var(--panel)', stroke: 'var(--c-transporter)', label: 'GLUT1/2' }, { fill: 'color-mix(in srgb, var(--c-ion) 35%, var(--panel))', stroke: 'var(--c-ion)', label: 'K-ATP channel' }, { fill: 'color-mix(in srgb, var(--c-messenger) 40%, var(--panel))', stroke: 'var(--c-messenger)', label: 'Voltage-gated Ca²⁺ channel' }, { fill: 'color-mix(in srgb, var(--c-receptor) 40%, var(--panel))', stroke: 'var(--c-receptor)', label: 'GLP-1 receptor' }]],
+        ['Inside the cell', [{ fill: 'color-mix(in srgb, var(--c-hormone) 25%, var(--panel))', stroke: 'var(--c-hormone)', rx: 9, label: 'Insulin granule' }, { fill: 'color-mix(in srgb, var(--c-enzyme) 15%, var(--panel))', stroke: 'var(--c-enzyme)', rx: 8, label: 'Mitochondria' }, { fill: 'var(--c-enzyme)', label: 'ATP/ADP gauge' }, { line: 'var(--accent)', label: 'Membrane potential trace' }]],
+      ],
       title: 'β-cell stimulus–secretion coupling', W: 900, H: 560, listTitle: 'Glucose → insulin',
       steps: [
         ['Glucose enters (GLUT1/2)', 'Glucose enters through facilitative transporters (GLUT1 in human β-cells, GLUT2 in rodents). Inside, glucose rises in step with plasma glucose.'],
@@ -400,6 +412,10 @@
   // ======================================================================
   EP.anim.gr = function (container) {
     return EP.mountAnim(container, {
+      key: [
+        ['Molecules', [{ dot: 'var(--c-hormone)', label: 'Cortisol' }, { dot: 'var(--c-drug)', label: 'Dexamethasone' }, { fill: 'color-mix(in srgb, var(--c-transport) 25%, var(--panel))', stroke: 'var(--c-transport)', rx: 8, label: 'CBG carrying cortisol' }, { fill: 'color-mix(in srgb, var(--c-receptor) 30%, var(--panel))', stroke: 'var(--c-receptor)', rx: 6, label: 'Glucocorticoid receptor (GR)' }, { dot: 'var(--muted)', label: 'HSP90 chaperone' }, { dot: 'var(--c-tf)', label: 'mRNA' }, { fill: 'var(--c-enzyme)', rx: 3, label: 'New PEPCK protein' }]],
+        ['Structures', [{ band: '#ff6b6b', label: 'Plasma' }, { fill: 'var(--panel2)', stroke: 'var(--c-hormone)', sw: 3, rx: 7, label: 'Cell membrane' }, { fill: 'var(--panel)', stroke: 'var(--c-tf)', dash: '6 3', rx: 7, label: 'Nucleus' }, { line: 'var(--c-tf)', w: 3, label: 'DNA (GRE box lights up when bound)' }, { fill: 'color-mix(in srgb, var(--c-enzyme) 30%, var(--panel))', stroke: 'var(--c-enzyme)', rx: 8, label: 'Ribosome' }]],
+      ],
       title: 'Cortisol acting through the glucocorticoid receptor', W: 900, H: 540, listTitle: 'Steroid hormone → gene', stepDur: 4.5,
       steps: [
         ['Mostly bound in plasma', 'About 90% of cortisol travels bound to **CBG** (and albumin). Only the **free** fraction can enter cells.'],

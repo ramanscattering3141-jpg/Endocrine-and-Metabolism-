@@ -124,6 +124,11 @@
     const svg = s('svg', { class: 'steroid-svg', viewBox: `0 0 ${W} ${H}` });
     svg.appendChild(EP.svgDefs());
     left.appendChild(svg);
+    left.appendChild(EP.colorKey([
+      ['Background column = where the steroid is made', [{ fill: 'color-mix(in srgb, #ffd166 22%, var(--panel))', label: 'Zona glomerulosa (aldosterone)' }, { fill: 'color-mix(in srgb, #6ea8ff 22%, var(--panel))', label: 'Zona fasciculata (cortisol)' }, { fill: 'color-mix(in srgb, #ff7eb3 22%, var(--panel))', label: 'Zona reticularis (androgens)' }, { fill: 'color-mix(in srgb, #9fe870 20%, var(--panel))', label: 'Gonads / peripheral tissues' }]],
+      ['Steroid boxes', [{ fill: 'var(--panel)', stroke: 'var(--c-metabolite)', rx: 9, label: 'Intermediate' }, { fill: 'var(--panel)', stroke: 'var(--c-metabolite)', sw: 3, rx: 9, label: 'Final hormone (thick border)' }, { fill: 'color-mix(in srgb, var(--up) 24%, var(--panel))', stroke: 'var(--up)', rx: 9, label: '↑ accumulates' }, { fill: 'var(--panel)', stroke: 'var(--dn)', dash: '4 3', rx: 9, label: '↓ deficient (dashed)' }]],
+      ['Enzymes & arrows', [{ fill: 'color-mix(in srgb, var(--c-enzyme) 18%, var(--panel))', stroke: 'var(--c-enzyme)', label: 'Enzyme (normal)' }, { fill: 'color-mix(in srgb, var(--dn) 15%, var(--panel))', stroke: 'var(--dn)', dash: '3 2', label: 'Partial deficiency' }, { fill: 'color-mix(in srgb, var(--dn2) 30%, var(--panel))', stroke: 'var(--dn2)', label: 'Complete deficiency (struck through)' }, { line: 'var(--c-rxn)', marker: 'rxn', label: 'Conversion; thicker = more flux' }, { line: 'var(--dn2)', dash: '3 5', label: 'Blocked step' }]],
+    ]));
     // zone bands
     [['zg', 70, 'Zona glomerulosa\n(mineralocorticoid)'], ['zf', 350, 'Zona fasciculata\n(glucocorticoid)'], ['zr', 630, 'Zona reticularis\n(androgen)'], ['zp', 880, 'Gonads / periphery']].forEach(([k, x, l]) => {
       svg.appendChild(s('rect', { x, y: 95, width: k === 'zp' ? 230 : 265, height: 700, rx: 18, class: 'zone-band ' + k }));

@@ -73,6 +73,11 @@
     svg.appendChild(s('text', { x: (COL.hyp.x + COL.hyp.w + COL.cells.x) / 2, y: H - 12, class: 'pm-note', 'text-anchor': 'middle' }, 'portal blood · stalk axons'));
     svg.appendChild(s('text', { x: (COL.horm.x + COL.horm.w + COL.sys.x) / 2, y: H - 12, class: 'pm-note', 'text-anchor': 'middle' }, 'systemic circulation'));
     host.appendChild(svg);
+    host.appendChild(EP.colorKey([
+      ['Band colour = axis', AX.map((a, i) => ({ band: `var(--tr${i})`, label: p.axisNames[a] }))],
+      ['Arrows', [{ line: 'var(--tr2)', marker: 'stim', label: 'Within an axis: releasing hormone → cell → hormone' }, { line: 'var(--tr0)', dash: '4 3', label: 'Inhibitory hypothalamic hormone (somatostatin, dopamine)' }, { line: 'var(--tr4)', w: 1.6, label: 'Hormone → organ system (axis colour)' }, { line: 'var(--c-stim)', dash: '6 4', label: 'Cross-axis: stimulates' }, { line: 'var(--c-inhib)', dash: '6 4', label: 'Cross-axis: inhibits' }]],
+      ['Scenario marks', [{ fill: 'var(--panel)', stroke: 'var(--up)', sw: 2.6, label: '↑ raised' }, { fill: 'var(--panel)', stroke: 'var(--dn)', sw: 2.6, label: '↓ lowered' }, { dot: 'var(--tr1)', label: 'Moving dots = hormone travelling' }, { fill: 'var(--panel)', stroke: 'var(--accent)', sw: 2.4, rx: 9, label: 'Organ system reached by the selected hormone' }, { fill: 'var(--panel)', stroke: 'var(--line)', rx: 9, label: 'Faded = not involved' }]],
+    ]));
 
     // ---- dynamic layer
     let dots = [];

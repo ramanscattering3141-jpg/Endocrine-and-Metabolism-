@@ -227,6 +227,28 @@
   };
 
   /**
+   * Colour key shared by every visual. groups: [[title, items]]; each item is one of
+   *  {node:type, cls}, {edge:type}, {comp:kind}, {fill,stroke}, {dot}, {line, dash, marker}, {sym, color}, {band}
+   * plus label. Swatches reuse the same CSS classes as the diagrams, so colours always match.
+   */
+  EP.colorKey = function (groups, o = {}) {
+    const sw = (it) => {
+      const svg = s('svg', { width: 34, height: 20, viewBox: '0 0 34 20', class: 'ck-sw' });
+      if (it.node) { const g = s('g', { class: `node t-${it.node} ${it.cls || ''}`, transform: 'translate(17,10)' }); g.appendChild(shapeFor(it.node, 30, it.node === 'messenger' ? 18 : 15)); svg.appendChild(g); }
+      else if (it.edge) { svg.appendChild(defs()); svg.appendChild(s('path', { d: 'M2,10 L27,10', class: 'edge e-' + it.edge, 'marker-end': `url(#m-${it.edge === 'endo' ? 'endo' : it.edge})` })); }
+      else if (it.comp) { const g = s('g', { class: 'comp k-' + it.comp }); g.appendChild(s('rect', { x: 2, y: 2, width: 30, height: 16, rx: 5 })); svg.appendChild(g); }
+      else if (it.dot) svg.appendChild(s('circle', { cx: 17, cy: 10, r: 5.5, style: `fill:${it.dot}` }));
+      else if (it.line) { svg.appendChild(defs()); svg.appendChild(s('path', { d: 'M2,10 L28,10', style: `fill:none;stroke:${it.line};stroke-width:${it.w || 2.4}` + (it.dash ? `;stroke-dasharray:${it.dash}` : ''), 'marker-end': it.marker ? `url(#m-${it.marker})` : null })); }
+      else if (it.band) svg.appendChild(s('rect', { x: 2, y: 3, width: 30, height: 14, rx: 4, style: `fill:${it.band};fill-opacity:.18;stroke:${it.band};stroke-opacity:.6` }));
+      else if (it.sym) svg.appendChild(s('text', { x: 17, y: 15, 'text-anchor': 'middle', style: `font-size:15px;font-weight:800;fill:${it.color || 'var(--text)'}` }, it.sym));
+      else svg.appendChild(s('rect', { x: 3, y: 3, width: 28, height: 14, rx: it.rx != null ? it.rx : 4, style: `fill:${it.fill || 'var(--panel)'};stroke:${it.stroke || 'none'};stroke-width:${it.sw || 1.6}` + (it.dash ? `;stroke-dasharray:${it.dash}` : '') }));
+      return svg;
+    };
+    const body = h('div.ck-body', groups.filter((g) => g && g[1] && g[1].length).map(([title, items]) => h('div.ck-group', h('div.ck-title', title), h('div.ck-items', items.map((it) => h('span.ck-item', sw(it), h('span', it.label)))))));
+    return h('details.ckey' + (o.compact ? '.compact' : ''), { open: o.open !== false }, h('summary', o.title || 'Colour key'), body);
+  };
+
+  /**
    * Mount a pathway into a container.
    * opts: { id, height, extModel (EP.Model to bind), onSelect, compact, focus }
    */
@@ -624,13 +646,28 @@
     }
     toolbar.appendChild(h('button.btn.ghost', { onclick: startQuiz, title: 'Hide labels and identify components' }, '✎ Test yourself'));
     toolbar.appendChild(h('button.btn.ghost', { onclick: () => { EP.state.paused = !EP.state.paused; document.body.classList.toggle('paused', EP.state.paused); }, title: 'Pause/resume flow animations' }, '⏯ Motion'));
-    const legendBtn = h('button.btn.ghost', { onclick: () => { lg.hidden = !lg.hidden; } }, 'Legend');
-    toolbar.appendChild(legendBtn);
-    const lg = EP.legend(); lg.hidden = true; stage.appendChild(lg);
+    let keyEl = null;
+    function buildKey() {
+      const types = [...new Set(Object.values(nodeEls).map(({ g }) => (g.getAttribute('class').match(/t-(\w+)/) || [])[1]).filter(Boolean))];
+      const edges = [...new Set(Object.values(edgeEls).map(({ e }) => e.type || 'stim'))];
+      const comps = [...new Set((pw.compartments || []).filter((c) => (c.lv || 1) <= lv()).map((c) => c.kind || 'cytosol'))];
+      const COMP = { blood: 'Blood / extracellular fluid', membrane: 'Plasma membrane', cytosol: 'Cell interior', mito: 'Mitochondrion / specialized compartment', nucleus: 'Nucleus', organ: 'Organ or tissue region' };
+      const EDGE = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', rxn: 'Is converted to', transport: 'Moves / is transported', endo: 'Travels in blood', fb: 'Negative feedback', fbpos: 'Positive feedback', bind: 'Binds' };
+      const k = EP.colorKey([
+        ['Box colour = kind of molecule', types.filter((x) => x !== 'note').map((x) => ({ node: x, label: TYPE_LABEL[x] || x }))],
+        ['Arrows', edges.map((x) => ({ edge: x, label: EDGE[x] || x }))],
+        ['Shaded regions', comps.map((x) => ({ comp: x, label: COMP[x] || x }))],
+        model || opts.extModel ? ['Activity (vs. reference)', [{ node: 'kinase', cls: 'up', label: 'Brighter fill, ↑ badge = more active' }, { node: 'kinase', cls: 'dn', label: 'Pale, dashed = less active' }, { sym: '↑↑', color: 'var(--up)', label: 'marked increase' }, { sym: '↓', color: 'var(--dn)', label: 'decrease' }, { line: 'var(--c-stim)', w: 4.5, label: 'Thick, fast-flowing arrow = more traffic' }]] : null,
+      ]);
+      if (keyEl) keyEl.replaceWith(k); else root.appendChild(k);
+      keyEl = k;
+    }
+    api.buildKey = buildKey;
 
-    const offLevel = EP.on('level', () => { render(); if (walk.on) showStep(walk.i); });
+    const offLevel = EP.on('level', () => { render(); buildKey(); if (walk.on) showStep(walk.i); });
     EP.onTeardown(offLevel);
     render();
+    buildKey();
     if (opts.focus) setTimeout(() => { centerOn(opts.focus); const n = nodeById[opts.focus]; if (n) onNodeClick(n); }, 50);
     api.root = root;
     api.setInput = (id, v) => { if (model) { model.inputs[id] = v; if (sliders[id]) sliders[id].set(v); update(); } };

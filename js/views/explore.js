@@ -20,6 +20,11 @@
     const svg = s('svg', { class: 'bodymap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ cross-talk map' });
     svg.appendChild(EP.svgDefs());
     container.appendChild(svg);
+    container.appendChild(EP.colorKey([
+      ['Line colour = type of message', [{ line: 'var(--c-hormone)', dash: '10 5', label: 'Hormone' }, { line: 'var(--c-transport)', label: 'Metabolite / fuel' }, { line: 'var(--c-tf)', dash: '3 3', label: 'Adipokine / cytokine' }, { line: 'var(--accent2)', dash: '1 4', label: 'Neural' }]],
+      ['Organs', [{ fill: 'color-mix(in srgb, var(--c-hormone) 18%, var(--panel))', stroke: 'var(--c-hormone)', sw: 2.4, label: 'Selected (source)' }, { fill: 'color-mix(in srgb, var(--accent) 14%, var(--panel))', stroke: 'var(--accent)', sw: 2.4, label: 'Partner organ' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: 'Not involved (faded)' }]],
+      ['Labels & dots', [{ dot: 'var(--c-hormone)', label: 'Moving dot = direction of the message (coloured by type)' }, { fill: 'var(--panel)', stroke: 'var(--c-transport)', rx: 9, label: 'Label pill sits next to the receiving organ' }]],
+    ]));
     const gWeb = s('g', { class: 'web' }), gL = s('g'), gO = s('g'), gT = s('g'), gP = s('g');
     svg.append(gWeb, gL, gO, gT, gP);
     svg.appendChild(s('text', { x: CX, y: CY - 6, 'text-anchor': 'middle', class: 'ring-hint' }, opts.hint || 'Select an organ'));
@@ -221,7 +226,7 @@
     const day = h('input', { type: 'range', min: 1, max: 28, value: 8 });
     const phase = h('span.phase-pill', '');
     const info = h('div.grid2');
-    el.append(h('div.card', h('div.daybar', h('strong', 'Day'), day, phase), cv, h('p.small.muted', 'Schematic curve shapes summarising Kovacs Ch8 / Molina Ch9 (relative scale for each hormone; not measured concentrations). The real cycle length and amplitudes vary.'), info));
+    el.append(h('div.card', h('div.daybar', h('strong', 'Day'), day, phase), cv, EP.colorKey([['Hormones (each on its own relative scale)', ['LH', 'FSH', 'Estradiol', 'Progesterone', 'Inhibin B'].map((k, i) => ({ line: `var(--tr${i})`, label: k }))], ['Background & marker', [{ fill: 'rgba(255,107,125,.25)', label: 'Menses' }, { fill: 'rgba(110,168,255,.22)', label: 'Luteal phase' }, { line: 'var(--text)', w: 1.2, dash: '4 4', label: 'Selected day' }]]], { compact: true }), h('p.small.muted', 'Schematic curve shapes summarising Kovacs Ch8 / Molina Ch9 (relative scale for each hormone; not measured concentrations). The real cycle length and amplitudes vary.'), info));
     const g = (x, m, sd) => Math.exp(-0.5 * Math.pow((x - m) / sd, 2));
     const curves = {
       LH: (d) => 0.12 + 0.95 * g(d, 14, 0.9) + 0.05 * g(d, 7, 5),
@@ -241,7 +246,7 @@
       Object.keys(curves).forEach((k, i) => {
         ctx.strokeStyle = css.getPropertyValue('--tr' + i); ctx.lineWidth = 2.4; ctx.beginPath();
         for (let d = 1; d <= 28; d += 0.1) { const y = H - 30 - curves[k](d) * (H - 70); d === 1 ? ctx.moveTo(X(d), y) : ctx.lineTo(X(d), y); }
-        ctx.stroke(); ctx.fillStyle = css.getPropertyValue('--tr' + i); ctx.fillText(k, W - 120, 50 + i * 15);
+        ctx.stroke();
       });
       const dd = +day.value; ctx.strokeStyle = css.getPropertyValue('--text'); ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(dd), 10); ctx.lineTo(X(dd), H - 30); ctx.stroke(); ctx.setLineDash([]);
       for (let d = 1; d <= 28; d += 3) ctx.fillText(String(d), X(d) - 4, H - 12);
@@ -260,6 +265,9 @@
     day.addEventListener('input', upd); upd();
     el.appendChild(h('h2', 'Inside the follicle: two cells, two gonadotropins'));
     EP.mountPathway(el, 'ovary', { height: 420, focus: params.focus });
+    el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'When the cycle stalls: polycystic ovary syndrome'));
+    el.appendChild(h('p.muted', 'PCOS is a major cause of anovulatory infertility (6–15% of reproductive-age women; Molina Ch9). Follow the loop: without ovulation there is no progesterone to slow GnRH pulses, so LH stays high and androgen excess persists.'));
+    EP.mountPathway(el, 'pcos', { height: 460 });
     el.appendChild(EP.sources(['kovacs8', 'molina9']));
   };
 

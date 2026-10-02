@@ -132,7 +132,11 @@
       am: link('amh', 'mull', 'neg', 'regression'), tw: link('t', 'wolff', '', 'T + AR'), td: link('t', 'dht'), ad: link('adr', 'dht'), de: link('dht', 'ext'),
     };
     const out = h('div.sd-out');
-    el.append(presets, ctl, h('div.card.sd-wrap', svg), out);
+    el.append(presets, ctl, h('div.card.sd-wrap', svg, EP.colorKey([
+      ['Box colour', [{ fill: 'color-mix(in srgb, var(--c-stim) 14%, var(--panel))', stroke: 'var(--c-stim)', rx: 6, label: 'Hormone made / signal present' }, { fill: 'color-mix(in srgb, #f4c430 18%, var(--panel))', stroke: '#d4a017', rx: 6, label: 'Partial / low' }, { fill: 'var(--panel)', stroke: 'var(--faint)', dash: '5 3', rx: 6, label: 'Absent / regressed' }, { fill: 'color-mix(in srgb, var(--c-drug) 12%, var(--panel))', stroke: 'var(--c-drug)', rx: 6, label: 'Abnormal androgen excess' }, { fill: 'color-mix(in srgb, var(--c-inhib) 12%, var(--panel))', stroke: 'var(--c-inhib)', rx: 6, label: 'Gonadal failure (streak)' }]],
+      ['Structures', [{ fill: 'color-mix(in srgb, var(--tr1) 14%, var(--panel))', stroke: 'var(--tr1)', rx: 6, label: 'Male-type structure present' }, { fill: 'color-mix(in srgb, var(--tr3) 14%, var(--panel))', stroke: 'var(--tr3)', rx: 6, label: 'Female-type structure present' }]],
+      ['Arrows', [{ line: 'var(--c-stim)', marker: 'stim', label: 'Active signal' }, { line: 'var(--c-inhib)', marker: 'inhib', label: 'AMH causes regression' }, { line: 'var(--faint)', dash: '4 4', label: 'No signal' }, { dot: 'var(--c-hormone)', label: 'Hormone travelling' }]],
+    ])), out);
     const dots = [];
     function setBox(b, val, sub, cls) { b.v.textContent = val; b.v2.textContent = sub || ''; b.g.setAttribute('class', 'sd-box ' + (cls || '')); }
     let R;

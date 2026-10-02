@@ -272,4 +272,132 @@
     ],
     refs: ['kovacs10', 'molina9'],
   };
+  // ======================================================================
+  // DKA vs HHS
+  // ======================================================================
+  P.dkahhs = {
+    id: 'dkahhs', title: 'DKA vs HHS: why a little insulin prevents ketoacidosis', view: { w: 1100, h: 540 },
+    compartments: [
+      { x: 10, y: 10, w: 220, h: 520, label: 'Hormones', kind: 'organ' },
+      { x: 240, y: 10, w: 250, h: 520, label: 'Adipose, liver, muscle', kind: 'cytosol' },
+      { x: 500, y: 10, w: 220, h: 520, label: 'Blood (and water intake)', kind: 'blood' },
+      { x: 730, y: 10, w: 360, h: 520, label: 'Consequences', kind: 'organ' },
+    ],
+    inputs: [
+      { node: 'insulin', label: 'Insulin action', value: 1, labels: ['absent (T1D)', 'severely reduced', 'normal', 'high', 'very high'] },
+      { node: 'stress', label: 'Counterregulatory hormones (infection, MI, stroke)', value: 1, labels: ['low', '', 'basal', 'high', 'very high'] },
+      { node: 'water', label: 'Water intake', value: 1, labels: ['none (elderly, confused)', 'poor', 'normal', 'high', 'very high'] },
+    ],
+    nodes: [
+      n('insulin', 120, 170, { label: 'Insulin action', w: 150 }),
+      pr('stress', 120, 300, 'Glucagon, epinephrine, cortisol', { w: 180, h: 46 }),
+      pr('water', 610, 455, 'Water intake', { w: 150 }),
+      pr('lipol', 365, 70, 'Adipose lipolysis', { ent: 'lipolysis', w: 190 }),
+      pr('hgo', 365, 300, 'Hepatic glucose output', { ent: 'gluconeogenesis', w: 200 }),
+      pr('keto', 365, 170, 'Hepatic ketogenesis', { ent: 'ketogenesis', w: 190 }),
+      pr('uptake', 365, 420, 'Muscle & fat glucose uptake', { ent: 'glut4', w: 210 }),
+      n('ffa', 610, 70, { label: 'FFA', w: 110 }),
+      n('glucose', 610, 300, { label: 'Blood glucose', w: 150 }),
+      n('ketones', 610, 170, { label: 'Ketone bodies', w: 150 }),
+      pr('diuresis', 910, 300, 'Glycosuria → osmotic diuresis', { w: 230 }),
+      pr('dehyd', 910, 400, 'Water & electrolyte loss (↓ GFR)', { w: 240 }),
+      pr('acid', 910, 170, 'Metabolic acidosis (ketoacidosis)', { w: 240 }),
+      pr('osm', 910, 495, 'Plasma osmolality → confusion, coma', { w: 260, h: 46 }),
+    ],
+    edges: [
+      e('insulin', 'lipol', 'inhib', { w: 1.3, why: 'Lipolysis is the most insulin-sensitive process: small amounts of insulin restrain hormone-sensitive lipase (Kovacs Ch15). This is why type 2 diabetes with residual insulin rarely causes ketoacidosis.' }),
+      e('insulin', 'hgo', 'inhib', { w: 0.6, why: 'Higher insulin concentrations are needed to suppress hepatic glucose output.' }),
+      e('insulin', 'keto', 'inhib', { w: 0.6, why: 'Insulin keeps malonyl-CoA high and CPT-1 closed in the liver.' }),
+      e('insulin', 'uptake', 'stim', { w: 0.7 }),
+      e('stress', 'lipol', 'stim', { w: 0.5, why: 'Counterregulatory hormones activate hormone-sensitive lipase (Molina Ch7).' }),
+      e('stress', 'hgo', 'stim', { w: 0.5, why: 'Glucagon, epinephrine and cortisol drive gluconeogenesis and glycogenolysis.' }),
+      e('stress', 'keto', 'stim', { w: 0.4, why: 'A low insulin:glucagon ratio diverts acetyl-CoA from the TCA cycle into ketone bodies (Molina Ch7).' }),
+      e('lipol', 'ffa', 'transport', { w: 0.9 }),
+      e('ffa', 'keto', 'stim', { w: 0.6, why: 'FFA supply to the liver is what distinguishes the extreme ketosis of uncontrolled type 1 diabetes from the mild ketosis of fasting (Kovacs Ch15).' }),
+      e('hgo', 'glucose', 'transport', { w: 0.8 }),
+      e('uptake', 'glucose', 'inhib', { w: 0.5 }),
+      e('keto', 'ketones', 'transport', { w: 0.9 }),
+      e('glucose', 'diuresis', 'stim', { w: 1, why: 'Filtered glucose exceeds tubular reabsorption → glycosuria and osmotic diuresis.' }),
+      e('diuresis', 'dehyd', 'stim', { w: 0.8, why: 'Massive water losses through the kidney (Kovacs Ch15).' }),
+      e('water', 'dehyd', 'inhib', { w: 0.6, why: 'If adequate hydration is not maintained, the water deficit becomes extreme (Kovacs Ch15) — typical of elderly patients with occult diabetes (Molina Ch7).' }),
+      e('dehyd', 'glucose', 'stim', { w: 0.45, curve: 40, why: 'As volume and GFR fall, less glucose is excreted, so glucose climbs further — a vicious cycle.' }),
+      e('ketones', 'acid', 'stim', { w: 0.9, why: 'Acetoacetate and β-hydroxybutyrate are acids.' }),
+      e('glucose', 'osm', 'stim', { w: 0.5, why: 'Glucose is osmotically active.' }),
+      e('dehyd', 'osm', 'stim', { w: 0.6, why: 'Lethargy and confusion as osmolality rises past ~300 mOsm/L; coma above ~330 (Molina Ch7).' }),
+    ],
+    steps: [
+      { n: ['insulin', 'lipol', 'ffa', 'keto', 'ketones', 'acid'], t: '**Ketosis needs FFA.** Lipolysis is suppressed by very little insulin, so ketoacidosis requires near-absolute insulin deficiency (DKA, usually type 1).' },
+      { n: ['stress', 'hgo', 'keto', 'lipol'], t: '**Counterregulatory hormones** (often from infection or other illness) push glucose output, lipolysis and ketogenesis.' },
+      { n: ['hgo', 'glucose', 'diuresis', 'dehyd', 'water'], t: '**Hyperglycemia → osmotic diuresis.** Without enough water intake, losses become massive.' },
+      { n: ['dehyd', 'glucose', 'osm'], t: '**Vicious cycle in HHS:** falling GFR lets glucose climb further; osmolality rises → confusion and coma.' },
+    ],
+    clinical: [
+      { id: 'dka', label: 'DKA (absolute insulin deficiency, type 1)', inputs: { insulin: 0.03, stress: 4, water: 1 }, desc: 'Absent insulin plus high counterregulatory hormones: unrestrained lipolysis → ketoacidosis, with hyperglycemia and dehydration (Molina Ch7).', chain: ['no insulin', '↑↑ lipolysis → FFA', '↑↑ ketogenesis', 'ketoacidosis'], highlight: ['insulin', 'lipol', 'ffa', 'keto', 'ketones', 'acid'] },
+      { id: 'hhs', label: 'HHS (relative insulin deficiency, type 2, poor water intake)', inputs: { insulin: 0.7, stress: 1.5, water: 0.25 }, desc: 'Enough insulin to restrain lipolysis, so ketones stay modest, but hyperglycemia and water loss become extreme: hyperosmolar, "nonketotic" state (Kovacs Ch15; Molina Ch7).', chain: ['some insulin', 'lipolysis restrained', 'hyperglycemia + water deficit', 'hyperosmolality → coma'], highlight: ['glucose', 'diuresis', 'dehyd', 'osm', 'water'] },
+      { id: 'tx', label: 'Treatment: insulin + fluids', inputs: { insulin: 1.6, stress: 1.2, water: 2 }, desc: 'Insulin stops lipolysis and ketogenesis and lowers glucose output; fluids restore volume and GFR. (Insulin also drives K⁺ into cells — see Potassium balance.)', chain: ['insulin + fluids', '↓ ketogenesis', '↓ glucose', 'osmolality normalizes'] },
+    ],
+    refs: ['molina7', 'kovacs15'],
+  };
+
+  // ======================================================================
+  // PCOS
+  // ======================================================================
+  P.pcos = {
+    id: 'pcos', title: 'Polycystic ovary syndrome: a self-sustaining cycle', view: { w: 1100, h: 500 },
+    compartments: [
+      { x: 10, y: 10, w: 250, h: 480, label: 'Metabolic', kind: 'organ' },
+      { x: 270, y: 10, w: 260, h: 480, label: 'Hypothalamus & pituitary', kind: 'organ' },
+      { x: 540, y: 10, w: 290, h: 480, label: 'Ovary', kind: 'organ' },
+      { x: 840, y: 10, w: 250, h: 480, label: 'Consequences', kind: 'organ' },
+    ],
+    inputs: [
+      { node: 'ir', label: 'Insulin resistance (hyperinsulinemia)', value: 1, labels: ['none', '', 'baseline', 'marked', 'severe'] },
+      { node: 'fat', label: 'Adiposity', value: 1, labels: ['lean', '', 'normal', 'obese', 'severe'] },
+    ],
+    nodes: [
+      pr('ir', 135, 110, 'Insulin resistance → hyperinsulinemia', { w: 200, h: 46 }),
+      pr('fat', 135, 330, 'Adipose tissue', { w: 160 }),
+      pr('gnrh', 400, 80, 'GnRH pulse frequency', { w: 200 }),
+      n('lh', 400, 190, { label: 'LH', w: 110 }),
+      n('fsh', 400, 300, { label: 'FSH', w: 110 }),
+      n('prog', 400, 420, { label: 'Progesterone (luteal)', ent: 'progesterone', w: 170 }),
+      pr('theca', 685, 110, 'Theca-cell androgen synthesis', { w: 230 }),
+      n('andro', 685, 210, { ent: 'androstenedione', label: 'Ovarian androgens', w: 170 }),
+      pr('arrest', 685, 320, 'Follicle arrest (many small follicles)', { w: 240, h: 46 }),
+      pr('anov', 685, 430, 'Anovulation', { w: 160 }),
+      pr('hirs', 965, 120, 'Hirsutism, acne', { w: 180 }),
+      n('estrone', 965, 450, { ent: 'estrone', label: 'Estrone (peripheral aromatization)', w: 200, h: 46 }),
+      pr('mens', 965, 300, 'Oligo-/amenorrhea, infertility', { w: 210, h: 46 }),
+    ],
+    edges: [
+      e('ir', 'theca', 'stim', { w: 0.5, why: 'Insulin resistance is frequently associated with PCOS (Molina Ch9); hyperinsulinemia is proposed to augment theca androgen production.' }),
+      e('gnrh', 'lh', 'stim', { w: 1.2, why: 'Rapid GnRH pulses favor LH-β synthesis; slow pulses favor FSH-β (Kovacs Ch5).' }),
+      e('gnrh', 'fsh', 'inhib', { w: 0.3, via: [[515, 80], [515, 300]], why: 'Relatively less FSH at fast pulse frequency → high LH:FSH.' }),
+      e('lh', 'theca', 'stim', { w: 0.8, why: 'LH drives theca-cell androgen synthesis.' }),
+      e('theca', 'andro', 'stim', { w: 0.85 }),
+      e('andro', 'arrest', 'stim', { w: 0.6, why: 'Ovarian hyperandrogenism with multiple follicular cysts and hyperplastic theca/stroma (Kovacs Ch8).' }),
+      e('fsh', 'arrest', 'inhib', { w: 0.5, why: 'FSH is needed for a dominant follicle to mature.' }),
+      e('arrest', 'anov', 'stim', { w: 0.85 }),
+      e('anov', 'prog', 'inhib', { w: 0.85, why: 'No ovulation → no corpus luteum → little progesterone.' }),
+      e('prog', 'gnrh', 'inhib', { w: 0.8, via: [[285, 420], [285, 80]], why: 'Progesterone slows GnRH pulses (via hypothalamic opioids); without it, pulse frequency rises (Molina Ch3). This closes the cycle.' }),
+      e('andro', 'hirs', 'stim', { w: 0.8, why: 'Ovarian hyperandrogenism is the most common cause of hirsutism (Kovacs Ch8).' }),
+      e('andro', 'estrone', 'stim', { w: 0.6, via: [[835, 210], [835, 450]], why: 'Much of the estrogen in chronic anovulation is estrone from peripheral aromatization of androstenedione (Kovacs Ch8).' }),
+      e('fat', 'estrone', 'stim', { w: 0.5, via: [[135, 475], [835, 475]], why: 'Adipose tissue aromatizes androgens.' }),
+      e('fat', 'ir', 'stim', { w: 0.5 }),
+      e('anov', 'mens', 'stim', { w: 0.85, why: 'Chronic anovulation causes >80% of amenorrhea (Kovacs Ch8).' }),
+    ],
+    steps: [
+      { n: ['gnrh', 'lh', 'fsh'], t: '**Fast GnRH pulses** favor LH over FSH.' },
+      { n: ['lh', 'ir', 'theca', 'andro'], t: '**Theca cells overproduce androgens** (LH, and hyperinsulinemia).' },
+      { n: ['andro', 'fsh', 'arrest', 'anov'], t: '**Follicles arrest**; no dominant follicle, no ovulation.' },
+      { n: ['anov', 'prog', 'gnrh'], t: '**No progesterone → GnRH pulses stay fast.** The cycle sustains itself.' },
+      { n: ['andro', 'hirs', 'estrone', 'fat', 'mens'], t: '**Consequences:** hirsutism, acyclic estrone, menstrual irregularity and infertility.' },
+    ],
+    clinical: [
+      { id: 'pcos', label: 'PCOS (insulin resistance + adiposity)', inputs: { ir: 3, fat: 2.5 }, desc: 'Oligo-/amenorrhea, high androgens and multiple ovarian cysts; insulin resistance and increased GnRH pulsatility with high LH are frequently associated (Molina Ch9).', chain: ['↑ GnRH pulses, ↑ LH', '↑ theca androgens', 'follicle arrest', 'anovulation', '↓ progesterone'], highlight: ['gnrh', 'lh', 'theca', 'andro', 'arrest', 'anov', 'prog'] },
+      { id: 'ocp', label: 'Oral contraceptive', caps: { lh: 0.3, fsh: 0.4, gnrh: 0.4, mens: 0.2 }, autos: { anov: 4, prog: 6 }, desc: 'The pill supplies progestin and suppresses gonadotropins, so ovarian androgen production falls — used to treat ovarian hirsutism (Kovacs Ch8). Ovulation stays suppressed (by design) and bleeding becomes regular withdrawal bleeding.', chain: ['progestin + estrogen', '↓ GnRH/LH', '↓ theca androgens', '↓ hirsutism'], highlight: ['lh', 'theca', 'andro', 'hirs'] },
+      { id: 'wt', label: 'Weight loss / insulin sensitization', inputs: { ir: 0.6, fat: 0.7 }, desc: 'Lower insulin and adiposity weaken the androgen drive.', chain: ['↓ insulin', '↓ theca androgens'], highlight: ['ir', 'theca', 'andro'] },
+    ],
+    refs: ['molina9', 'kovacs8', 'kovacs5', 'molina3'],
+  };
 })();

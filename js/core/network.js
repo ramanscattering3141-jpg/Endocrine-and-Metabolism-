@@ -94,6 +94,21 @@
       nodeEl[n.id] = { g, bar, badge, mw };
     });
 
+    {
+      const types = [...new Set(drawNodes.map((n) => n.type || 'hormone'))];
+      const etypes = [...new Set(svg.querySelectorAll('path.edge').length ? [...svg.querySelectorAll('path.edge')].map((p) => (p.getAttribute('class').match(/e-(\w+)/) || [])[1]) : [])].filter(Boolean);
+      const EL = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', endo: 'Hormone travels in blood', fb: 'Negative feedback (curved, dashed)', fbpos: 'Positive feedback', transport: 'Moves / is transported', rxn: 'Is converted to' };
+      const meterSw = (pos) => { const sv = EP.s('svg', { width: 34, height: 20, viewBox: '0 0 34 20', class: 'ck-sw' }); const g = EP.s('g', { class: 'meter', transform: 'translate(2,7)' }); g.append(EP.s('rect', { width: 30, height: 7, rx: 3.5, class: 'm-bg' }), EP.s('line', { x1: 15, x2: 15, y1: -2, y2: 9, class: 'm-ref' }), EP.s('rect', { height: 7, rx: 3.5, x: pos ? 15 : 4, width: 11, class: 'm-bar ' + (pos ? 'pos' : 'neg') })); sv.appendChild(g); return sv; };
+      const k = EP.colorKey([
+        ['Box colour = kind of signal', types.map((x) => ({ node: x, label: EP.TYPE_LABEL[x] || x }))],
+        ['Arrows', etypes.map((x) => ({ edge: x, label: EL[x] || x }))],
+        ['Level vs. normal', [{ node: 'hormone', cls: 'up', label: 'Brighter fill + ↑ badge = above normal' }, { node: 'hormone', cls: 'dn', label: 'Pale, dashed = below normal' }]],
+      ]);
+      const items = k.querySelectorAll('.ck-items');
+      const lv = items[items.length - 1];
+      lv.append(EP.h('span.ck-item', meterSw(true), EP.h('span', 'Bar right of the tick: above normal')), EP.h('span.ck-item', meterSw(false), EP.h('span', 'Bar left of the tick: below normal')));
+      left.appendChild(k);
+    }
     const nboxes = drawNodes.map((n) => { const [w, hh] = sz(n); return { x: n.x - w / 2, y: n.y - hh / 2, w, h: hh + 16 }; });
     requestAnimationFrame(() => EP.declutter(svg, nboxes));
 

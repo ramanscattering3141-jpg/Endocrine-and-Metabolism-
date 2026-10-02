@@ -53,6 +53,16 @@
     const gBand = s('g'), gLink = s('g'), gNode = s('g'), gDot = s('g');
     svg.append(gBand, gLink, gNode, gDot);
     left.appendChild(svg);
+    {
+      const TV = { receptor: ['--c-receptor', 'Receptor'], kinase: ['--c-kinase', 'Kinase / signaling protein'], messenger: ['--c-messenger', 'Second messenger / G protein'], enzyme: ['--c-enzyme', 'Enzyme'], tf: ['--c-tf', 'Transcription factor'], gene: ['--c-tf', 'Gene / transcription (dashed)'], transporter: ['--c-transporter', 'Transporter / channel'], process: ['--c-process', 'Cell process'], hormone: ['--c-hormone', 'Hormone / mediator'], ion: ['--c-ion', 'Ion'], metabolite: ['--c-metabolite', 'Metabolite'] };
+      const types = [...new Set(C.nodes.map((n) => n.type || 'kinase'))].filter((x) => TV[x]);
+      left.appendChild(EP.colorKey([
+        ['Bands = branches', C.branches.map((b) => ({ band: `var(--tr${b.c})`, label: b.label }))],
+        ['Box outline = kind of molecule', types.map((x) => ({ fill: 'var(--panel)', stroke: `var(${TV[x][0]})`, dash: x === 'gene' ? '4 2' : null, label: TV[x][1] })).concat([{ fill: 'color-mix(in srgb, var(--accent) 10%, var(--panel))', stroke: 'var(--accent)', rx: 8, label: 'Result (outlined in its branch colour)' }])],
+        ['Box fill = change', [{ fill: 'color-mix(in srgb, var(--up) 22%, var(--panel))', stroke: 'var(--c-kinase)', label: '↑ increased' }, { fill: 'color-mix(in srgb, var(--dn) 22%, var(--panel))', stroke: 'var(--c-kinase)', label: '↓ decreased' }, { fill: 'color-mix(in srgb, #f4c430 25%, var(--panel))', stroke: 'var(--c-kinase)', label: '± opposing inputs' }, { fill: 'var(--panel)', stroke: 'var(--c-kinase)', dash: '5 3', label: 'dashed = set by the disorder/drug (✕ = blocked)' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: '— no change' }]],
+        ['Arrows & moving dots', [{ line: 'var(--c-stim)', marker: 'stim', label: 'Active stimulation' }, { line: 'var(--c-inhib)', dash: '5 3', marker: 'inhib', label: 'Active inhibition' }, { line: 'var(--faint)', label: 'Inactive' }, { line: 'var(--faint)', dash: '2 4', label: 'Feedback' }, { dot: 'var(--c-stim)', label: 'Signal pushing a target up' }, { dot: 'var(--c-inhib)', label: 'Signal pushing a target down' }]],
+      ]));
+    }
 
     // ---------- layout
     const rowY = (r) => TOP + r * ROWH + ROWH / 2;

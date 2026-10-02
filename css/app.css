@@ -483,7 +483,7 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
 .a-gran circle { fill: color-mix(in srgb, var(--c-hormone) 25%, var(--panel)); stroke: var(--c-hormone); stroke-width: 1.5; } .a-gran circle.core { fill: var(--c-hormone); stroke: none; }
 .a-trace-bg { fill: var(--panel); stroke: var(--line); } .a-trace { fill: none; stroke: var(--accent); stroke-width: 1.8; }
 .a-dot.glc { fill: var(--m-glc); } .a-dot.g6p { fill: var(--m-glc); opacity: .6; } .a-dot.kion { fill: var(--c-ion); } .a-dot.caion { fill: var(--c-messenger); }
-.a-dot.ins { fill: var(--c-hormone); } .a-dot.campdot { fill: var(--c-messenger); }
+.a-dot.ins { fill: var(--c-hormone); } .a-dot.campdot { fill: var(--accent2); }
 .a-cbg ellipse { fill: color-mix(in srgb, var(--c-transport) 25%, var(--panel)); stroke: var(--c-transport); stroke-width: 1.5; }
 .lig { fill: var(--c-hormone); }
 .a-dot.cort { fill: var(--c-hormone); } .a-dot.dex { fill: var(--c-drug); } .a-dot.mrna { fill: var(--c-tf); }
@@ -578,3 +578,27 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
 .tl-dx select { max-width: 100%; }
 .sig-table td, .sig-table th { font-size: .82rem; }
 .sd-svg { max-width: 1100px; margin: 0 auto; }
+
+/* ---------- colour keys (shared) ---------- */
+.ckey { margin: 8px 0 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); font-size: .8rem; }
+.ckey > summary { cursor: pointer; padding: 6px 12px; font-weight: 700; color: var(--muted); font-size: .74rem; letter-spacing: .05em; text-transform: uppercase; }
+.ck-body { display: flex; flex-wrap: wrap; gap: 6px 26px; padding: 2px 12px 10px; }
+.ck-group { min-width: 0; }
+.ck-title { font-size: .7rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 4px 0 3px; }
+.ck-items { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.ck-item { display: inline-flex; align-items: center; gap: 5px; color: var(--text); }
+.ck-sw { flex: none; overflow: visible; }
+.ck-sw .node-label, .ck-sw .badge { display: none; }
+/* ---------- thyroid explorer ---------- */
+.tx-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1000px) { .tx-grid { grid-template-columns: 1fr; } }
+.tx-svg { width: 100%; height: auto; display: block; }
+.tx-follicle { fill: color-mix(in srgb, var(--c-hormone) 7%, transparent); stroke: color-mix(in srgb, var(--c-hormone) 45%, var(--line)); stroke-width: 2; }
+.tx-box rect { fill: var(--panel); stroke: var(--line); stroke-width: 1.8; transition: fill .3s, stroke .3s; }
+.tx-box.up rect { fill: color-mix(in srgb, var(--up) 22%, var(--panel)); stroke: var(--up); }
+.tx-box.dn rect { fill: color-mix(in srgb, var(--dn) 18%, var(--panel)); stroke: var(--dn); stroke-dasharray: 4 3; }
+.tx-box text { font-size: 12px; font-weight: 600; fill: var(--text); }
+.tx-lbl { font-size: 11px; font-weight: 600; fill: var(--muted); } .tx-leak { fill: var(--c-hormone); }
+.tx-arrow { fill: none; stroke: var(--c-stim); stroke-width: 2.2; transition: stroke-width .3s, opacity .3s; }
+.tx-fb { fill: none; stroke: var(--c-fb); stroke-width: 2; stroke-dasharray: 6 4; transition: stroke-width .3s; }
+.tx-ab circle { fill: var(--c-drug); } .tx-ab text { font-size: 10px; font-weight: 800; fill: #fff; }
