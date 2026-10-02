@@ -33,6 +33,7 @@
       T('aa', 0.35, 'Arginine/leucine stimulate β-cells (depolarization; leucine allosterically activates GDH).'),
       T('glp1', 0.45, 'GLP-1R → Gs → cAMP → PKA/Epac2 amplify glucose-stimulated secretion (feed-forward from the gut).'),
       T('epi', -0.7, 'α2-adrenergic (Gi) inhibition of insulin exocytosis — why insulin falls in stress and exercise.'),
+      T('sens', -0.3, 'Hepatic insulin clearance falls in insulin resistance (fewer surface insulin receptors, CEACAM1) → peripheral hyperinsulinemia (Petersen & Shulman 2018).'),
       T('fastdur', -0.3, 'Fasting removes meal-related stimuli (incretins, vagal input, amino acids) and β-cell responsiveness declines, so insulin falls steeply although glucose falls only modestly.'),
     ], { ent: 'insulin' }),
     N('glucagon', 'Glucagon', 'pancreas', 'hormone', [
@@ -90,7 +91,7 @@
 
     // ---------------- LIVER ----------------
     N('h_ins', 'Hepatic insulin signaling (IR→Akt)', 'liver', 'signal', [
-      T('insulin', 1, 'Portal insulin binds hepatic insulin receptors → IRS → PI3K → Akt.'), T('sens', 1, 'Hepatic insulin resistance (DAG → PKCε → IR Thr1160) blunts signaling.'),
+      T('insulin', 1, 'Portal insulin binds hepatic insulin receptors → IRS → PI3K → Akt.'), T('sens', 1, 'Hepatic insulin resistance: lipogenic sn-1,2-DAG activates PKCε, which phosphorylates insulin-receptor kinase Thr1160 and inhibits it (Petersen & Shulman 2018).'), T('hdag', -0.25, 'Hepatic DAG accumulation (from fatty-acid re-esterification) → PKCε → INSR Thr1160 inhibition.'),
       T('cortisol', -0.15, 'Glucocorticoids antagonize insulin action.'), T('gh', -0.15, 'GH is diabetogenic (post-receptor antagonism).'),
     ], { ent: 'akt' }),
     N('h_pka', 'Hepatic cAMP → PKA', 'liver', 'signal', [
@@ -105,7 +106,7 @@
     ], { ent: 'pepck', tau: 4 }),
     N('f26bp', 'Fructose-2,6-bisphosphate', 'liver', 'signal', [T('h_pka', -0.8, 'PKA phosphorylates PFK-2/FBPase-2 → kinase off, phosphatase on (Pilkis & Granner).'), T('h_ins', 0.3, 'Insulin favours the dephosphorylated (kinase-active) form.')], { ent: 'f26bp' }),
     N('chrebp', 'ChREBP', 'liver', 'signal', [T('glucose', 0.7, 'Glucose metabolites activate ChREBP.'), T('h_pka', -0.4, 'PKA phosphorylation inactivates ChREBP.')], { ent: 'chrebp' }),
-    N('srebp', 'SREBP-1c', 'liver', 'signal', [T('h_ins', 0.8, 'Insulin → Akt/mTORC1 → SREBP-1c transcription and processing.')], { ent: 'srebp1c' }),
+    N('srebp', 'SREBP-1c', 'liver', 'signal', [T('h_ins', 0.8, 'Insulin → Akt/mTORC1 → SREBP-1c transcription and processing. Highly insulin-sensitive, so portal hyperinsulinemia can keep it active even in hepatic insulin resistance.'), T('aa', 0.25, 'Amino acids activate mTORC1 → SREBP-1c independently of insulin (nutrient-driven lipogenesis).')], { ent: 'srebp1c' }),
     N('h_gk', 'Glucokinase activity', 'liver', 'enzyme', [T('h_ins', 0.4, 'Insulin induces GCK transcription.'), T('glucose', 0.8, 'Glucose releases glucokinase from GKRP (nucleus → cytosol).')], { ent: 'gk' }),
     N('lgly', 'Liver glycogen store', 'liver', 'signal', [T('fastdur', -1.6, 'Hepatic glycogen is progressively depleted over the first day or so of fasting (Cahill 2006).'), T('carb', 0.25, 'Carbohydrate meals refill liver glycogen.'), T('exercise', -0.3, 'Prolonged exercise draws down liver glycogen.')], { ent: 'glycogen' }),
     N('lglyav', 'Glycogen availability (liver)', 'liver', 'signal', [T('lgly', 1, 'Phosphorylase flux is limited only when stores run low (saturating).')], { sat: 0.3 }),
@@ -154,6 +155,8 @@
     ], { ent: 'ketogenesis' }),
     N('h_tca', 'Hepatic TCA cycle', 'liver', 'pathway', [T('acoa', 0.5, 'Acetyl-CoA supply.'), T('oaa', 0.6, 'Requires oxaloacetate to form citrate.')], { ent: 'tca' }),
     N('dnl', 'De novo lipogenesis', 'liver', 'pathway', [T('srebp', 0.5, 'SREBP-1c lipogenic program.'), T('chrebp', 0.4, 'ChREBP (carbohydrate).'), T('malonyl', 0.6, 'Malonyl-CoA supply (ACC).'), T('citrate', 0.3, 'Citrate → cytosolic acetyl-CoA (ATP-citrate lyase).')], { ent: 'lipogenesis' }),
+    N('htg', 'Hepatic triglyceride (steatosis)', 'liver', 'pathway', [T('ffa', 0.6, '"Substrate push": plasma fatty acids are re-esterified in the liver regardless of hepatic insulin signaling — the main lipogenic flux in insulin-resistant humans.'), T('dnl', 0.2, 'De novo lipogenesis adds newly made fatty acids.'), T('h_fao', -0.3, 'Fatty acids oxidized are not stored.')], { ent: 'tg' }),
+    N('hdag', 'Hepatic diacylglycerol (sn-1,2-DAG)', 'liver', 'signal', [T('htg', 0.8, 'Lipogenic DAG accumulates in parallel with re-esterification.')], { ent: 'dag' }),
     N('vldl', 'VLDL secretion', 'liver', 'pathway', [T('dnl', 0.35, 'Newly synthesized fatty acids.'), T('ffa', 0.45, 'Re-esterified plasma fatty acids (main source).'), T('h_ins', -0.2, 'Insulin acutely suppresses apoB/VLDL secretion.')], { ent: 'vldl' }),
     N('hgo', 'Hepatic glucose output', 'liver', 'output', [C('h_glycogenolysis', 0.55, 'Glycogenolysis.'), C('gng', 0.45, 'Gluconeogenesis.')], { mode: 'sum', desc: 'Glucose released by liver = glycogenolysis + gluconeogenesis (via G6Pase).' }),
     N('h_aaup', 'Hepatic amino-acid uptake', 'liver', 'pathway', [T('aa', 0.7, 'Substrate.'), T('glucagon', 0.5, 'Glucagon stimulates hepatic amino-acid transport and catabolism (Wewer Albrechtsen 2019).'), T('cortisol', 0.2, 'Glucocorticoids increase amino-acid catabolic enzymes.')], { ent: 'transamination' }),
@@ -161,8 +164,8 @@
 
     // ---------------- MUSCLE ----------------
     N('m_ins', 'Muscle insulin signaling (Akt)', 'muscle', 'signal', [
-      T('insulin', 0.9, 'Insulin receptor → IRS-1 → PI3K → Akt2.'), T('sens', 1, 'Muscle insulin resistance (intramyocellular DAG → PKCθ → IRS-1 serine phosphorylation).'),
-      T('cortisol', -0.2, 'Glucocorticoids impair post-receptor signaling.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.25, 'Fatty acid–induced insulin resistance (Petersen & Shulman).'),
+      T('insulin', 0.9, 'Insulin receptor → IRS-1 → PI3K → Akt2.'), T('sens', 1, 'Muscle insulin resistance: sarcolemmal sn-1,2-DAG → PKCθ → IRS-1 Ser1101 phosphorylation → ↓ PI3K/Akt → ↓ GLUT4 translocation. Glucose transport is the rate-controlling defect (Petersen & Shulman 2018).'),
+      T('cortisol', -0.2, 'Glucocorticoids impair post-receptor signaling.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.25, 'Lipid-induced insulin resistance: intramyocellular DAG → PKCθ. During lipid infusion intracellular G6P falls rather than rises, so impaired GLUT4 transport, not the classic Randle substrate-competition cycle, is the main defect.'),
     ], { ent: 'akt' }),
     N('m_ampk', 'Muscle AMPK', 'muscle', 'signal', [T('amp', 1, 'Rising AMP:ATP activates AMPK.')], { ent: 'ampk' }),
     N('m_contr', 'Contraction signals (Ca²⁺/CaMKII, Rac1)', 'muscle', 'signal', [T('exercise', 0.9, 'Excitation releases SR Ca²⁺; mechanical stress activates Rac1.')], { ent: 'camk' }),

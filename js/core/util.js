@@ -124,6 +124,7 @@
     level: 2, // 1 student, 2 physiology, 3 molecular, 4 clinical
     motion: 1, // animation speed multiplier
     paused: false,
+    textScale: 1,
   };
   EP.setLevel = (lv) => { EP.state.level = lv; document.body.dataset.level = lv; EP.emit('level', lv); };
 

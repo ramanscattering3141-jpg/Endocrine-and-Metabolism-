@@ -6,6 +6,8 @@
   --c-metabolite: #9fb4d0; --c-transporter: #6cd87a; --c-tf: #ff7eb3; --c-process: #ffb86b; --c-organ: #7f8db5; --c-drug: #ff6b6b; --c-ion: #ffe066;
   --c-stim: #4ade80; --c-inhib: #ff6b7d; --c-rxn: #c0cbe3; --c-transport: #78d3ff; --c-endo: #f4a945; --c-fb: #ff9f6b;
   --up: #4ade80; --up2: #22c55e; --dn: #ff7b8a; --dn2: #f43f5e; --eq: #93a0bf;
+  --flowc: #ffffff;
+  --m-glc: #f4a945; --m-fat: #e8c35a; --m-ket: #f07fae; --m-lac: #a98bff; --m-tg: #8fb6c9; --m-hor: #6ea8ff;
   --tr0: #f4a945; --tr1: #6ea8ff; --tr2: #4ade80; --tr3: #ff7eb3; --tr4: #b48cff; --tr5: #3fd0e0;
   --shadow: 0 10px 30px rgba(0,0,0,.35); --radius: 14px;
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
@@ -19,6 +21,8 @@
   --c-metabolite: #6c7f9e; --c-transporter: #2f9e44; --c-tf: #d6457f; --c-process: #d9730f; --c-organ: #5d6a8a; --c-drug: #d63c3c; --c-ion: #b88a00;
   --c-stim: #1f9e4f; --c-inhib: #d63c55; --c-rxn: #6c7894; --c-transport: #1d8fd0; --c-endo: #d9820f; --c-fb: #d9600f;
   --up: #1f9e4f; --up2: #13803c; --dn: #d63c55; --dn2: #b0213b; --eq: #6c7894;
+  --flowc: #17203a;
+  --m-glc: #c9740a; --m-fat: #a88400; --m-ket: #c4447d; --m-lac: #6f4fd0; --m-tg: #4f7d93; --m-hor: #2f6fe0;
   --tr0: #d9820f; --tr1: #2f6fe0; --tr2: #1f9e4f; --tr3: #d6457f; --tr4: #7b4fe0; --tr5: #0aa5b8;
   --shadow: 0 8px 24px rgba(30,40,80,.12);
  color-scheme: light; } }
@@ -29,6 +33,8 @@
   --c-metabolite: #6c7f9e; --c-transporter: #2f9e44; --c-tf: #d6457f; --c-process: #d9730f; --c-organ: #5d6a8a; --c-drug: #d63c3c; --c-ion: #b88a00;
   --c-stim: #1f9e4f; --c-inhib: #d63c55; --c-rxn: #6c7894; --c-transport: #1d8fd0; --c-endo: #d9820f; --c-fb: #d9600f;
   --up: #1f9e4f; --up2: #13803c; --dn: #d63c55; --dn2: #b0213b; --eq: #6c7894;
+  --flowc: #17203a;
+  --m-glc: #c9740a; --m-fat: #a88400; --m-ket: #c4447d; --m-lac: #6f4fd0; --m-tg: #4f7d93; --m-hor: #2f6fe0;
   --tr0: #d9820f; --tr1: #2f6fe0; --tr2: #1f9e4f; --tr3: #d6457f; --tr4: #7b4fe0; --tr5: #0aa5b8;
   --shadow: 0 8px 24px rgba(30,40,80,.12);
  color-scheme: light; }
@@ -261,7 +267,7 @@ body.paused .flow, body.paused .particle { animation-play-state: paused; }
 .organ-box.focus rect.ob { stroke: var(--accent); stroke-width: 2.5; }
 .organ-box.dim { opacity: .35; }
 .organ-title { font-weight: 800; font-size: 14px; fill: var(--text); letter-spacing: .04em; text-transform: uppercase; }
-.proc { cursor: pointer; } .proc text { font-size: 12.5px; fill: var(--text); } .proc .pbg { fill: var(--panel2); } .proc .pbar.pos { fill: color-mix(in srgb, var(--up) 70%, transparent); } .proc .pbar.neg { fill: color-mix(in srgb, var(--dn) 70%, transparent); }
+.proc { cursor: pointer; } .proc text { font-size: 11.5px; font-weight: 500; fill: var(--text); } .proc .pbg { fill: var(--panel2); } .proc .pbar.pos { fill: color-mix(in srgb, var(--up) 70%, transparent); } .proc .pbar.neg { fill: color-mix(in srgb, var(--dn) 70%, transparent); }
 .proc:hover .pbg { fill: color-mix(in srgb, var(--accent) 20%, var(--panel2)); }
 .proc .psym { font-weight: 800; font-size: 12px; }
 .flux { fill: none; stroke-linecap: round; opacity: .85; }
@@ -367,3 +373,127 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
   .whatif-btn span { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .flow { animation: none; } }
+
+/* ---------- flux hub map ---------- */
+.flux-filter { margin-bottom: 6px; }
+.flux-filter .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.flux-filter .chip:not(.on) { opacity: .55; }
+.vessel { fill: color-mix(in srgb, #e05a6a 9%, var(--panel)); stroke: color-mix(in srgb, #e05a6a 45%, var(--line)); stroke-width: 1.5; }
+.vessel-note { font-size: 10.5px; fill: var(--muted); }
+.pchip { cursor: pointer; } .pchip rect { fill: var(--panel); stroke: var(--line); }
+.pchip:hover rect, .pchip:focus rect { stroke: var(--accent); }
+.pchip-l { font-size: 11px; font-weight: 700; fill: var(--text); } .pchip-v { font-size: 10.5px; fill: var(--muted); }
+.pchip-v.up, .pchip-v.up2 { fill: var(--up); } .pchip-v.dn, .pchip-v.dn2 { fill: var(--dn); }
+.port { cursor: pointer; } .port-line { fill: none; stroke: var(--pc); stroke-linecap: round; opacity: .85; }
+.port.k-hor .port-line { stroke-dasharray: 6 4; }
+.port-flow { fill: none; stroke: var(--flowc); stroke-opacity: .5; stroke-dasharray: 2 14; stroke-linecap: round; animation: flow 2.4s linear infinite; pointer-events: none; }
+.port-tag rect { fill: var(--panel); stroke: var(--pc); stroke-width: 1.2; } .port-tag text { font-size: 10.5px; font-weight: 600; fill: var(--text); }
+.port.low .port-line { opacity: .3; } .port.low .port-flow { display: none; } .port.low .port-tag { opacity: .6; }
+.port.dim { opacity: .1; } .port:hover .port-line { opacity: 1; }
+.mk-port { fill: var(--muted); }
+.proc .pmid { stroke: var(--muted); stroke-opacity: .35; }
+.proc .psym.pos { fill: var(--up); } .proc .psym.neg { fill: var(--dn); }
+.proc .ptrack { fill: color-mix(in srgb, var(--muted) 12%, transparent); }
+.proc .pbar { opacity: .9; }
+
+/* ---------- cross-talk ring ---------- */
+.web-line { fill: none; stroke: var(--muted); stroke-opacity: .09; stroke-width: 1; }
+.bodymap.has-sel .web-line { stroke-opacity: .04; }
+.ring-hint { font-size: 15px; font-weight: 700; fill: var(--muted); opacity: .55; } .ring-hint.sub { font-size: 11px; font-weight: 500; }
+.bodymap.has-sel .ring-hint { display: none; }
+.ltag { cursor: pointer; } .ltag rect { fill: var(--panel); stroke-width: 1.3; } .ltag text { font-size: 10.5px; font-weight: 600; fill: var(--text); }
+.ltag.k-hormone rect { stroke: var(--c-hormone); } .ltag.k-metabolite rect { stroke: var(--c-transport); } .ltag.k-adipokine rect { stroke: var(--c-tf); } .ltag.k-neural rect { stroke: var(--accent2); }
+.flux-dot.k-hormone { fill: var(--c-hormone); } .flux-dot.k-metabolite { fill: var(--c-transport); } .flux-dot.k-adipokine { fill: var(--c-tf); } .flux-dot.k-neural { fill: var(--accent2); }
+
+/* ---------- pituitary integration map ---------- */
+.pm-wrap { padding: 10px; }
+.pitmap { width: 100%; height: auto; display: block; }
+.pm-head { font-size: 12px; font-weight: 700; fill: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.pm-note { font-size: 10.5px; fill: var(--faint); font-style: italic; }
+.pm-band { fill: var(--ax); fill-opacity: .05; stroke: var(--ax); stroke-opacity: .18; }
+.pm-chain { fill: none; stroke: var(--ax); stroke-opacity: .45; stroke-width: 1.6; }
+.pm-chain.neg { stroke-dasharray: 4 3; }
+.pitmap.has-sel .pm-chain:not(.on) { stroke-opacity: .12; }
+.pm-link { fill: none; stroke: var(--ax); stroke-width: 2; stroke-opacity: .75; }
+.pm-link.fx { stroke-width: 1.6; stroke-opacity: .55; }
+.pm-link.cross { stroke-width: 2.2; stroke-dasharray: 6 4; stroke-opacity: .9; }
+.pm-link.chain { stroke-opacity: 0; }
+.pm-dot { pointer-events: none; }
+.pm-node { cursor: pointer; }
+.pm-node rect { fill: var(--panel); stroke: var(--ax, var(--c-organ)); stroke-width: 1.4; transition: opacity .2s, stroke-width .2s; }
+.pm-node.c-cells rect { fill: var(--panel2); }
+.pm-node.c-horm rect { stroke-width: 2; }
+.pm-node.c-sys rect { stroke: var(--c-organ); }
+.pm-node text { font-size: 12px; font-weight: 600; fill: var(--text); pointer-events: none; }
+.pm-node:focus-visible rect, .pm-node.sel rect { stroke-width: 3; }
+.pitmap.has-sel .pm-node:not(.on):not(.sel) { opacity: .32; }
+.pm-node.on.c-sys rect { stroke: var(--accent); }
+.pm-node.up rect { stroke: var(--up); stroke-width: 2.6; } .pm-node.down rect { stroke: var(--dn); stroke-width: 2.6; }
+.pm-badge { font-size: 14px; font-weight: 800; }
+.pm-node.up .pm-badge { fill: var(--up); } .pm-node.down .pm-badge { fill: var(--dn); }
+.pm-ctrl { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 8px; min-height: 34px; }
+.pm-step { font-weight: 600; color: var(--muted); font-size: .85rem; }
+.pm-steps { padding-left: 20px; } .pm-steps li { margin-bottom: 8px; cursor: pointer; transition: opacity .2s; }
+.pm-steps li.todo { opacity: .4; } .pm-steps li.cur { background: var(--panel2); border-radius: 8px; padding: 6px 8px; margin-left: -8px; }
+.pm-card h2 { font-size: 1.1rem; }
+.pm-layout { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.pm-panel { font-size: .9rem; }
+.pm-panel .keypoints { columns: 2 320px; column-gap: 28px; } .pm-panel .keypoints li { break-inside: avoid; }
+.pm-panel .pm-steps { columns: 1; }
+
+/* ---------- shared cell/organ animations ---------- */
+.anim-svg text { pointer-events: none; }
+.a-head { font-size: 11px; font-weight: 700; letter-spacing: .05em; fill: var(--muted); }
+.a-lbl, .a-small { font-size: 11px; font-weight: 600; fill: var(--text); }
+.a-nlabel { font-size: 12px; font-weight: 600; fill: var(--text); }
+.a-note { font-size: 10.5px; font-style: italic; fill: var(--muted); }
+.a-route { fill: none; stroke: none; }
+.a-dot { pointer-events: none; }
+.a-region { stroke-width: 1.5; }
+.a-region.hyp { fill: color-mix(in srgb, var(--accent2) 8%, transparent); stroke: color-mix(in srgb, var(--accent2) 35%, transparent); }
+.a-region.stalk { fill: color-mix(in srgb, var(--accent2) 6%, transparent); stroke: color-mix(in srgb, var(--accent2) 30%, transparent); }
+.a-region.ant { fill: color-mix(in srgb, var(--c-hormone) 9%, transparent); stroke: color-mix(in srgb, var(--c-hormone) 40%, transparent); }
+.a-region.post { fill: color-mix(in srgb, var(--accent) 8%, transparent); stroke: color-mix(in srgb, var(--accent) 35%, transparent); }
+.a-region.blood { fill: color-mix(in srgb, #ff6b6b 7%, transparent); stroke: none; }
+.a-region.cell { fill: color-mix(in srgb, var(--panel2) 75%, transparent); stroke: var(--c-hormone); stroke-opacity: .5; stroke-width: 4; }
+.a-region.nucleus { fill: color-mix(in srgb, var(--c-tf) 7%, transparent); stroke: var(--c-tf); stroke-opacity: .5; stroke-width: 3; stroke-dasharray: 10 5; }
+.a-artery { fill: none; stroke: #e05561; stroke-width: 4; stroke-opacity: .6; }
+.a-plexus { fill: none; stroke: #e05561; stroke-width: 2; stroke-opacity: .5; }
+.a-portal { fill: none; stroke: #b04a8a; stroke-width: 5; stroke-opacity: .45; stroke-linecap: round; }
+.a-vein { fill: none; stroke: #6b7fd6; stroke-width: 5; stroke-opacity: .4; }
+.a-fb { fill: none; stroke: var(--c-inhib); stroke-width: 1.6; stroke-dasharray: 6 5; stroke-opacity: .55; }
+.a-axon { fill: none; stroke-width: 2; stroke-opacity: .55; }
+.a-maxon { fill: none; stroke: var(--accent); stroke-width: 3; stroke-opacity: .45; }
+.a-neuron circle { fill: var(--c, var(--accent)); fill-opacity: .25; stroke: var(--c, var(--accent)); stroke-width: 2; transition: fill-opacity .15s; }
+.a-neuron.fire circle { fill-opacity: .85; }
+.a-neuron.osm circle { --c: var(--c-messenger); }
+.a-cell circle { fill: var(--c); fill-opacity: calc(.12 + var(--glow, 0) * .7); stroke: var(--c); stroke-width: 2; }
+.a-cell circle.nuc { fill: var(--panel); fill-opacity: .9; stroke-width: 1; }
+.a-term { fill: var(--accent); fill-opacity: .3; stroke: var(--accent); stroke-width: 1.5; }
+.a-dot.troph { opacity: .9; } .a-dot.fbdot { fill: var(--c-inhib); } .a-dot.osmdot { fill: var(--c-messenger); }
+.a-dot.gran { fill: var(--accent); stroke: var(--panel); stroke-width: 1; } .a-dot.adh { fill: var(--accent); }
+.a-chan rect { fill: var(--panel); stroke: var(--c-transporter); stroke-width: 2; }
+.a-chan.katp rect { stroke: var(--c-ion); } .a-chan.katp.open rect { fill: color-mix(in srgb, var(--c-ion) 35%, var(--panel)); }
+.a-chan.vgcc rect { stroke: var(--c-messenger); } .a-chan.vgcc.open rect { fill: color-mix(in srgb, var(--c-messenger) 40%, var(--panel)); }
+.a-chan.glp1r rect { stroke: var(--c-receptor); } .a-chan.glp1r.open rect { fill: color-mix(in srgb, var(--c-receptor) 40%, var(--panel)); }
+.a-node rect { fill: var(--panel); stroke: var(--c-enzyme); stroke-width: 1.6; }
+.a-node.camp rect { stroke: var(--c-messenger); opacity: .45; } .a-node.camp.on rect { opacity: 1; fill: color-mix(in srgb, var(--c-messenger) 20%, var(--panel)); }
+.a-mito { fill: color-mix(in srgb, var(--c-enzyme) 15%, transparent); stroke: var(--c-enzyme); stroke-width: 2; }
+.a-bartrack { fill: var(--panel); stroke: var(--line); } .a-bar { fill: var(--c-enzyme); }
+.a-gran circle { fill: color-mix(in srgb, var(--c-hormone) 25%, var(--panel)); stroke: var(--c-hormone); stroke-width: 1.5; } .a-gran circle.core { fill: var(--c-hormone); stroke: none; }
+.a-trace-bg { fill: var(--panel); stroke: var(--line); } .a-trace { fill: none; stroke: var(--accent); stroke-width: 1.8; }
+.a-dot.glc { fill: var(--m-glc); } .a-dot.g6p { fill: var(--m-glc); opacity: .6; } .a-dot.kion { fill: var(--c-ion); } .a-dot.caion { fill: var(--c-messenger); }
+.a-dot.ins { fill: var(--c-hormone); } .a-dot.campdot { fill: var(--c-messenger); }
+.a-cbg ellipse { fill: color-mix(in srgb, var(--c-transport) 25%, var(--panel)); stroke: var(--c-transport); stroke-width: 1.5; }
+.lig { fill: var(--c-hormone); }
+.a-dot.cort { fill: var(--c-hormone); } .a-dot.dex { fill: var(--c-drug); } .a-dot.mrna { fill: var(--c-tf); }
+.a-gr rect.gr { fill: color-mix(in srgb, var(--c-receptor) 30%, var(--panel)); stroke: var(--c-receptor); stroke-width: 2; }
+.a-gr circle.hsp { fill: var(--muted); transition: opacity .3s; } .a-gr circle.lig { transition: opacity .3s; }
+.a-gr.blocked rect.gr { stroke: var(--c-drug); stroke-dasharray: 3 2; }
+.a-dna { fill: none; stroke: var(--c-tf); stroke-width: 3; stroke-opacity: .6; }
+.a-gre { fill: var(--panel); stroke: var(--c-tf); stroke-width: 2; } .a-gre.on { fill: color-mix(in srgb, var(--c-tf) 45%, var(--panel)); }
+.a-pore { fill: var(--panel); stroke: var(--c-tf); stroke-width: 1.5; }
+.a-ribo { fill: color-mix(in srgb, var(--c-enzyme) 30%, var(--panel)); stroke: var(--c-enzyme); }
+.a-prot { fill: var(--c-enzyme); }
+.a-meter { height: 10px; background: var(--panel2); border-radius: 5px; overflow: hidden; } .a-meter i { display: block; height: 100%; background: var(--c-enzyme); transition: width .3s; }
+.anim-readout { margin-top: 10px; }

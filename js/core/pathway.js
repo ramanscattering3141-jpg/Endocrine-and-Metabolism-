@@ -69,7 +69,7 @@
     let L = n.label;
     if (!L) { const e = ent(n.ent || n.id); L = e ? (e.short || e.name) : n.id; }
     if (L.includes('\n')) return L.split('\n');
-    const [w] = sizeOf(n);
+    const [w] = baseSize(n);
     const max = Math.max(8, Math.floor(w / 7.2));
     if (L.length <= max) return [L];
     const words = L.split(' ');
@@ -78,12 +78,20 @@
       const cur = lines[lines.length - 1];
       if ((cur + ' ' + wd).trim().length > max && cur) lines.push(wd); else lines[lines.length - 1] = (cur + ' ' + wd).trim();
     });
-    return lines.slice(0, 3);
+    return lines;
   }
   function typeOf(n) { if (n.type) return n.type; const e = ent(n.ent || n.id); return (e && e.type) || 'protein'; }
-  function sizeOf(n) {
+  function baseSize(n) {
     const d = SIZE[typeOf(n)] || [110, 34];
     return [n.w || d[0], n.h || d[1]];
+  }
+  /** Final node size: never smaller than the text it carries (no label overflow). */
+  function sizeOf(n) {
+    const key = (n.label || '') + '|' + EP.state.textScale;
+    if (n._sz && n._szKey === key) return n._sz;
+    const [bw, bh] = baseSize(n);
+    n._sz = EP.fitBox(typeOf(n), labelLines(n), bw, bh); n._szKey = key;
+    return n._sz;
   }
 
   /** Shape path for node types (centered at 0,0). Shapes differ so color is never the only cue. */
@@ -127,11 +135,67 @@
       mk('m-inhib', 'M5,0 L7,0 L7,12 L5,12 Z', 'mk mk-inhib', { refX: 6, size: 14 }),
       mk('m-fb', 'M5,0 L7,0 L7,12 L5,12 Z', 'mk mk-fb', { refX: 6, size: 14 }),
       mk('m-fbpos', 'M0,0 L12,6 L0,12 Z', 'mk mk-fbpos', { size: 11 }),
+      s('marker', { id: 'm-port', viewBox: '0 0 12 12', refX: 4, refY: 6, markerWidth: 10, markerHeight: 10, orient: 'auto-start-reverse', markerUnits: 'userSpaceOnUse' }, s('path', { d: 'M0,0 L12,6 L0,12 Z', class: 'mk mk-port' })),
       mk('m-bind', 'M6,2 A4,4 0 1,1 5.9,2 Z', 'mk mk-bind', { refX: 6, size: 9 }),
       s('filter', { id: 'glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
         s('feGaussianBlur', { stdDeviation: 4, result: 'b' }),
         s('feMerge', {}, s('feMergeNode', { in: 'b' }), s('feMergeNode', { in: 'SourceGraphic' }))));
   }
+  // ---- text measurement & box fitting (shared by all diagram engines) ----
+  let mctx = null;
+  EP.textWidth = function (str, px = 12, weight = 600) {
+    if (!mctx) { const c = document.createElement('canvas'); mctx = c.getContext('2d'); }
+    mctx.font = `${weight} ${px}px Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif`;
+    return mctx.measureText(str).width * 1.06; // small margin for font fallback differences
+  };
+  EP.fitBox = function (type, lines, bw, bh) {
+    const tw = Math.max(...lines.map((l) => EP.textWidth(l)));
+    const th = lines.length * 13;
+    let w = bw, hh = bh;
+    const padX = { hormone: 34, receptor: 22, tf: 30, process: 26, metabolite: 0, messenger: 0, drug: 22, gene: 18, vesicle: 24, ion: 22 }[type];
+    if (type === 'metabolite') w = Math.max(w, tw * 1.22 + 18);
+    else if (type === 'messenger') w = Math.max(w, tw * 1.9 + 12);
+    else w = Math.max(w, tw + (padX != null ? padX : 18));
+    if (type === 'messenger') hh = Math.max(hh, th * 2 + 10);
+    else if (type === 'metabolite') hh = Math.max(hh, th + 16);
+    else if (type === 'receptor') hh = Math.max(hh, th + 20);
+    else hh = Math.max(hh, th + 13);
+    return [Math.ceil(w), Math.ceil(hh)];
+  };
+
+  /** Declutter: slide edge labels along their path off any node box; move compartment titles to a free corner. */
+  EP.declutter = function (svg, boxes) {
+    const hits = (b) => boxes.some((r) => b.x < r.x + r.w - 1 && b.x + b.width > r.x + 1 && b.y < r.y + r.h - 1 && b.y + b.height > r.y + 1);
+    const placed = [];
+    const clash = (b) => hits(b) || placed.some((r) => b.x < r.x + r.width && b.x + b.width > r.x && b.y < r.y + r.height && b.y + b.height > r.y);
+    svg.querySelectorAll('text.edge-label').forEach((t) => {
+      const path = t.parentNode && t.parentNode.querySelector('path.edge');
+      let b; try { b = t.getBBox(); } catch (e) { return; }
+      if (!b.width) return;
+      if (!clash(b)) { placed.push(b); return; }
+      if (path) {
+        let L = 0; try { L = path.getTotalLength(); } catch (e) { /* noop */ }
+        const tries = [0.5, 0.38, 0.62, 0.28, 0.72, 0.2, 0.8, 0.12, 0.88];
+        for (const f of tries) {
+          for (const off of [-8, 12, -16]) {
+            const p = path.getPointAtLength(L * f);
+            t.setAttribute('x', p.x + 6); t.setAttribute('y', p.y + off);
+            const nb = t.getBBox();
+            if (!clash(nb)) { placed.push(nb); return; }
+          }
+        }
+      }
+      t.style.display = 'none'; // still available as the arrow's tooltip
+    });
+    svg.querySelectorAll('text.comp-label').forEach((t) => {
+      let b; try { b = t.getBBox(); } catch (e) { return; }
+      if (!hits(b)) return;
+      const r = t.__comp; if (!r) return;
+      const cand = [[r.x + 12, r.y + r.h - 8, 'start'], [r.x + r.w - 12, r.y + 20, 'end'], [r.x + r.w - 12, r.y + r.h - 8, 'end']];
+      for (const [x, y, a] of cand) { t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', a); if (!hits(t.getBBox())) return; }
+      t.style.display = 'none';
+    });
+  };
   EP.svgDefs = defs;
   EP.shapeFor = shapeFor;
   EP.SIZE = SIZE;
@@ -279,7 +343,7 @@
         if ((c.lv || 1) > lv()) return;
         const g = s('g', { class: 'comp k-' + (c.kind || 'cytosol') });
         g.appendChild(s('rect', { x: c.x, y: c.y, width: c.w, height: c.h, rx: c.kind === 'membrane' ? 6 : 18 }));
-        if (c.label) g.appendChild(c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label));
+        if (c.label) g.appendChild(Object.assign(c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label), { __comp: c }));
         gComp.appendChild(g);
       });
       pw.edges.forEach((e) => {
@@ -335,7 +399,7 @@
           g.appendChild(s('path', { d: `M${-w / 2 + 10},${-hh / 2 + 4} L${-w / 2 + 10},${hh / 2 - 4} M${w / 2 - 10},${-hh / 2 + 4} L${w / 2 - 10},${hh / 2 - 4}`, class: 'tp-bars' }));
         }
         const lines = quiz ? ['?'] : labelLines(n);
-        const t = s('text', { class: 'node-label', 'text-anchor': 'middle', y: -(lines.length - 1) * 6.5 + 4.5 });
+        const t = s('text', { class: 'node-label', 'text-anchor': 'middle', y: -(lines.length - 1) * 6.5 + 4.5 + (type === 'receptor' ? 4 : 0) });
         lines.forEach((L, i) => t.appendChild(s('tspan', { x: 0, dy: i ? 13 : 0 }, L)));
         g.appendChild(t);
         const badge = s('text', { class: 'badge', x: w / 2 - 2, y: -hh / 2 - 4, 'text-anchor': 'end' }, '');
@@ -348,6 +412,8 @@
         gNode.appendChild(g);
         nodeEls[n.id] = { g, badge, n };
       });
+      const boxes = Object.values(nodeEls).map(({ n }) => { const [w, hh] = sizeOf(n); return { x: n.x - w / 2, y: n.y - hh / 2, w, h: hh }; });
+      requestAnimationFrame(() => EP.declutter(svg, boxes));
       update();
     }
     api.render = render;

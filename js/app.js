@@ -16,6 +16,7 @@
       { id: 'secretion', title: 'Pulsatile, circadian & clearance', render: V.secretion, kw: 'pulsatile circadian rhythm half-life clearance GnRH desensitization cortisol rhythm' },
     ] },
     { k: 'B', title: 'Hypothalamus & Pituitary', pages: [
+      { id: 'pitmap', title: 'Pituitary integration map ★', render: V.pituitaryMap, kw: 'pituitary integration cross-axis organ systems stress hypothyroidism prolactinoma pregnancy macroadenoma stalk effect anorexia growth' },
       { id: 'hpa', title: 'HPA axis (CRH–ACTH–cortisol)', render: (el, p) => V.axisPage(el, 'hpa', p), networks: ['hpa'], kw: 'CRH ACTH cortisol adrenal insufficiency Addison Cushing exogenous glucocorticoid circadian' },
       { id: 'hpt', title: 'HPT axis (TRH–TSH–T4/T3)', render: (el, p) => V.axisPage(el, 'hpt', p), networks: ['hpt'], kw: 'TRH TSH T4 T3 hypothyroidism hyperthyroidism Graves Hashimoto' },
       { id: 'hpgm', title: 'HPG axis — male', render: (el, p) => V.axisPage(el, 'hpgm', p), networks: ['hpgm'], pathways: ['testis'], kw: 'GnRH LH FSH testosterone inhibin Leydig Sertoli hypogonadism anabolic steroids' },
@@ -29,15 +30,15 @@
     ] },
     { k: 'D', title: 'Adrenal', pages: [
       { id: 'steroidogenesis', title: 'Steroidogenesis map ★', render: V.steroid, kw: 'cholesterol pregnenolone 21-hydroxylase 11-beta hydroxylase 17-alpha hydroxylase aldosterone synthase CAH zona glomerulosa fasciculata reticularis DHEA androstenedione 17-OHP' },
-      { id: 'cortisol', title: 'Cortisol actions & rhythm', render: PW('cortisolaction', { q: 'Where does cortisol act, and how does it raise glucose?', net: 'hpa' }), pathways: ['cortisolaction', 'nuclear'], kw: 'cortisol glucocorticoid receptor gluconeogenesis immune circadian' },
+      { id: 'cortisol', title: 'Cortisol actions & rhythm', render: PW('cortisolaction', { q: 'Where does cortisol act, and how does it raise glucose?', net: 'hpa', anim: 'gr', animTitle: 'Animated cell: cortisol → GR → gene → protein' }), pathways: ['cortisolaction', 'nuclear'], kw: 'cortisol glucocorticoid receptor gluconeogenesis immune circadian' },
       { id: 'raas', title: 'RAAS & aldosterone', render: (el, p) => V.axisPage(el, 'raas', p), networks: ['raas'], kw: 'renin angiotensin aldosterone potassium hyperaldosteronism' },
       { id: 'medulla', title: 'Adrenal medulla & catecholamines', render: PW('catecholamine', { q: 'How does a sympathetic signal become circulating epinephrine — and why does the medulla need cortisol?' }), pathways: ['catecholamine'], kw: 'epinephrine norepinephrine tyrosine hydroxylase PNMT chromaffin alpha beta adrenergic pheochromocytoma metanephrines' },
     ] },
     { k: 'E', title: 'Pancreas & Glucose', pages: [
-      { id: 'insulin', title: 'Insulin signaling ★ (prototype)', render: V.insulin, pathways: ['insulin'], kw: 'insulin receptor IRS PI3K PIP3 Akt AS160 TBC1D4 GLUT4 FOXO1 GSK3 mTOR PDE3B insulin resistance' },
+      { id: 'insulin', title: 'Insulin signaling ★ (prototype)', render: V.insulin, pathways: ['insulin', 'irmech'], kw: 'insulin receptor IRS PI3K PIP3 Akt AS160 TBC1D4 GLUT4 FOXO1 GSK3 mTOR PDE3B insulin resistance' },
       { id: 'glut4', title: 'GLUT4: insulin vs exercise ★', render: V.glut4page, kw: 'GLUT4 translocation exercise contraction AMPK insulin vesicle muscle adipocyte' },
       { id: 'glucagon', title: 'Glucagon simulation ★', render: V.glucagonPage, pathways: ['glucagon'], kw: 'glucagon cAMP PKA glycogenolysis gluconeogenesis ketogenesis muscle liver' },
-      { id: 'betacell', title: 'β-cell & incretins', render: PW('betacell', { q: 'How does a rise in glucose become insulin exocytosis, and how do GLP-1 and epinephrine adjust it?', net: 'motif_ff' }), pathways: ['betacell'], kw: 'beta cell glucokinase KATP sulfonylurea calcium GLP-1 GIP incretin somatostatin' },
+      { id: 'betacell', title: 'β-cell & incretins', render: PW('betacell', { q: 'How does a rise in glucose become insulin exocytosis, and how do GLP-1 and epinephrine adjust it?', net: 'motif_ff', anim: 'beta', animTitle: 'Animated β-cell: glucose → K-ATP → Ca²⁺ → exocytosis' }), pathways: ['betacell'], kw: 'beta cell glucokinase KATP sulfonylurea calcium GLP-1 GIP incretin somatostatin' },
     ] },
     { k: 'F', title: 'Calcium, Bone & Mineral', pages: [
       { id: 'calcium', title: 'Ca / PTH / vitamin D / FGF23 ★', render: V.calciumPage, networks: ['calcium'], pathways: ['kidneymineral'], kw: 'calcium PTH vitamin D calcitriol FGF23 phosphate CaSR hyperparathyroidism CKD' },

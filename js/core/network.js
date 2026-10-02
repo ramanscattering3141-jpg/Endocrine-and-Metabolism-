@@ -30,7 +30,7 @@
     left.appendChild(svg);
     (net.bands || []).forEach((b) => {
       gBg.appendChild(s('rect', { x: b.x || 0, y: b.y, width: b.w || W, height: b.h, class: 'band', rx: 12 }));
-      gBg.appendChild(s('text', { x: (b.x || 0) + 12, y: b.y + 18, class: 'comp-label' }, b.label));
+      gBg.appendChild(Object.assign(s('text', { x: (b.x || 0) + 12, y: b.y + 18, class: 'comp-label' }, b.label), { __comp: { x: b.x || 0, y: b.y, w: b.w || W, h: b.h } }));
     });
     const drawNodes = net.nodes.filter((n) => n.x != null);
     const nodeEl = {}, edgeEl = [];
@@ -70,7 +70,7 @@
       const k = Math.min((w / 2 + pad) / Math.abs(dx || 1e-9), (hh / 2 + 14 + pad) / Math.abs(dy || 1e-9));
       return [n.x + dx * k, n.y + dy * k];
     }
-    function sz(n) { const d = EP.SIZE[n.type || 'hormone'] || [110, 36]; return [n.w || d[0], n.h || d[1]]; }
+    function sz(n) { if (!n._nsz) { const d = EP.SIZE[n.type || 'hormone'] || [110, 36]; n._nsz = EP.fitBox(n.type || 'hormone', n.label.split('\n'), n.w || d[0], n.h || d[1]); } return n._nsz; }
     drawNodes.forEach((n) => {
       const [w, hh] = sz(n);
       const g = s('g', { class: `node t-${n.type || 'hormone'}`, transform: `translate(${n.x},${n.y})`, tabindex: 0, role: 'button' });
@@ -93,6 +93,9 @@
       gN.appendChild(g);
       nodeEl[n.id] = { g, bar, badge, mw };
     });
+
+    const nboxes = drawNodes.map((n) => { const [w, hh] = sz(n); return { x: n.x - w / 2, y: n.y - hh / 2, w, h: hh + 16 }; });
+    requestAnimationFrame(() => EP.declutter(svg, nboxes));
 
     function info(n) {
       const ex = model.explain(n.id).slice(0, 5);

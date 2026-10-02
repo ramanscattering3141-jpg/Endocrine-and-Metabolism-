@@ -9,59 +9,89 @@
 
   // ------------------------------------------------------------------ body map component
   EP.mountBodyMap = function (container, opts = {}) {
-    const W = 920, H = 680;
+    // Ring layout: organs sit on an ellipse (roughly head-to-toe, clockwise); only the selected
+    // organ's (or hormone's) connections are drawn, bundled through the centre, so lines never tangle.
+    const W = 920, H = 640, CX = 460, CY = 318, RX = 350, RY = 252;
+    const ORDER = ['brain', 'pituitary', 'thyroid', 'parathyroid', 'heart', 'adrenal', 'medulla', 'kidney', 'bone', 'immune', 'testis', 'muscle', 'adipose', 'gut', 'pancreas', 'liver'];
+    const O = D.body.organs;
+    const pos = {};
+    ORDER.forEach((k, i) => { const a = -Math.PI / 2 + (i / ORDER.length) * Math.PI * 2; pos[k] = [CX + RX * Math.cos(a), CY + RY * Math.sin(a)]; });
+    const P = (k) => pos[O[k] && O[k].alias ? O[k].alias : k];
     const svg = s('svg', { class: 'bodymap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ cross-talk map' });
     svg.appendChild(EP.svgDefs());
     container.appendChild(svg);
-    // stylized body silhouette
-    svg.appendChild(s('path', { class: 'body-sil', d: 'M450,20 C500,20 520,60 515,95 C512,120 495,140 480,148 L480,165 C560,175 610,200 640,240 C670,290 680,360 690,430 L700,520 C705,560 690,580 670,570 L650,480 L640,420 L630,470 C640,540 640,600 625,660 L540,660 C535,610 520,560 470,560 L430,560 C380,560 365,610 360,660 L275,660 C260,600 260,540 270,470 L260,420 L250,480 L230,570 C210,580 195,560 200,520 L210,430 C220,360 230,290 260,240 C290,200 340,175 420,165 L420,148 C405,140 388,120 385,95 C380,60 400,20 450,20 Z', opacity: 0.6 }));
-    const O = D.body.organs;
-    const gL = s('g'), gO = s('g'), gP = s('g');
-    svg.append(gL, gO, gP);
-    const center = (k) => { const o = O[k]; return [o.x, o.y]; };
-    const linkEls = D.body.links.map((L, i) => {
-      const a = center(L.from), b = center(L.to);
-      const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-      const bend = (L.bend || 18) * (i % 2 ? 1 : -1);
-      const qx = mx - (b[1] - a[1]) / len * bend, qy = my + (b[0] - a[0]) / len * bend;
-      const d = `M${a[0]},${a[1]} Q${qx},${qy} ${b[0]},${b[1]}`;
-      const p = s('path', { d, class: 'blink k-' + L.kind, 'marker-end': 'url(#m-' + (L.kind === 'hormone' ? 'endo' : L.kind === 'metabolite' ? 'transport' : 'stim') + ')' });
-      p.appendChild(s('title', {}, `${O[L.from].label} → ${O[L.to].label}: ${L.mol}`));
-      p.addEventListener('click', () => opts.onLink && opts.onLink(L));
-      const t = s('text', { class: 'blabel', x: qx, y: qy, 'text-anchor': 'middle', style: 'display:none' }, L.mol);
-      gL.append(p, t);
-      return { L, p, t, d };
-    });
-    const orgEls = {};
-    Object.keys(O).forEach((k) => {
-      if (O[k].alias) return;
-      const o = O[k]; const w = o.w || 110;
-      const g = s('g', { class: 'borgan', transform: `translate(${o.x - w / 2},${o.y - 15})`, tabindex: 0, role: 'button' });
+    const gWeb = s('g', { class: 'web' }), gL = s('g'), gO = s('g'), gT = s('g'), gP = s('g');
+    svg.append(gWeb, gL, gO, gT, gP);
+    svg.appendChild(s('text', { x: CX, y: CY - 6, 'text-anchor': 'middle', class: 'ring-hint' }, opts.hint || 'Select an organ'));
+    svg.appendChild(s('text', { x: CX, y: CY + 12, 'text-anchor': 'middle', class: 'ring-hint sub' }, 'its signals are drawn through the centre'));
+    const curve = (a, b) => { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; const qx = CX + (mx - CX) * 0.22, qy = CY + (my - CY) * 0.22; return `M${a[0]},${a[1]} Q${qx},${qy} ${b[0]},${b[1]}`; };
+    // faint background web (context only)
+    D.body.links.forEach((L) => { if (P(L.from) && P(L.to)) gWeb.appendChild(s('path', { d: curve(P(L.from), P(L.to)), class: 'web-line' })); });
+    const orgEls = {}, pillW = {};
+    ORDER.forEach((k) => {
+      const o = O[k]; const [x, y] = pos[k];
+      const w = Math.max(84, EP.textWidth(o.label, 12, 700) + 26); pillW[k] = w;
+      const g = s('g', { class: 'borgan', transform: `translate(${x - w / 2},${y - 15})`, tabindex: 0, role: 'button', 'aria-label': o.label });
       g.appendChild(s('rect', { width: w, height: 30, rx: 15 }));
       g.appendChild(s('text', { x: w / 2, y: 20, 'text-anchor': 'middle' }, o.label));
       g.addEventListener('click', () => opts.onOrgan && opts.onOrgan(k));
+      g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') opts.onOrgan && opts.onOrgan(k); });
       gO.appendChild(g); orgEls[k] = g;
     });
+    // trim a curve end so arrows stop at the pill edge
+    const edgePoint = (k, toward) => { const [x, y] = P(k); const w = pillW[O[k].alias || k] / 2 + 4, hh = 19; const dx = toward[0] - x, dy = toward[1] - y; const t = Math.min(w / Math.abs(dx || 1e-9), hh / Math.abs(dy || 1e-9)); return [x + dx * t, y + dy * t]; };
     const parts = [];
-    const stop = EP.loop((dt) => {
-      parts.forEach((pt) => {
-        pt.t = (pt.t + dt * pt.speed) % 1;
-        try { const P = pt.path.getPointAtLength(pt.t * pt.len); pt.c.setAttribute('cx', P.x); pt.c.setAttribute('cy', P.y); } catch (e) { /* noop */ }
-      });
-    });
+    const stop = EP.loop((dt) => parts.forEach((pt) => { pt.t = (pt.t + dt * 0.28) % 1; try { const p = pt.path.getPointAtLength(pt.t * pt.len); pt.c.setAttribute('cx', p.x); pt.c.setAttribute('cy', p.y); } catch (e) { /* noop */ } }));
     EP.onTeardown(stop);
-    function clearParticles() { parts.splice(0).forEach((p) => p.c.remove()); }
-    function highlight({ organs = [], src = null, links = null, labels = true }) {
-      clearParticles();
-      Object.keys(orgEls).forEach((k) => { orgEls[k].classList.toggle('on', organs.includes(k)); orgEls[k].classList.toggle('src', k === src); orgEls[k].classList.toggle('dim', !!(organs.length || src) && !organs.includes(k) && k !== src); });
-      linkEls.forEach((le) => {
-        const on = links ? links.includes(le.L) : false;
-        le.p.classList.toggle('hl', on); le.p.classList.toggle('dim', !!links && !on); le.t.style.display = on && labels ? '' : 'none';
-        if (on) for (let i = 0; i < 3; i++) { const c = s('circle', { r: 4, class: 'flux-dot', fill: le.L.kind === 'hormone' ? 'var(--c-hormone)' : le.L.kind === 'metabolite' ? 'var(--c-transport)' : 'var(--c-tf)' }); gP.appendChild(c); parts.push({ c, path: le.p, len: le.p.getTotalLength(), t: i / 3, speed: 0.35 }); }
+    function highlight({ organs = [], src = null, links = [], labels = true }) {
+      EP.clear(gL); EP.clear(gT); EP.clear(gP); parts.length = 0;
+      const any = organs.length || src || links.length;
+      svg.classList.toggle('has-sel', !!any);
+      Object.keys(orgEls).forEach((k) => { const al = (x) => (O[x] && O[x].alias) || x; const on = organs.map(al).includes(k); orgEls[k].classList.toggle('on', on); orgEls[k].classList.toggle('src', al(src) === k); orgEls[k].classList.toggle('dim', !!any && !on && al(src) !== k); });
+      // merge parallel links between the same pair
+      const pairs = {};
+      links.forEach((L) => { const key = L.from + '>' + L.to; (pairs[key] = pairs[key] || { from: L.from, to: L.to, kind: L.kind, mols: [], links: [] }); pairs[key].mols.push(L.mol); pairs[key].links.push(L); });
+      Object.values(pairs).forEach((pr) => {
+        const A = P(pr.from), B = P(pr.to); if (!A || !B) return;
+        const a = edgePoint(pr.from, [CX, CY]), b = edgePoint(pr.to, [CX, CY]);
+        const d = curve(a, b);
+        const p = s('path', { d, class: 'blink hl k-' + pr.kind, 'marker-end': 'url(#m-' + (pr.kind === 'hormone' ? 'endo' : pr.kind === 'metabolite' ? 'transport' : 'stim') + ')' });
+        p.appendChild(s('title', {}, `${O[pr.from].label} → ${O[pr.to].label}: ${pr.mols.join(', ')}`));
+        p.addEventListener('click', () => opts.onLink && opts.onLink(pr.links[0]));
+        gL.appendChild(p);
+        const len = p.getTotalLength();
+        for (let i = 0; i < 3; i++) { const c = s('circle', { r: 4, class: 'flux-dot k-' + pr.kind }); gP.appendChild(c); parts.push({ c, path: p, len, t: i / 3 }); }
+        if (labels) {
+          const al = (x) => (O[x] && O[x].alias) || x;
+          const f = src && al(pr.from) === al(src) ? 0.8 : src && al(pr.to) === al(src) ? 0.2 : 0.72; // sit next to the partner organ
+          const q = p.getPointAtLength(len * f);
+          const txt = pr.mols.join(' · ');
+          const tw = EP.textWidth(txt, 10.5, 600) + 14;
+          const tg = s('g', { class: 'ltag k-' + pr.kind, transform: `translate(${q.x},${q.y})` });
+          tg.appendChild(s('rect', { x: -tw / 2, y: -9, width: tw, height: 18, rx: 9 }));
+          tg.appendChild(s('text', { x: 0, y: 4, 'text-anchor': 'middle' }, txt));
+          tg.addEventListener('click', () => opts.onLink && opts.onLink(pr.links[0]));
+          gT.appendChild(tg);
+        }
       });
+      // nudge overlapping label pills apart
+      const tags = [...gT.children];
+      for (let it = 0; it < 30; it++) {
+        let moved = false;
+        for (let i = 0; i < tags.length; i++) for (let j = i + 1; j < tags.length; j++) {
+          const a = tags[i].getBBox(), b = tags[j].getBBox();
+          const ma = tags[i].transform.baseVal[0].matrix, mb = tags[j].transform.baseVal[0].matrix;
+          const ax = ma.e + a.x, ay = ma.f + a.y, bx = mb.e + b.x, by = mb.f + b.y;
+          if (ax < bx + b.width && ax + a.width > bx && ay < by + b.height && ay + a.height > by) {
+            const dy = (ma.f <= mb.f ? -1 : 1) * 6;
+            tags[i].setAttribute('transform', `translate(${ma.e},${ma.f + dy})`); tags[j].setAttribute('transform', `translate(${mb.e},${mb.f - dy})`); moved = true;
+          }
+        }
+        if (!moved) break;
+      }
     }
-    function reset() { highlight({}); linkEls.forEach((le) => le.p.classList.remove('dim', 'hl')); }
-    return { highlight, reset, linkEls };
+    function reset() { highlight({}); }
+    return { highlight, reset, pos: P };
   };
 
   // ------------------------------------------------------------------ Follow the molecule / hormone
@@ -105,23 +135,9 @@
       const grid = h('div.cols'); const left = h('div'); const right = h('div.sim-panel');
       grid.append(left, right);
       EP.clear(slot); slot.append(picker, grid);
-      const bm = EP.mountBodyMap(left, { onOrgan: (k) => { const t = HM.targets.find((x) => x.organ === k); if (t) EP.showInfoHTML(`<div class="why-head">${EP.esc(ent(id).name)} → ${EP.esc(D.body.organs[k].label)}</div><h3>${EP.md(t.effects)}</h3><p>${EP.md(t.mech)}</p>`); } });
+      const bm = EP.mountBodyMap(left, { hint: ent(id).name, onOrgan: (k) => { const t = HM.targets.find((x) => x.organ === k); if (t) EP.showInfoHTML(`<div class="why-head">${EP.esc(ent(id).name)} → ${EP.esc(D.body.organs[k].label)}</div><h3>${EP.md(t.effects)}</h3><p>${EP.md(t.mech)}</p>`); } });
       const fake = HM.targets.map((t) => ({ from: HM.source, to: t.organ, mol: ent(id).short || ent(id).name, kind: 'hormone' }));
-      // draw dedicated links for this hormone
-      const svg = left.querySelector('svg');
-      const O = D.body.organs;
-      const gx = s('g'); svg.insertBefore(gx, svg.children[2]);
-      const parts = [];
-      fake.forEach((L, i) => {
-        const a = [O[L.from].x, O[L.from].y], b = [O[L.to].x, O[L.to].y];
-        const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; const bend = 30 * (i % 2 ? 1 : -1);
-        const p = s('path', { d: `M${a[0]},${a[1]} Q${mx - (b[1] - a[1]) / len * bend},${my + (b[0] - a[0]) / len * bend} ${b[0]},${b[1]}`, class: 'blink k-hormone hl', 'marker-end': 'url(#m-endo)' });
-        gx.appendChild(p);
-        for (let j = 0; j < 3; j++) { const c = s('circle', { r: 5, fill: 'var(--c-hormone)' }); gx.appendChild(c); parts.push({ c, p, t: j / 3 + i * 0.07 }); }
-      });
-      const stop = EP.loop((dt) => parts.forEach((pt) => { pt.t = (pt.t + dt * 0.3) % 1; const L = pt.p.getTotalLength(); const P = pt.p.getPointAtLength(pt.t * L); pt.c.setAttribute('cx', P.x); pt.c.setAttribute('cy', P.y); }));
-      EP.onTeardown(stop);
-      bm.highlight({ organs: HM.targets.map((t) => t.organ), src: HM.source, links: [] });
+      bm.highlight({ organs: HM.targets.map((t) => t.organ), src: HM.source, links: fake, labels: false });
       right.innerHTML = `<h3>${EP.esc(ent(id).name)}</h3><p class="small muted">${EP.esc(D.body.organs[HM.source].label)} → ${EP.md(HM.route)}</p>` + HM.targets.map((t) => `<div class="info-sec"><b>${EP.esc(D.body.organs[t.organ].label)}</b>${EP.md(t.effects)}<div class="small muted">${EP.md(t.mech)}</div></div>`).join('') + `<p><button class="btn" data-e="${id}">Explain ${EP.esc(ent(id).short || ent(id).name)}</button></p>`;
       right.querySelector('[data-e]').onclick = () => EP.showInfo(id);
     }
@@ -135,11 +151,11 @@
     const fbar = h('div.statebar', Object.keys(filt).map((k) => h('button.chip.on', { onclick: (ev) => { filt[k] = !filt[k]; ev.target.classList.toggle('on', filt[k]); apply(); } }, { hormone: '⬡ Hormones', metabolite: '● Metabolites', adipokine: '◆ Adipokines', neural: '⚡ Neural' }[k])));
     const grid = h('div.cols'); const left = h('div'); const right = h('div.sim-panel');
     grid.append(left, right); el.append(fbar, grid);
-    let sel = null;
+    let sel = 'adipose';
     const bm = EP.mountBodyMap(left, { onOrgan: (k) => { sel = sel === k ? null : k; apply(); }, onLink: (L) => EP.showInfoHTML(`<div class="why-head">${EP.esc(D.body.organs[L.from].label)} → ${EP.esc(D.body.organs[L.to].label)}</div><h3>${EP.esc(L.mol)}</h3><p>${EP.md(L.desc)}</p>`) });
     function apply() {
       const links = D.body.links.filter((L) => filt[L.kind] && (!sel || L.from === sel || L.to === sel));
-      if (!sel) { bm.highlight({ links: links, labels: false }); right.innerHTML = '<p class="muted">Click an organ (e.g., Adipose, Muscle, Liver) to isolate its communications. Click any line for details.</p>'; return; }
+      if (!sel) { bm.highlight({}); right.innerHTML = '<p class="muted">Click an organ (e.g., Adipose, Muscle, Liver) to isolate its communications. Click any line for details.</p>'; return; }
       bm.highlight({ organs: [...new Set(links.flatMap((L) => [L.from, L.to]))], src: sel, links });
       const out = links.filter((L) => L.from === sel), inn = links.filter((L) => L.to === sel);
       const li = (L, dir) => `<li><strong>${EP.esc(L.mol)}</strong> ${dir} ${EP.esc(D.body.organs[dir === '→' ? L.to : L.from].label)}<div class="small muted">${EP.md(L.desc)}</div></li>`;

@@ -20,7 +20,7 @@
   const POS = {
     chol: [480, 50], preg: [200, 150], oh17preg: [480, 150], dhea: [760, 150], prog: [200, 280], oh17p: [480, 280], a4: [760, 280],
     doc: [200, 410], s11: [480, 410], b: [200, 530], cortisol: [480, 530], oh18b: [200, 640], aldo: [200, 740],
-    t: [1000, 280], dht: [1000, 410], e2: [1000, 530], e1: [1000, 150],
+    t: [1000, 280], dht: [1065, 400], e2: [935, 520], e1: [1000, 150],
   };
   const ENZ = {
     cyp11a1: 'CYP11A1 (P450scc)', hsd3b2: '3β-HSD2', cyp17oh: 'CYP17 17α-hydroxylase', cyp17ly: 'CYP17 17,20-lyase', cyp21: '21-hydroxylase', cyp11b1: '11β-hydroxylase', cyp11b2: 'Aldosterone synthase', hsd17b: '17β-HSD', srd5a2: '5α-reductase', cyp19: 'Aromatase', star: 'StAR',

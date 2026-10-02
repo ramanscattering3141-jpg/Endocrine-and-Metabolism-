@@ -5,126 +5,157 @@
   const { h, s } = EP;
   const V = EP.views;
 
-  // ---------------- organ map layout ----------------
+  // ---------------- organ map: hub layout ----------------
+  // Every organ exchanges with one central blood vessel through vertical "ports", so no
+  // connector ever crosses another. Metabolite groups can be filtered.
+  const GROUPS = {
+    glc: { label: 'Glucose', color: 'var(--m-glc)' }, fat: { label: 'Fatty acids & glycerol', color: 'var(--m-fat)' },
+    ket: { label: 'Ketones', color: 'var(--m-ket)' }, lac: { label: 'Lactate & amino acids', color: 'var(--m-lac)' },
+    tg: { label: 'Lipoproteins & urea', color: 'var(--m-tg)' }, hor: { label: 'Hormones', color: 'var(--m-hor)' },
+  };
   const ORG = {
-    brain: { x: 390, y: 20, w: 220, title: 'Brain', procs: [['brainglc', 'Glucose use'], ['brainket', 'Ketone oxidation']] },
-    pancreas: { x: 395, y: 210, w: 210, title: 'Pancreas', procs: [['insulin', 'Insulin secretion'], ['glucagon', 'Glucagon secretion']] },
-    adrenal: { x: 700, y: 20, w: 190, title: 'Adrenal', procs: [['epi', 'Epinephrine'], ['cortisol', 'Cortisol']] },
-    liver: { x: 20, y: 150, w: 260, title: 'Liver', procs: [['h_glycogenolysis', 'Glycogenolysis'], ['gng', 'Gluconeogenesis'], ['h_glycogenesis', 'Glycogenesis'], ['h_glycolysis', 'Glycolysis'], ['dnl', 'Lipogenesis'], ['h_fao', 'β-Oxidation'], ['ketogenesis', 'Ketogenesis'], ['urea', 'Urea cycle']] },
-    muscle: { x: 700, y: 210, w: 230, title: 'Skeletal muscle', procs: [['m_uptake', 'Glucose uptake'], ['m_glycogenesis', 'Glycogen synthesis'], ['m_glycogenolysis', 'Glycogenolysis'], ['m_glycolysis', 'Glycolysis'], ['m_fao', 'Fat oxidation'], ['m_protsyn', 'Protein synthesis'], ['m_proteolysis', 'Proteolysis']] },
-    adipose: { x: 20, y: 480, w: 260, title: 'Adipose tissue', procs: [['a_uptake', 'Glucose uptake'], ['esterif', 'TG synthesis'], ['lipolysis', 'Lipolysis'], ['leptin', 'Leptin']] },
-    kidney: { x: 720, y: 520, w: 210, title: 'Kidney', procs: [['renalgng', 'Gluconeogenesis']] },
-    gut: { x: 395, y: 600, w: 210, title: 'Gut', procs: [['gutglc', 'Glucose absorption'], ['glp1', 'GLP-1 (incretin)']] },
+    brain: { x: 20, y: 18, w: 200, title: 'Brain', procs: [['brainglc', 'Glucose use'], ['brainket', 'Ketone oxidation']],
+      ports: [['in', 'glc', 'brainglc', 'Glucose'], ['in', 'ket', 'brainket', 'Ketones'], ['in', 'hor', 'leptin', 'Leptin']] },
+    gut: { x: 236, y: 18, w: 170, title: 'Gut', procs: [['gutglc', 'Glucose in'], ['glp1', 'GLP-1']],
+      ports: [['out', 'glc', 'gutglc', 'Glucose'], ['out', 'lac', 'protein', 'Amino acids'], ['out', 'hor', 'glp1', 'GLP-1']] },
+    pancreas: { x: 422, y: 18, w: 200, title: 'Pancreas', procs: [['insulin', 'Insulin'], ['glucagon', 'Glucagon']],
+      ports: [['out', 'hor', 'insulin', 'Insulin'], ['out', 'hor', 'glucagon', 'Glucagon']] },
+    adrenal: { x: 638, y: 18, w: 170, title: 'Adrenal', procs: [['epi', 'Epinephrine'], ['cortisol', 'Cortisol']],
+      ports: [['out', 'hor', 'epi', 'Epinephrine'], ['out', 'hor', 'cortisol', 'Cortisol']] },
+    kidney: { x: 824, y: 18, w: 156, title: 'Kidney', procs: [['renalgng', 'GNG']],
+      ports: [['out', 'glc', 'renalgng', 'Glucose'], ['in', 'tg', 'urea', 'Urea']] },
+    liver: { x: 20, y: 330, w: 340, title: 'Liver', procs: [['h_glycogenolysis', 'Glycogenolysis'], ['gng', 'Gluconeogenesis'], ['h_glycogenesis', 'Glycogenesis'], ['h_glycolysis', 'Glycolysis'], ['dnl', 'Lipogenesis'], ['h_fao', 'β-Oxidation'], ['ketogenesis', 'Ketogenesis'], ['urea', 'Urea cycle']],
+      ports: [['out', 'glc', 'hgo', 'Glucose'], ['in', 'lac', 'lactrel', 'Lactate'], ['in', 'lac', 'alarel', 'Alanine'], ['in', 'fat', 'ffa', 'FFA'], ['in', 'fat', 'glycerol', 'Glycerol'], ['out', 'ket', 'ketogenesis', 'Ketones'], ['out', 'tg', 'vldl', 'VLDL'], ['out', 'tg', 'urea', 'Urea']] },
+    muscle: { x: 376, y: 330, w: 300, title: 'Skeletal muscle', procs: [['m_uptake', 'Glucose uptake'], ['m_glycogenesis', 'Glycogen synthesis'], ['m_glycogenolysis', 'Glycogenolysis'], ['m_glycolysis', 'Glycolysis'], ['m_fao', 'Fat oxidation'], ['m_protsyn', 'Protein synthesis'], ['m_proteolysis', 'Proteolysis']],
+      ports: [['in', 'glc', 'm_uptake', 'Glucose'], ['in', 'fat', 'm_fao', 'FFA'], ['in', 'ket', 'm_ketox', 'Ketones'], ['out', 'lac', 'lactrel', 'Lactate'], ['out', 'lac', 'alarel', 'Alanine']] },
+    adipose: { x: 692, y: 330, w: 288, title: 'Adipose tissue', procs: [['a_uptake', 'Glucose uptake'], ['esterif', 'TG synthesis'], ['lipolysis', 'Lipolysis'], ['leptin', 'Leptin']],
+      ports: [['in', 'glc', 'a_uptake', 'Glucose'], ['in', 'tg', 'lpl_a', 'VLDL-TG'], ['out', 'fat', 'lipolysis', 'FFA'], ['out', 'fat', 'glycerol', 'Glycerol'], ['out', 'hor', 'leptin', 'Leptin']] },
   };
   const ROWH = 24;
-  ORG.blood = { x: 360, y: 345, w: 280, title: 'Blood', procs: [['glucose', 'Glucose'], ['ffa', 'Free fatty acids'], ['ketones', 'Ketone bodies'], ['lactate', 'Lactate'], ['aa', 'Amino acids'], ['tgp', 'Triglyceride (VLDL)']] };
-  Object.values(ORG).forEach((o) => { o.h = 34 + o.procs.length * ROWH + 6; });
-  const anchor = (o, side) => { const O = ORG[o]; return side === 'r' ? [O.x + O.w, O.y + O.h / 2] : side === 'l' ? [O.x, O.y + O.h / 2] : side === 't' ? [O.x + O.w / 2, O.y] : [O.x + O.w / 2, O.y + O.h]; };
-  const FLUX = [
-    { from: ['liver', 'r'], to: ['blood', 'l'], bind: 'hgo', label: 'glucose output', k: 'glc', dy1: -30, dy2: -40 },
-    { from: ['blood', 't'], to: ['brain', 'b'], bind: 'brainglc', label: 'glucose', k: 'glc', dx1: -40, dx2: -40 },
-    { from: ['blood', 'r'], to: ['muscle', 'l'], bind: 'm_uptake', label: 'glucose', k: 'glc', dy1: -40, dy2: -50 },
-    { from: ['blood', 'l'], to: ['adipose', 'r'], bind: 'a_uptake', label: 'glucose', k: 'glc', dy1: 40, dy2: -50 },
-    { from: ['gut', 't'], to: ['blood', 'b'], bind: 'gutglc', label: 'absorbed glucose', k: 'glc', dx1: -50, dx2: -50 },
-    { from: ['kidney', 'l'], to: ['blood', 'r'], bind: 'renalgng', label: 'glucose', k: 'glc', dy2: 50 },
-    { from: ['muscle', 'l'], to: ['liver', 'r'], bind: 'lactrel', label: 'lactate (Cori)', k: 'lac', dy1: 40, dy2: 30, curve: 70 },
-    { from: ['muscle', 'l'], to: ['liver', 'r'], bind: 'alarel', label: 'alanine', k: 'aa', dy1: 70, dy2: 60, curve: 100 },
-    { from: ['adipose', 't'], to: ['liver', 'b'], bind: 'ffa', label: 'FFA', k: 'fat', dx1: -60, dx2: -60 },
-    { from: ['adipose', 't'], to: ['liver', 'b'], bind: 'glycerol', label: 'glycerol', k: 'fat', dx1: 60, dx2: 60 },
-    { from: ['adipose', 'r'], to: ['muscle', 'b'], bind: 'm_fao', label: 'FFA', k: 'fat', dy1: 30, dx2: -60, curve: -90 },
-    { from: ['liver', 't'], to: ['brain', 'l'], bind: 'brainket', label: 'ketones', k: 'ket', dx1: 40, dy2: 10, curve: 60 },
-    { from: ['liver', 'r'], to: ['muscle', 'l'], bind: 'm_ketox', label: 'ketones', k: 'ket', dy1: -80, dy2: -80, curve: -60 },
-    { from: ['liver', 'b'], to: ['adipose', 't'], bind: 'vldl', label: 'VLDL-TG', k: 'tg', dx1: 0, dx2: 0 },
-    { from: ['pancreas', 'l'], to: ['liver', 'r'], bind: 'insulin', label: 'insulin', k: 'hor', dy1: -10, dy2: -90 },
-    { from: ['pancreas', 'l'], to: ['liver', 'r'], bind: 'glucagon', label: 'glucagon', k: 'hor', dy1: 12, dy2: -70, curve: 30 },
-    { from: ['pancreas', 'r'], to: ['muscle', 'l'], bind: 'insulin', label: 'insulin', k: 'hor', dy1: 0, dy2: -90 },
-    { from: ['gut', 'r'], to: ['pancreas', 'b'], bind: 'glp1', label: 'GLP-1', k: 'hor', dx2: 70, curve: -60 },
-    { from: ['adrenal', 'l'], to: ['brain', 'r'], bind: 'cortisol', label: '', k: 'hor', hide: true },
-    { from: ['adrenal', 'b'], to: ['muscle', 't'], bind: 'epi', label: 'epinephrine', k: 'hor', dx1: 20, dx2: 0 },
-    { from: ['adipose', 'l'], to: ['brain', 'l'], bind: 'leptin', label: 'leptin', k: 'hor', dy1: -20, dy2: 40, via: [[10, 470], [10, 80]] },
-    { from: ['liver', 'b'], to: ['kidney', 'l'], bind: 'urea', label: 'urea', k: 'n', dx1: 90, dy2: 30, via: [[300, 640], [600, 690]] },
-  ];
+  const BLOOD = { x: 20, y: 200, w: 960, h: 70 };
+  const PLASMA = [['glucose', 'Glucose'], ['ffa', 'FFA'], ['ketones', 'Ketones'], ['lactate', 'Lactate'], ['aa', 'Amino acids'], ['tgp', 'Triglyceride'], ['insulin', 'Insulin'], ['glucagon', 'Glucagon']];
+  Object.values(ORG).forEach((o) => { o.h = 36 + o.procs.length * ROWH + 8; });
 
-  /** Draws the organ map and returns {update(model), focus(organ)} */
+  /** Draws the organ map and returns {update(), focus(organ)} */
   EP.mountOrganMap = function (container, model, opts = {}) {
-    const W = 950, H = 720;
-    const svg = s('svg', { class: 'organmap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ flux map' });
+    const W = 1000, H = 330 + Math.max(...['liver', 'muscle', 'adipose'].map((k) => ORG[k].h)) + 16;
+    const show = Object.fromEntries(Object.keys(GROUPS).map((k) => [k, true]));
+    const filt = h('div.statebar.flux-filter', Object.keys(GROUPS).map((k) => {
+      const b = h('button.chip.on', { 'aria-pressed': 'true', onclick: () => { show[k] = !show[k]; b.classList.toggle('on', show[k]); b.setAttribute('aria-pressed', show[k]); applyVis(); } }, h('i.swatch', { style: { background: GROUPS[k].color } }), GROUPS[k].label);
+      return b;
+    }));
+    container.appendChild(filt);
+    const svg = s('svg', { class: 'organmap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ fuel exchange map' });
     svg.appendChild(EP.svgDefs());
     container.appendChild(svg);
-    const gF = s('g'), gO = s('g'), gD = s('g');
-    svg.append(gF, gO, gD);
-    const fluxEls = [];
-    FLUX.forEach((f) => {
-      if (f.hide) return;
-      const a = anchor(f.from[0], f.from[1]), b = anchor(f.to[0], f.to[1]);
-      a[0] += f.dx1 || 0; a[1] += f.dy1 || 0; b[0] += f.dx2 || 0; b[1] += f.dy2 || 0;
-      let d;
-      if (f.via) d = 'M' + [a, ...f.via, b].map((p) => p.join(',')).join(' L');
-      else {
-        const c = f.curve || 0; const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
-        const qx = mx - (b[1] - a[1]) / len * c, qy = my + (b[0] - a[0]) / len * c;
-        d = `M${a[0]},${a[1]} Q${qx},${qy} ${b[0]},${b[1]}`;
-      }
-      const g = s('g', { class: 'flux-g' });
-      const p = s('path', { d, class: 'flux k-' + f.k, 'marker-end': 'url(#m-rxn)' });
-      const flow = s('path', { d, class: 'flow' });
-      const t = s('text', { class: 'flux-label' }, f.label);
-      g.append(p, flow, t);
-      g.appendChild(s('title', {}, f.label));
-      g.addEventListener('click', () => opts.onPick && opts.onPick(f.bind));
-      gF.appendChild(g);
-      fluxEls.push({ f, g, p, flow, t, from: f.from[0], to: f.to[0] });
-      requestAnimationFrame(() => { try { const L = p.getTotalLength(); const pt = p.getPointAtLength(L * 0.45); t.setAttribute('x', pt.x + 6); t.setAttribute('y', pt.y - 6); } catch (e) { /* hidden */ } });
+    const gV = s('g'), gP = s('g'), gO = s('g');
+    svg.append(gV, gP, gO);
+    // blood vessel
+    gV.appendChild(s('rect', { class: 'vessel', x: BLOOD.x, y: BLOOD.y, width: BLOOD.w, height: BLOOD.h, rx: 35 }));
+    gV.appendChild(s('text', { class: 'organ-title', x: BLOOD.x + 18, y: BLOOD.y + 22 }, 'Blood'));
+    gV.appendChild(s('text', { class: 'vessel-note', x: BLOOD.x + 18, y: BLOOD.y + 40 }, 'gut & pancreas drain'));
+    gV.appendChild(s('text', { class: 'vessel-note', x: BLOOD.x + 18, y: BLOOD.y + 54 }, 'via the portal vein to liver'));
+    const chipEls = [];
+    const cw = 86, cx0 = BLOOD.x + 196;
+    PLASMA.forEach(([id, label], i) => {
+      const g = s('g', { class: 'pchip', transform: `translate(${cx0 + i * (cw + 5)},${BLOOD.y + 15})`, tabindex: 0, role: 'button' });
+      g.appendChild(s('rect', { width: cw, height: 40, rx: 10 }));
+      g.appendChild(s('text', { x: 10, y: 17, class: 'pchip-l' }, label));
+      const sym = s('text', { x: 10, y: 33, class: 'pchip-v' }, '');
+      g.appendChild(sym);
+      g.addEventListener('click', () => opts.onPick && opts.onPick(id));
+      gV.appendChild(g); chipEls.push({ id, sym });
     });
-    const procEls = [];
-    const orgEls = {};
+    // ports
+    const portEls = [];
+    Object.keys(ORG).forEach((k) => {
+      const O = ORG[k]; const top = O.y < BLOOD.y;
+      const n = O.ports.length; const pad = 22;
+      O.ports.forEach(([dir, grp, bind, label], i) => {
+        const x = O.x + pad + (n === 1 ? (O.w - 2 * pad) / 2 : i * (O.w - 2 * pad) / (n - 1));
+        const yOrg = top ? O.y + O.h : O.y, yBlood = top ? BLOOD.y : BLOOD.y + BLOOD.h;
+        const fromOrg = dir === 'out';
+        const y1 = fromOrg ? yOrg : yBlood, y2 = fromOrg ? yBlood : yOrg;
+        const d = `M${x},${y1 + (y2 > y1 ? 2 : -2)} L${x},${y2 + (y2 > y1 ? -9 : 9)}`;
+        const g = s('g', { class: 'port k-' + grp, style: `--pc:${GROUPS[grp].color}` });
+        const line = s('path', { d, class: 'port-line', 'marker-end': 'url(#m-port)' });
+        const flow = s('path', { d, class: 'port-flow' });
+        const ly = (y1 + y2) / 2;
+        const tag = s('g', { class: 'port-tag', transform: `translate(${x},${ly})` });
+        const tw = EP.textWidth(label, 10.5, 600) + 12;
+        tag.appendChild(s('rect', { x: -tw / 2, y: -9, width: tw, height: 18, rx: 9 }));
+        tag.appendChild(s('text', { x: 0, y: 4, 'text-anchor': 'middle' }, label));
+        g.append(line, flow, tag);
+        g.appendChild(s('title', {}, `${label}: ${dir === 'out' ? O.title + ' → blood' : 'blood → ' + O.title}`));
+        g.addEventListener('click', () => opts.onPick && opts.onPick(bind));
+        gP.appendChild(g);
+        portEls.push({ g, line, flow, tag, bind, grp, organ: k });
+      });
+    });
+    // stagger tag heights so neighbouring tags never collide
+    ['top', 'bottom'].forEach((row) => {
+      const list = portEls.filter((p) => (ORG[p.organ].y < BLOOD.y) === (row === 'top')).sort((a, b) => a.tag.transform.baseVal[0].matrix.e - b.tag.transform.baseVal[0].matrix.e);
+      let lastRight = -1e9, alt = 0;
+      list.forEach((p) => {
+        const m = p.tag.transform.baseVal[0].matrix; const r = p.tag.querySelector('rect'); const w = +r.getAttribute('width');
+        if (m.e - w / 2 < lastRight + 4) { alt = (alt + 1) % 2; p.tag.setAttribute('transform', `translate(${m.e},${m.f + (alt ? 20 : -20) * (row === 'top' ? 1 : 1)})`); } else alt = 0;
+        lastRight = m.e + w / 2;
+      });
+    });
+    // organs
+    const procEls = [], orgEls = {};
     Object.keys(ORG).forEach((k) => {
       const O = ORG[k];
       const g = s('g', { class: 'organ-box', transform: `translate(${O.x},${O.y})` });
       g.appendChild(s('rect', { class: 'ob', width: O.w, height: O.h, rx: 14 }));
-      const title = s('text', { class: 'organ-title', x: 12, y: 22 }, O.title);
+      const title = s('text', { class: 'organ-title', x: 14, y: 23 }, O.title);
+      title.style.cursor = 'pointer'; title.addEventListener('click', () => focus(k));
       g.appendChild(title);
-      title.style.cursor = 'pointer';
-      title.addEventListener('click', () => focus(k));
       O.procs.forEach(([id, label], i) => {
-        const pg = s('g', { class: 'proc', transform: `translate(10,${34 + i * ROWH})` });
-        const bw = O.w - 20;
-        pg.appendChild(s('rect', { class: 'pbg', width: bw, height: ROWH - 4, rx: 5 }));
-        const bar = s('rect', { class: 'pbar', height: ROWH - 4, rx: 5, x: bw / 2, width: 0, opacity: 0.55 });
+        const pg = s('g', { class: 'proc', transform: `translate(10,${36 + i * ROWH})`, tabindex: 0, role: 'button' });
+        const full = O.w - 20, lw = Math.max(O.w > 220 ? 110 : 60, EP.textWidth(label, 11.5, 500) + 12);
+        const bx = lw, bw = Math.max(30, full - lw - 30); // label column | bar track | symbol
+        pg.appendChild(s('rect', { class: 'pbg', width: full, height: ROWH - 5, rx: 5 }));
+        pg.appendChild(s('rect', { class: 'ptrack', x: bx, y: 5, width: bw, height: ROWH - 15, rx: 3 }));
+        const bar = s('rect', { class: 'pbar', height: ROWH - 15, y: 5, rx: 3, x: bx + bw / 2, width: 0 });
         pg.appendChild(bar);
-        pg.appendChild(s('line', { x1: bw / 2, x2: bw / 2, y1: 0, y2: ROWH - 4, stroke: 'var(--muted)', 'stroke-opacity': 0.4 }));
-        pg.appendChild(s('text', { x: 8, y: 13 }, label));
-        const sym = s('text', { class: 'psym', x: bw - 8, y: 13, 'text-anchor': 'end' }, '');
+        pg.appendChild(s('line', { x1: bx + bw / 2, x2: bx + bw / 2, y1: 2, y2: ROWH - 7, class: 'pmid' }));
+        pg.appendChild(s('text', { x: 8, y: 13.5 }, label));
+        const sym = s('text', { class: 'psym', x: full - 6, y: 13.5, 'text-anchor': 'end' }, '');
         pg.appendChild(sym);
         pg.addEventListener('click', () => opts.onPick && opts.onPick(id));
-        g.appendChild(pg);
-        procEls.push({ id, bar, sym, bw });
+        g.appendChild(pg); procEls.push({ id, bar, sym, bw, bx });
       });
       gO.appendChild(g); orgEls[k] = g;
     });
     let focused = null;
+    function applyVis() {
+      portEls.forEach((p) => { const on = show[p.grp]; p.g.style.display = on ? '' : 'none'; p.g.classList.toggle('dim', !!focused && p.organ !== focused); });
+    }
     function focus(k) {
       focused = focused === k ? null : k;
-      Object.keys(orgEls).forEach((o) => { orgEls[o].classList.toggle('focus', o === focused); orgEls[o].classList.toggle('dim', !!focused && o !== focused && !fluxEls.some((f) => (f.from === focused && f.to === o) || (f.to === focused && f.from === o))); });
-      fluxEls.forEach((f) => f.g.classList.toggle('dim', !!focused && f.from !== focused && f.to !== focused));
+      Object.keys(orgEls).forEach((o) => { orgEls[o].classList.toggle('focus', o === focused); orgEls[o].classList.toggle('dim', !!focused && o !== focused); });
+      applyVis();
       if (opts.onFocus) opts.onFocus(focused);
     }
     function update() {
-      procEls.forEach(({ id, bar, sym, bw }) => {
+      procEls.forEach(({ id, bar, sym, bw, bx }) => {
         const r = model.eff(id) / (model.ref[id] || 1); const q = EP.qual(model.eff(id), model.ref[id]);
         const l = EP.clamp(Math.log2(r) / 3, -1, 1);
-        bar.setAttribute('x', l >= 0 ? bw / 2 : bw / 2 + l * bw / 2); bar.setAttribute('width', Math.abs(l) * bw / 2);
+        bar.setAttribute('x', bx + (l >= 0 ? bw / 2 : bw / 2 + l * bw / 2)); bar.setAttribute('width', Math.abs(l) * bw / 2);
         bar.setAttribute('class', 'pbar ' + (l >= 0 ? 'pos' : 'neg'));
-        sym.textContent = q.sym === '↔' ? '' : q.sym; sym.setAttribute('fill', l >= 0 ? 'var(--up)' : 'var(--dn)');
+        sym.textContent = q.sym === '↔' ? '' : q.sym; sym.setAttribute('class', 'psym ' + (l >= 0 ? 'pos' : 'neg'));
       });
-      fluxEls.forEach(({ f, p, flow }) => {
-        const r = model.eff(f.bind) / (model.ref[f.bind] || 1);
-        const w = EP.clamp(1.2 + Math.log2(r + 0.15) * 2.4 + 2, 0.6, 11);
-        p.style.strokeWidth = w + 'px'; flow.style.strokeWidth = Math.max(1, w * 0.5) + 'px';
+      portEls.forEach(({ line, flow, bind, g }) => {
+        const r = model.eff(bind) / (model.ref[bind] || 1);
+        const w = EP.clamp(2.2 + Math.log2(r) * 1.6, 1, 9);
+        line.style.strokeWidth = w + 'px'; flow.style.strokeWidth = Math.max(1, w * 0.45) + 'px';
         flow.style.animationDuration = (2.6 / EP.clamp(r, 0.12, 6)).toFixed(2) + 's';
-        p.style.opacity = r < 0.25 ? 0.25 : 0.85; flow.style.display = r < 0.25 ? 'none' : '';
+        g.classList.toggle('low', r < 0.3);
       });
+      chipEls.forEach(({ id, sym }) => { const q = EP.qual(model.eff(id), model.ref[id]); sym.textContent = { up2: '↑↑ marked', up: '↑ up', eq: '↔ normal', dn: '↓ down', dn2: '↓↓ marked' }[q.cls]; sym.setAttribute('class', 'pchip-v ' + q.cls); });
     }
+    applyVis();
     return { update, focus, svg };
   };
 
@@ -249,7 +280,7 @@
         const [x, y] = pos[n.id]; const l = chg(n.id); const q = EP.qual(m.eff(n.id), m.ref[n.id]);
         const g = s('g', { class: `cnode ${l > 0.2 ? 'up' : l < -0.2 ? 'dn' : ''} ${focusIds.includes(n.id) ? 'focus' : ''}`, transform: `translate(${x},${y})` });
         g.appendChild(s('rect', { width: colW - 22, height: 26, rx: 7 }));
-        const lab = n.label.length > 24 ? n.label.slice(0, 23) + '…' : n.label;
+        let lab = n.label; while (lab.length > 6 && EP.textWidth(lab, 11.5, 400) > colW - 66) lab = lab.slice(0, -2).trim() + '…'; if (lab !== n.label) lab = lab.replace(/…+$/, '…');
         g.appendChild(s('text', { x: 8, y: 17 }, lab));
         g.appendChild(s('text', { x: colW - 30, y: 17, 'text-anchor': 'end', class: 'csym' }, q.sym));
         g.appendChild(s('title', {}, `${n.label}: ${q.word} — ${M.organs[n.organ] || ''}`));

@@ -43,6 +43,7 @@
   V.pathwayPage = function (el, id, opts = {}, params = {}) {
     const pw = EP.pathways[id];
     el.appendChild(EP.pageHeader(pw.title, opts.q, { section: EP.pages[EP.pageForPathway[id]] ? EP.pages[EP.pageForPathway[id]].section : '' }));
+    if (opts.anim && EP.anim[opts.anim]) { el.appendChild(h('h2', opts.animTitle || 'Animated cell')); EP.anim[opts.anim](el); el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Pathway map')); }
     const api = EP.mountPathway(el, id, { height: opts.height || Math.min(640, Math.round(pw.view.h * 0.78)), focus: params.focus });
     (opts.more || []).forEach((mid) => { el.appendChild(h('h2', EP.pathways[mid].title)); EP.mountPathway(el, mid, { height: Math.round(EP.pathways[mid].view.h * 0.7), focus: params.focus }); });
     if (opts.net) {
@@ -84,6 +85,7 @@
     if (id === 'hpgf') { el.appendChild(h('h2', 'Inside the follicle')); EP.mountPathway(el, 'ovary', { height: 420 }); }
     if (id === 'gh') { el.appendChild(h('h2', 'GH receptor signaling (JAK2–STAT5)')); EP.mountPathway(el, 'jakstat', { height: 460 }); }
     if (id === 'hpa') { el.appendChild(h('p', h('a', { href: '#/cortisol' }, 'Where cortisol acts →'), ' · ', h('a', { href: '#/steroidogenesis' }, 'How cortisol is made →'))); }
+    const pc = EP.pitSystemsCard && EP.pitSystemsCard(id); if (pc) el.appendChild(pc);
     el.appendChild(EP.sources(AXIS_REFS[id] || []));
   };
 
@@ -299,10 +301,13 @@
     el.appendChild(EP.pageHeader('Posterior pituitary: ADH & oxytocin', 'How does a 1–2% change in plasma osmolality control urine concentration — and when does volume override it?', { section: 'Hypothalamus & Pituitary' }));
     const api = EP.mountNetwork(el, 'adh');
     if (params.preset) api.choose(params.preset);
+    el.appendChild(h('h2', 'Animated: portal blood vs axonal transport'));
+    EP.anim.hp && EP.anim.hp(el);
     el.appendChild(h('h2', 'In the collecting duct'));
     EP.mountPathway(el, 'adhcd', { height: 380 });
     el.appendChild(h('h2', 'Oxytocin: positive feedback'));
     EP.mountNetwork(el, 'motif_pos');
+    const pc = EP.pitSystemsCard && EP.pitSystemsCard('adh'); if (pc) el.appendChild(pc);
     el.appendChild(EP.sources(['kovacs6', 'molina2']));
   };
 

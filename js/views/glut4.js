@@ -254,6 +254,9 @@
     EP.mountPathway(el, 'insulin', { height: 640, focus: params.focus });
     el.appendChild(h('h2', '3 · Whole-body read-out'));
     el.appendChild(wholeBody());
+    el.appendChild(h('h2', { style: { marginTop: '18px' } }, '4 · Mechanisms of insulin resistance: the multi-organ cycle'));
+    el.appendChild(h('p.muted', 'Petersen & Shulman (2018): adipose insulin resistance raises FFA delivery; hepatic sn-1,2-DAG → PKCε → INSR Thr1160 and muscle DAG → PKCθ → IRS-1 Ser1101 impair signaling; glucose not taken up by muscle feeds hepatic lipogenesis; β-cells compensate until they fail. Step through it, or raise the sliders.'));
+    EP.mountPathway(el, 'irmech', { height: 560 });
     el.appendChild(EP.sources(EP.pathways.insulin.refs));
   };
   function wholeBody() {
