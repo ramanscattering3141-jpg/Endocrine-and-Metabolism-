@@ -40,7 +40,10 @@
       const v = attrs[k];
       if (v == null || v === false) continue;
       if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2), v);
-      else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
+      else if (k === 'style' && typeof v === 'object') {
+        // custom properties (--x) are ignored by Object.assign on CSSStyleDeclaration
+        for (const sk in v) { if (sk.startsWith('--')) el.style.setProperty(sk, v[sk]); else el.style[sk] = v[sk]; }
+      }
       else if (k === 'html') el.innerHTML = v;
       else if (k === 'text') el.textContent = v;
       else if (k === 'class' || k === 'className') el.setAttribute('class', v);

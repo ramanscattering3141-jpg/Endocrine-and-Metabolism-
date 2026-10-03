@@ -198,7 +198,7 @@
     }
     el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Zoom into a pathway (same model)'));
     el.appendChild(h('p', ...[['hepatocyte', 'Liver map'], ['acetylcoa', 'Acetyl-CoA hub'], ['fattyacid', 'Fatty acids & malonyl-CoA'], ['aminoacid', 'Amino acids & urea']].map(([id, l]) => h('a.btn', { href: '#/' + id, style: { marginRight: '8px' } }, l))));
-    el.appendChild(EP.sources(['petersen2018', 'cahill2006', 'owen1967', 'richter2013', 'sylow2017', 'mcgarry1980', 'perry2015', 'felig1973', 'kovacs15', 'molina10', 'rui2014']));
+    el.appendChild(EP.sources(['petersen2018', 'cahill2006', 'owen1967', 'richter2013', 'sylow2017', 'mcgarry1980', 'perry2015', 'felig1973', 'kovacs15', 'molina10', 'rui2014', 'petersen2007', 'brown2008', 'donnelly2005', 'lambert2014']));
   };
 
   // ------------------------------------------------------------------ What-if
