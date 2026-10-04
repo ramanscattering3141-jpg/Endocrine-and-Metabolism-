@@ -164,9 +164,11 @@
     // traces
     const traceIds = net.traces || drawNodes.filter((n) => n.type !== 'organ' && n.type !== 'process').map((n) => n.id).slice(0, 5);
     const cv = h('canvas.trace', { width: 520, height: 170 });
-    const traceWrap = h('div.trace-wrap', h('div.trace-head', h('span', 'Time course'), h('span.muted.small', 'log scale · relative to normal · arbitrary time units')), cv, h('div.trace-legend', traceIds.map((id, i) => h('span', { style: { '--c': `var(--tr${i})` } }, byId[id].label.replace(/\n/g, ' ')))));
+    const traceWrap = h('div.trace-wrap', h('div.trace-head', h('span', 'Time course'), h('span.muted.small', 'log scale · relative to normal · arbitrary time units')), cv, h('div.trace-legend', h('span.tl-title', 'Line colours:'), traceIds.map((id, i) => h('span.tl-item', { style: { '--c': `var(--tr${i % 6})` } }, byId[id].label.replace(/\n/g, ' ')))));
     (opts.traceInto || left).appendChild(traceWrap);
     const hist = traceIds.map(() => []);
+    const traceLabels = traceIds.map((id) => byId[id].label.replace(/\n/g, ' ').replace(/ \/.*$/, ''));
+    const LABW = Math.min(130, 14 + 6.2 * Math.max(...traceLabels.map((l) => l.length)));
     const HN = 260;
 
     function choose(p, btn) {
@@ -228,16 +230,27 @@
         ctx.globalAlpha = l === 0 ? 0.9 : 0.35; ctx.beginPath(); ctx.moveTo(26, y); ctx.lineTo(cw, y); ctx.stroke();
         ctx.globalAlpha = 1; ctx.fillText(l === 0 ? '1×' : (l > 0 ? Math.pow(2, l) + '×' : '1/' + Math.pow(2, -l)), 0, y + 3);
       });
+      const PLOTW = cw - 28 - LABW;
+      const ends = [];
       hist.forEach((hs, i) => {
-        ctx.strokeStyle = css.getPropertyValue(`--tr${i}`).trim() || '#fff';
+        const col = css.getPropertyValue(`--tr${i % 6}`).trim() || '#fff';
+        ctx.strokeStyle = col;
         ctx.lineWidth = 2; ctx.beginPath();
         hs.forEach((v, j) => {
-          const x = 26 + (j / HN) * (cw - 28);
+          const x = 26 + (j / HN) * PLOTW;
           const y = ch / 2 - EP.clamp(Math.log2(v) / 2.6, -1, 1) * (ch / 2 - 8);
           j ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          if (j === hs.length - 1) ends.push({ x, y, col, label: traceLabels[i] });
         });
         ctx.stroke();
       });
+      // direct labels at the end of each line (nudged apart so they don't overlap)
+      ends.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 12) ends[k].y = ends[k - 1].y + 12;
+      const over = ends.length ? ends[ends.length - 1].y - (ch - 4) : 0;
+      if (over > 0) ends.forEach((e) => { e.y -= over; });
+      ctx.font = '600 11px Inter, system-ui, sans-serif';
+      ends.forEach((e) => { ctx.fillStyle = e.col; ctx.fillText(e.label, e.x + 5, e.y + 4); });
     }
 
     let acc = 0;

@@ -55,8 +55,8 @@
       T('stress', 0.8, 'Stress → CRH → ACTH → cortisol (HPA axis).'), T('hypo', 0.6, 'Hypoglycemia activates the HPA axis.'), T('fastdur', 0.15, 'Fasting modestly raises cortisol.'),
     ], { ent: 'cortisol' }),
     N('gh', 'Growth hormone', 'pituitary', 'hormone', [
-      T('hypo', 0.8, 'Hypoglycemia stimulates GH (hypothalamic GHRH↑/somatostatin↓).'), T('glucose', -0.3, 'Hyperglycemia suppresses GH.'), T('fastdur', 0.4, 'Fasting increases GH pulse amplitude.'),
-      T('exercise', 0.4, 'Exercise stimulates GH.'), T('ffa', -0.3, 'Free fatty acids suppress GH secretion.'),
+      T('hypo', 1.1, 'Hypoglycemia is a potent GH stimulus (hypothalamic GHRH↑/somatostatin↓) — the basis of the insulin tolerance test for GH reserve.'), T('glucose', -0.3, 'Hyperglycemia suppresses GH.'), T('fastdur', 0.4, 'Fasting increases GH pulse amplitude.'),
+      T('exercise', 0.4, 'Exercise stimulates GH.'), T('ffa', -0.15, 'Free fatty acids suppress GH secretion (a weaker signal that hypoglycemia overrides).'),
     ], { ent: 'gh' }),
 
     // ---------------- systemic metabolites ----------------
@@ -92,7 +92,7 @@
     // ---------------- LIVER ----------------
     N('h_ins', 'Hepatic insulin signaling (IR→Akt)', 'liver', 'signal', [
       T('insulin', 1, 'Portal insulin binds hepatic insulin receptors → IRS → PI3K → Akt.'), T('sens', 1, 'Hepatic insulin resistance: lipogenic sn-1,2-DAG activates PKCε, which phosphorylates insulin-receptor kinase Thr1160 and inhibits it (Petersen & Shulman 2018).'), T('hdag', -0.25, 'Hepatic DAG accumulation (from fatty-acid re-esterification) → PKCε → INSR Thr1160 inhibition.'),
-      T('cortisol', -0.15, 'Glucocorticoids antagonize insulin action.'), T('gh', -0.15, 'GH is diabetogenic (post-receptor antagonism).'),
+      T('cortisol', -0.3, 'Glucocorticoids cause hepatic insulin resistance (post-receptor) — steroid-induced hyperglycemia.'), T('gh', -0.15, 'GH is diabetogenic (post-receptor antagonism).'),
     ], { ent: 'akt' }),
     N('h_pka', 'Hepatic cAMP → PKA', 'liver', 'signal', [
       T('glucagon', 0.9, 'Glucagon receptor → Gs → adenylyl cyclase → cAMP → PKA (Molina Ch7).'), T('epi', 0.25, 'β2/α1-adrenergic input (smaller than glucagon in humans).'),
@@ -105,11 +105,11 @@
       T('cortisol', 0.35, 'Glucocorticoid receptor binds GREs in the PEPCK promoter.'),
     ], { ent: 'pepck', tau: 4 }),
     N('f26bp', 'Fructose-2,6-bisphosphate', 'liver', 'signal', [T('h_pka', -0.8, 'PKA phosphorylates PFK-2/FBPase-2 → kinase off, phosphatase on (Pilkis & Granner).'), T('h_ins', 0.3, 'Insulin favours the dephosphorylated (kinase-active) form.')], { ent: 'f26bp' }),
-    N('chrebp', 'ChREBP', 'liver', 'signal', [T('glucose', 0.7, 'Glucose metabolites activate ChREBP.'), T('h_pka', -0.4, 'PKA phosphorylation inactivates ChREBP.')], { ent: 'chrebp' }),
-    N('srebp', 'SREBP-1c', 'liver', 'signal', [T('h_ins', 0.8, 'Insulin → Akt/mTORC1 → SREBP-1c transcription and processing. Highly insulin-sensitive, so portal hyperinsulinemia can keep it active even in hepatic insulin resistance.'), T('aa', 0.25, 'Amino acids activate mTORC1 → SREBP-1c independently of insulin (nutrient-driven lipogenesis).')], { ent: 'srebp1c' }),
+    N('chrebp', 'ChREBP', 'liver', 'signal', [T('glucose', 1.2, 'Glucose metabolites (xylulose-5-P, G6P) activate ChREBP. In insulin resistance, glucose that muscle fails to take up is diverted to the liver and feeds lipogenesis (Petersen 2007).'), T('carb', 0.15, 'Dietary sugar (especially fructose) reaching the liver via the portal vein.'), T('h_pka', -0.4, 'PKA phosphorylation inactivates ChREBP.')], { ent: 'chrebp' }),
+    N('srebp', 'SREBP-1c', 'liver', 'signal', [T('insulin', 0.8, 'Portal insulin → INSR → mTORC1 → SREBP-1c transcription and processing. In insulin resistance compensatory hyperinsulinemia **raises** SREBP-1c and lipogenesis even while insulin fails to suppress glucose production ("selective" hepatic insulin resistance; Brown & Goldstein 2008). Petersen & Shulman (2018) attribute this less to a true branch-point in signaling than to very high portal insulin plus substrate supply (glucose diverted from muscle, FFA).'), T('h_ins', 0.1, 'Akt-dependent component (shared with glycogen synthesis), which is impaired in hepatic insulin resistance.'), T('aa', 0.25, 'Amino acids activate mTORC1 → SREBP-1c independently of insulin (nutrient-driven lipogenesis).')], { ent: 'srebp1c' }),
     N('h_gk', 'Glucokinase activity', 'liver', 'enzyme', [T('h_ins', 0.4, 'Insulin induces GCK transcription.'), T('glucose', 0.8, 'Glucose releases glucokinase from GKRP (nucleus → cytosol).')], { ent: 'gk' }),
-    N('lgly', 'Liver glycogen store', 'liver', 'signal', [T('fastdur', -1.6, 'Hepatic glycogen is progressively depleted over the first day or so of fasting (Cahill 2006).'), T('carb', 0.25, 'Carbohydrate meals refill liver glycogen.'), T('exercise', -0.3, 'Prolonged exercise draws down liver glycogen.')], { ent: 'glycogen' }),
-    N('lglyav', 'Glycogen availability (liver)', 'liver', 'signal', [T('lgly', 1, 'Phosphorylase flux is limited only when stores run low (saturating).')], { sat: 0.3 }),
+    N('lgly', 'Liver glycogen store', 'liver', 'signal', [T('fastdur', -1.6, 'Hepatic glycogen decays roughly exponentially during fasting — still contributing appreciably at 24 h and nearly depleted by ~48 h in humans, while gluconeogenesis stays roughly constant (Rothman 1991; Petersen & Shulman 2018).'), T('carb', 0.25, 'Carbohydrate meals refill liver glycogen.'), T('exercise', -0.3, 'Prolonged exercise draws down liver glycogen.'), T('sens', 0.9, 'Hepatic insulin resistance lowers postprandial glycogen deposition and fasting glycogen content: in T2D liver glycogen oscillates with a smaller amplitude and glycogenolysis is lower, so the excess glucose output of T2D comes from gluconeogenesis (Petersen & Shulman 2018).')], { ent: 'glycogen' }),
+    N('lglyav', 'Glycogen availability (liver)', 'liver', 'signal', [T('lgly', 1, 'Phosphorylase flux depends on how much glycogen is stored (saturating at high stores).')], { sat: 0.6 }),
     N('h_gs', 'Glycogen synthase (liver)', 'liver', 'enzyme', [T('h_ins', 0.5, 'Akt ⊣ GSK3 and PP1 activation dephosphorylate (activate) glycogen synthase.'), T('h_pka', -0.6, 'PKA (directly and via phosphorylase kinase) phosphorylates/inactivates glycogen synthase.'), T('glucose', 0.5, 'Glucose binds phosphorylase a, promoting its inactivation and releasing PP1 to activate GS.')], { ent: 'glycsyn' }),
     N('h_gp', 'Glycogen phosphorylase (liver)', 'liver', 'enzyme', [
       T('h_pka', 0.9, 'PKA → phosphorylase kinase → phosphorylase a. Acute glucagon rises raise HGP mainly this way (Ramnanan 2011).'),
@@ -127,8 +127,8 @@
     ], { ent: 'pdh' }),
     N('citrate', 'Cytosolic citrate', 'liver', 'signal', [T('h_glycolysis', 0.5, 'Glycolytic carbon → pyruvate → acetyl-CoA → citrate exported when energy is abundant.'), T('pdh_h', 0.3, 'PDH supplies acetyl-CoA for citrate.')], { ent: 'citrate', override: true }),
     N('acc', 'Acetyl-CoA carboxylase', 'liver', 'enzyme', [
-      T('h_ins', 0.5, 'Insulin dephosphorylates ACC (Molina Ch7).'), T('h_pka', -0.5, 'PKA phosphorylation inhibits ACC (glucagon).'),
-      T('ampk_h', -0.6, 'AMPK phosphorylates ACC (Ser79/Ser221) — classic energy-stress brake.'), T('citrate', 0.4, 'Citrate allosterically activates (polymerizes) ACC.'), T('srebp', 0.3, 'SREBP-1c increases ACC expression.'),
+      T('h_ins', 0.15, 'Insulin dephosphorylates ACC (Molina Ch7).'), T('h_pka', -0.4, 'PKA phosphorylation inhibits ACC (glucagon).'),
+      T('ampk_h', -0.6, 'AMPK phosphorylates ACC (Ser79/Ser221) — classic energy-stress brake.'), T('citrate', 0.4, 'Citrate allosterically activates (polymerizes) ACC.'), T('srebp', 0.6, 'SREBP-1c increases ACC expression.'), T('chrebp', 0.3, 'ChREBP increases ACC expression.'),
     ], { ent: 'acc' }),
     N('malonyl', 'Malonyl-CoA', 'liver', 'signal', [T('acc', 1, 'Product of ACC.')], { ent: 'malonylcoa', override: true }),
     N('cpt1', 'CPT-1 (mitochondrial entry)', 'liver', 'enzyme', [T('malonyl', -1, 'Malonyl-CoA inhibits CPT-1 (McGarry 1977) — when making fat, do not burn it.')], { ent: 'cpt1' }),
@@ -142,22 +142,22 @@
     ], { mode: 'sum' }),
     N('gng', 'Hepatic gluconeogenesis', 'liver', 'pathway', [
       T('gngsub', 0.9, 'Substrate availability is a major determinant of gluconeogenic flux.'), T('gngenes', 0.3, 'Enzyme capacity (PEPCK, G6Pase) set by FOXO1, CREB, GR.'),
-      T('pc', 0.3, 'Pyruvate carboxylase activation by acetyl-CoA.'), T('fbp', 0.35, 'FBPase-1 released from F-2,6-BP inhibition.'),
+      T('pc', 0.5, 'Pyruvate carboxylase activation by acetyl-CoA from lipolysis-driven β-oxidation — a major controller of fasting gluconeogenesis (Perry 2015).'), T('fbp', 0.35, 'FBPase-1 released from F-2,6-BP inhibition.'),
       T('glucose', -0.6, 'Glucose effectiveness: hyperglycemia per se suppresses hepatic glucose production (substrate cycling at glucokinase/G6Pase), independent of hormones.'),
     ], { ent: 'gluconeogenesis' }),
     N('oaa', 'OAA available to TCA', 'liver', 'signal', [
-      T('pc', 0.3, 'Anaplerosis via pyruvate carboxylase.'), T('gng', -0.7, 'Gluconeogenesis drains oxaloacetate (cataplerosis via PEPCK).'),
+      T('pc', 0.5, 'Anaplerosis via pyruvate carboxylase — raised alongside gluconeogenesis in insulin-resistant/fatty liver, which refills OAA.'), T('gng', -0.6, 'Gluconeogenesis drains oxaloacetate (cataplerosis via PEPCK).'),
       T('nadh', -0.4, 'High NADH/NAD⁺ shifts OAA → malate.'), T('h_glycolysis', 0.2, 'Carbohydrate supply replenishes intermediates.'),
     ], { ent: 'oaa' }),
-    N('hmgcs2', 'HMGCS2 (ketogenic enzyme)', 'liver', 'enzyme', [T('h_ins', -0.5, 'Insulin represses HMGCS2.'), T('h_pka', 0.3, 'Fasting/glucagon (PPARα, cAMP) induce HMGCS2.')], { ent: 'hmgcs2' }),
+    N('hmgcs2', 'HMGCS2 (ketogenic enzyme)', 'liver', 'enzyme', [T('insulin', -0.6, 'Insulin represses HMGCS2 (FOXA2/mTORC1). Ketogenesis is among the most insulin-sensitive hepatic processes, so the hyperinsulinemia of insulin resistance and T2D keeps ketones low; ketoacidosis needs near-absolute insulin deficiency.'), T('h_ins', -0.15, 'Akt-dependent component.'), T('h_pka', 0.3, 'Fasting/glucagon (PPARα, cAMP) induce HMGCS2.')], { ent: 'hmgcs2' }),
     N('ketogenesis', 'Ketogenesis', 'liver', 'pathway', [
       T('acoa', 1, 'High acetyl-CoA from β-oxidation.'), T('oaa', -0.7, 'When OAA is scarce, acetyl-CoA cannot enter the TCA cycle and spills into HMG-CoA → ketones.'), T('hmgcs2', 0.6, 'HMGCS2 capacity.'),
     ], { ent: 'ketogenesis' }),
     N('h_tca', 'Hepatic TCA cycle', 'liver', 'pathway', [T('acoa', 0.5, 'Acetyl-CoA supply.'), T('oaa', 0.6, 'Requires oxaloacetate to form citrate.')], { ent: 'tca' }),
-    N('dnl', 'De novo lipogenesis', 'liver', 'pathway', [T('srebp', 0.5, 'SREBP-1c lipogenic program.'), T('chrebp', 0.4, 'ChREBP (carbohydrate).'), T('malonyl', 0.6, 'Malonyl-CoA supply (ACC).'), T('citrate', 0.3, 'Citrate → cytosolic acetyl-CoA (ATP-citrate lyase).')], { ent: 'lipogenesis' }),
-    N('htg', 'Hepatic triglyceride (steatosis)', 'liver', 'pathway', [T('ffa', 0.6, '"Substrate push": plasma fatty acids are re-esterified in the liver regardless of hepatic insulin signaling — the main lipogenic flux in insulin-resistant humans.'), T('dnl', 0.2, 'De novo lipogenesis adds newly made fatty acids.'), T('h_fao', -0.3, 'Fatty acids oxidized are not stored.')], { ent: 'tg' }),
+    N('dnl', 'De novo lipogenesis', 'liver', 'pathway', [T('srebp', 0.9, 'SREBP-1c lipogenic program (ACC, FAS, SCD1) — kept high by hyperinsulinemia in insulin resistance.'), T('chrebp', 0.5, 'ChREBP (carbohydrate) — driven by glucose diverted from insulin-resistant muscle to the liver.'), T('malonyl', 0.35, 'Malonyl-CoA supply (ACC).'), T('citrate', 0.2, 'Citrate → cytosolic acetyl-CoA (ATP-citrate lyase).')], { ent: 'lipogenesis' }),
+    N('htg', 'Hepatic triglyceride (steatosis)', 'liver', 'pathway', [T('ffa', 0.85, '"Substrate push": plasma fatty acids are re-esterified in the liver regardless of hepatic insulin signaling — the main lipogenic flux in insulin-resistant humans.'), T('dnl', 0.35, 'De novo lipogenesis adds newly made fatty acids (~23–26% of liver/VLDL TG in hyperinsulinemic NAFLD vs ~10% with low liver fat; Donnelly 2005, Lambert 2014).'), T('fat', 0.1, 'Dietary fat delivered as chylomicron remnants.'), T('h_fao', -0.12, 'Fatty acids oxidized are not stored — but oxidation removes only part of an increased FFA influx, so steatosis accompanies FFA excess (including uncontrolled diabetes).')], { ent: 'tg' }),
     N('hdag', 'Hepatic diacylglycerol (sn-1,2-DAG)', 'liver', 'signal', [T('htg', 0.8, 'Lipogenic DAG accumulates in parallel with re-esterification.')], { ent: 'dag' }),
-    N('vldl', 'VLDL secretion', 'liver', 'pathway', [T('dnl', 0.35, 'Newly synthesized fatty acids.'), T('ffa', 0.45, 'Re-esterified plasma fatty acids (main source).'), T('h_ins', -0.2, 'Insulin acutely suppresses apoB/VLDL secretion.')], { ent: 'vldl' }),
+    N('vldl', 'VLDL secretion', 'liver', 'pathway', [T('htg', 0.5, 'Hepatic triglyceride pool available for export.'), T('dnl', 0.3, 'Newly synthesized fatty acids are preferentially exported.'), T('ffa', 0.3, 'Re-esterified plasma fatty acids.'), T('h_ins', -0.3, 'Insulin acutely suppresses apoB/VLDL secretion (MTP, apoB degradation) — this suppression fails in hepatic insulin resistance → VLDL overproduction.')], { ent: 'vldl' }),
     N('hgo', 'Hepatic glucose output', 'liver', 'output', [C('h_glycogenolysis', 0.55, 'Glycogenolysis.'), C('gng', 0.45, 'Gluconeogenesis.')], { mode: 'sum', desc: 'Glucose released by liver = glycogenolysis + gluconeogenesis (via G6Pase).' }),
     N('h_aaup', 'Hepatic amino-acid uptake', 'liver', 'pathway', [T('aa', 0.7, 'Substrate.'), T('glucagon', 0.5, 'Glucagon stimulates hepatic amino-acid transport and catabolism (Wewer Albrechtsen 2019).'), T('cortisol', 0.2, 'Glucocorticoids increase amino-acid catabolic enzymes.')], { ent: 'transamination' }),
     N('urea', 'Ureagenesis', 'liver', 'pathway', [T('h_aaup', 0.8, 'Nitrogen load from amino-acid deamination.'), T('glucagon', 0.3, 'Glucagon increases urea-cycle enzyme expression/capacity.')], { ent: 'ureacycle' }),
@@ -165,7 +165,7 @@
     // ---------------- MUSCLE ----------------
     N('m_ins', 'Muscle insulin signaling (Akt)', 'muscle', 'signal', [
       T('insulin', 0.9, 'Insulin receptor → IRS-1 → PI3K → Akt2.'), T('sens', 1, 'Muscle insulin resistance: sarcolemmal sn-1,2-DAG → PKCθ → IRS-1 Ser1101 phosphorylation → ↓ PI3K/Akt → ↓ GLUT4 translocation. Glucose transport is the rate-controlling defect (Petersen & Shulman 2018).'),
-      T('cortisol', -0.2, 'Glucocorticoids impair post-receptor signaling.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.25, 'Lipid-induced insulin resistance: intramyocellular DAG → PKCθ. During lipid infusion intracellular G6P falls rather than rises, so impaired GLUT4 transport, not the classic Randle substrate-competition cycle, is the main defect.'),
+      T('cortisol', -0.4, 'Glucocorticoids impair post-receptor signaling (↓ IRS-1/PI3K/Akt) and GLUT4 translocation — a major cause of steroid-induced hyperglycemia.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.4, 'Lipid-induced insulin resistance: intramyocellular DAG → PKCθ. During lipid infusion intracellular G6P falls rather than rises, so impaired GLUT4 transport, not the classic Randle substrate-competition cycle, is the main defect.'),
     ], { ent: 'akt' }),
     N('m_ampk', 'Muscle AMPK', 'muscle', 'signal', [T('amp', 1, 'Rising AMP:ATP activates AMPK.')], { ent: 'ampk' }),
     N('m_contr', 'Contraction signals (Ca²⁺/CaMKII, Rac1)', 'muscle', 'signal', [T('exercise', 0.9, 'Excitation releases SR Ca²⁺; mechanical stress activates Rac1.')], { ent: 'camk' }),
@@ -183,7 +183,7 @@
       T('mglyav', 0.7, 'Substrate availability.'), T('m_ins', -0.2, 'Insulin activates PP1, inactivating phosphorylase.'),
     ], { ent: 'gp', note: 'No glucagon term: skeletal muscle lacks meaningful glucagon-receptor signaling (Molina Ch7).' }),
     N('m_g6p', 'Muscle G6P', 'muscle', 'signal', [T('m_uptake', 0.7, 'Glucose → hexokinase II → G6P.'), T('m_gp', 0.3, 'Glycogen → G1P → G6P.')], { ent: 'g6p' }),
-    N('m_gs', 'Muscle glycogen synthase', 'muscle', 'enzyme', [T('m_ins', 0.6, 'Akt ⊣ GSK3 → GS dephosphorylation.'), T('m_g6p', 0.4, 'G6P allosterically activates GS.'), T('epi', -0.3, 'PKA phosphorylates GS.'), T('mgly', -0.3, 'Glycogen content feeds back on GS (low glycogen → high GS activity after exercise).')], { ent: 'glycsyn' }),
+    N('m_gs', 'Muscle glycogen synthase', 'muscle', 'enzyme', [T('m_ins', 0.3, 'Insulin promotes GS dephosphorylation (PP1; Akt ⊣ GSK3, dispensable in vivo), which makes GS more sensitive to G6P.'), T('m_g6p', 0.8, 'G6P allostery is the dominant acute activator: G6P-insensitive glycogen synthase abolishes insulin-stimulated glycogen synthesis (Petersen & Shulman 2018).'), T('epi', -0.3, 'PKA phosphorylates GS.'), T('mgly', -0.3, 'Glycogen content feeds back on GS (low glycogen → high GS activity after exercise).')], { ent: 'glycsyn' }),
     N('m_glycogenesis', 'Muscle glycogenesis', 'muscle', 'pathway', [T('m_gs', 0.8, 'Glycogen synthase activity.'), T('m_g6p', 0.5, 'Substrate.')], { ent: 'glycogenesis' }),
     N('m_glycogenolysis', 'Muscle glycogenolysis', 'muscle', 'pathway', [T('m_gp', 1, 'Phosphorylase activity.')], { ent: 'glycogenolysis' }),
     N('m_glycolysis', 'Muscle glycolysis', 'muscle', 'pathway', [T('m_g6p', 0.6, 'Substrate.'), T('m_ampk', 0.5, 'AMP/ADP activate PFK-1 — demand-driven.')], { ent: 'glycolysis' }),
@@ -200,7 +200,7 @@
     // ---------------- ADIPOSE ----------------
     N('a_ins', 'Adipocyte insulin signaling', 'adipose', 'signal', [T('insulin', 0.9, 'Insulin → Akt.'), T('sens', 1, 'Adipose insulin resistance.'), T('cortisol', -0.15, 'Glucocorticoid antagonism.'), T('gh', -0.25, 'GH antagonism.')], { ent: 'akt' }),
     N('a_pka', 'Adipocyte cAMP → PKA', 'adipose', 'signal', [
-      T('epi', 0.8, 'β1/β3-adrenergic → Gs → cAMP.'), T('a_ins', -0.9, 'Akt → PDE3B → cAMP hydrolysis: the antilipolytic action of insulin (Petersen & Shulman).'),
+      T('epi', 0.8, 'β1/β3-adrenergic → Gs → cAMP.'), T('a_ins', -0.9, 'Insulin activates PDE3B (cAMP hydrolysis) and phosphatases (PP2A → HSL, PP1 → perilipin): the antilipolytic action — the most insulin-sensitive in the body (ED50 ≈ 20 µU/mL vs ≈ 60 µU/mL for glucose uptake). Akt2 itself is dispensable for it (Petersen & Shulman 2018).'),
       T('gh', 0.25, 'GH increases lipolysis (slower, transcriptional).'), T('cortisol', 0.15, 'Permissive effect of glucocorticoids.'),
     ], { ent: 'pka' }),
     N('lipolysis', 'Adipose lipolysis', 'adipose', 'pathway', [T('a_pka', 1.0, 'PKA phosphorylates HSL and perilipin-1 → ATGL/HSL activity (Zechner 2012).')], { ent: 'lipolysis' }),
@@ -235,8 +235,8 @@
     { id: 'prolonged', label: 'Prolonged fasting (days–weeks)', icon: '🏜', inputs: { fastdur: 7 }, text: 'Hepatic glycogen is depleted; gluconeogenesis and ketogenesis dominate; the brain oxidizes ketones and uses less glucose, so muscle proteolysis falls (protein sparing; Cahill 2006, Owen 1967). Renal gluconeogenesis grows.' },
     { id: 'exercise', label: 'Exercise', icon: '🏃', inputs: { exercise: 5 }, text: 'Contraction (AMPK, Ca²⁺/CaMKII, Rac1) translocates GLUT4 even though insulin falls (α2-adrenergic suppression). Muscle glycogenolysis and glycolysis rise, lactate is released, fatty-acid oxidation increases, and glucagon + epinephrine raise hepatic glucose output.' },
     { id: 'stress', label: 'Acute stress', icon: '⚡', inputs: { stress: 4 }, text: 'Epinephrine and cortisol: hepatic glucose output and lipolysis rise, insulin secretion is restrained (α2), proteolysis increases — stress hyperglycemia.' },
-    { id: 'ir', label: 'Insulin resistance', icon: '🧱', inputs: { sens: 0.3 }, text: 'Impaired signaling to Akt in muscle, liver and fat. β-cells compensate with hyperinsulinemia, keeping glucose only mildly raised — while lipolysis is less suppressed (↑ FFA).' },
-    { id: 't2d', label: 'Type 2 diabetes', icon: '🩸', inputs: { sens: 0.3, betacap: 0.35 }, text: 'Insulin resistance plus β-cell dysfunction: compensation fails → fasting hyperglycemia, ↑ hepatic glucose output, relative glucagon excess.' },
+    { id: 'ir', label: 'Insulin resistance', icon: '🧱', inputs: { sens: 0.3 }, text: 'Impaired signaling to Akt in muscle, liver and fat. β-cells compensate with hyperinsulinemia, keeping glucose only mildly raised — while lipolysis is less suppressed (↑ FFA). In the liver, insulin still drives **lipogenesis**: hyperinsulinemia → SREBP-1c, plus glucose diverted from insulin-resistant muscle → ChREBP, so **de novo lipogenesis roughly doubles** (Petersen 2007, Lambert 2014). Together with FFA re-esterification this gives steatosis, hepatic DAG → PKCε (worsening hepatic insulin resistance), VLDL overproduction and hypertriglyceridemia. Ketogenesis stays low because insulin is high.' },
+    { id: 't2d', label: 'Type 2 diabetes', icon: '🩸', inputs: { sens: 0.3, betacap: 0.35 }, text: 'Insulin resistance plus β-cell dysfunction: compensation fails → fasting hyperglycemia, ↑ hepatic glucose output, relative glucagon excess. Insulin is still above normal, so lipogenesis, steatosis and VLDL/TG remain raised and ketosis is only mild — unlike insulin-deficient T1D.' },
     { id: 't1d', label: 'Type 1 diabetes (untreated)', icon: '⚠', inputs: { betacap: 0.01 }, text: 'Absolute insulin deficiency: unrestrained lipolysis → FFA flood → hepatic β-oxidation and ketogenesis (low malonyl-CoA, high glucagon) → ketoacidosis; hyperglycemia from ↑ HGO and ↓ uptake.' },
   ];
 
@@ -246,7 +246,7 @@
     { id: 'ins_dn', label: '↓ Insulin', focus: 'insulin', apply: { inputs: { betacap: 0.15 } }, note: 'Loss of β-cell secretion.' },
     { id: 'gcg_up', label: '↑ Glucagon', focus: 'glucagon', apply: { exo: { glucagon: 3 } }, clampInsulin: true, note: 'Glucagon infusion with insulin held at basal (pancreatic clamp, as in human glucagon studies) — the liver responds while skeletal muscle barely does. Untick "hold insulin" to see how the resulting hyperglycemia recruits insulin and blunts ketogenesis.' },
     { id: 'gcg_dn', label: '↓ Glucagon', focus: 'glucagon', apply: { clamps: { glucagon: 0.3 } }, note: 'Glucagon held low (e.g., receptor antagonism).' },
-    { id: 'cort_up', label: '↑ Cortisol', focus: 'cortisol', apply: { exo: { cortisol: 2.5 } }, note: 'Glucocorticoid excess. Also see the HPA axis: CRH and ACTH fall.' , axis: 'hpa', axisPreset: 'exo' },
+    { id: 'cort_up', label: '↑ Cortisol', focus: 'cortisol', apply: { exo: { cortisol: 2.5 } }, note: 'Glucocorticoid excess: insulin resistance, ↑ gluconeogenic enzymes and proteolysis. With normal β-cells, compensatory hyperinsulinemia keeps fasting glucose near normal — overt steroid-induced hyperglycemia appears after meals or when β-cell reserve is limited (try lowering β-cell capacity). Also see the HPA axis: CRH and ACTH fall.' , axis: 'hpa', axisPreset: 'exo' },
     { id: 'cort_dn', label: '↓ Cortisol', focus: 'cortisol', apply: { clamps: { cortisol: 0.25 } }, note: 'Adrenal insufficiency (metabolic view).', axis: 'hpa', axisPreset: 'primary' },
     { id: 'gh_up', label: '↑ Growth hormone', focus: 'gh', apply: { exo: { gh: 3 } }, note: 'GH excess: lipolytic and diabetogenic.' },
     { id: 'epi_up', label: '↑ Catecholamines', focus: 'epi', apply: { exo: { epi: 3 } }, note: 'Epinephrine infusion / pheochromocytoma-like.' },
