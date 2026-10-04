@@ -133,7 +133,7 @@ const PRESETS = {
  prolonged:{insulin:'dn',glucagon:'up',ketones:'up',ketogenesis:'up',gng:'up',h_glycogenolysis:'dn',brainket:'up',brainglc:'dn',m_proteolysis:'dn/eq',renalgng:'up',lipolysis:'up',leptin:'dn',lgly:'dn'},
  exercise:{m_uptake:'up',m_glut4:'up',insulin:'dn/eq',glucagon:'up',epi:'up',hgo:'up',lipolysis:'up',m_glycogenolysis:'up',lactrel:'up',m_fao:'up',m_malonyl:'dn',glucose:'eq/up'},
  stress:{epi:'up',cortisol:'up',glucose:'up',hgo:'up',lipolysis:'up',m_proteolysis:'up',glucagon:'up'},
- ir:{insulin:'up',glucose:'eq/up',m_ins:'dn',h_ins:'dn',dnl:'up',htg:'up',vldl:'up',tgp:'up',ketogenesis:'eq',ffa:'up',lipolysis:'up',hgo:'eq/up'},
+ ir:{insulin:'up',glucose:'eq/up',m_ins:'dn',h_ins:'dn',dnl:'up',htg:'up',vldl:'up',tgp:'up',ketogenesis:'eq/up',ffa:'up',lipolysis:'up',hgo:'eq/up'},
  t2d:{glucose:'up',hgo:'up',glucagon:'up',dnl:'up/eq',htg:'up',tgp:'up',ketogenesis:'up/eq'},
  t1d:{insulin:'dn',glucose:'up',glucagon:'up',lipolysis:'up',ffa:'up',ketogenesis:'up',ketones:'up',malonyl:'dn',hgo:'up',m_proteolysis:'up',dnl:'dn'},
 };
