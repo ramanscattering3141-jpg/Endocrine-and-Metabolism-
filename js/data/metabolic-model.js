@@ -55,8 +55,8 @@
       T('stress', 0.8, 'Stress → CRH → ACTH → cortisol (HPA axis).'), T('hypo', 0.6, 'Hypoglycemia activates the HPA axis.'), T('fastdur', 0.15, 'Fasting modestly raises cortisol.'),
     ], { ent: 'cortisol' }),
     N('gh', 'Growth hormone', 'pituitary', 'hormone', [
-      T('hypo', 0.8, 'Hypoglycemia stimulates GH (hypothalamic GHRH↑/somatostatin↓).'), T('glucose', -0.3, 'Hyperglycemia suppresses GH.'), T('fastdur', 0.4, 'Fasting increases GH pulse amplitude.'),
-      T('exercise', 0.4, 'Exercise stimulates GH.'), T('ffa', -0.3, 'Free fatty acids suppress GH secretion.'),
+      T('hypo', 1.1, 'Hypoglycemia is a potent GH stimulus (hypothalamic GHRH↑/somatostatin↓) — the basis of the insulin tolerance test for GH reserve.'), T('glucose', -0.3, 'Hyperglycemia suppresses GH.'), T('fastdur', 0.4, 'Fasting increases GH pulse amplitude.'),
+      T('exercise', 0.4, 'Exercise stimulates GH.'), T('ffa', -0.15, 'Free fatty acids suppress GH secretion (a weaker signal that hypoglycemia overrides).'),
     ], { ent: 'gh' }),
 
     // ---------------- systemic metabolites ----------------
@@ -92,7 +92,7 @@
     // ---------------- LIVER ----------------
     N('h_ins', 'Hepatic insulin signaling (IR→Akt)', 'liver', 'signal', [
       T('insulin', 1, 'Portal insulin binds hepatic insulin receptors → IRS → PI3K → Akt.'), T('sens', 1, 'Hepatic insulin resistance: lipogenic sn-1,2-DAG activates PKCε, which phosphorylates insulin-receptor kinase Thr1160 and inhibits it (Petersen & Shulman 2018).'), T('hdag', -0.25, 'Hepatic DAG accumulation (from fatty-acid re-esterification) → PKCε → INSR Thr1160 inhibition.'),
-      T('cortisol', -0.15, 'Glucocorticoids antagonize insulin action.'), T('gh', -0.15, 'GH is diabetogenic (post-receptor antagonism).'),
+      T('cortisol', -0.3, 'Glucocorticoids cause hepatic insulin resistance (post-receptor) — steroid-induced hyperglycemia.'), T('gh', -0.15, 'GH is diabetogenic (post-receptor antagonism).'),
     ], { ent: 'akt' }),
     N('h_pka', 'Hepatic cAMP → PKA', 'liver', 'signal', [
       T('glucagon', 0.9, 'Glucagon receptor → Gs → adenylyl cyclase → cAMP → PKA (Molina Ch7).'), T('epi', 0.25, 'β2/α1-adrenergic input (smaller than glucagon in humans).'),
@@ -142,7 +142,7 @@
     ], { mode: 'sum' }),
     N('gng', 'Hepatic gluconeogenesis', 'liver', 'pathway', [
       T('gngsub', 0.9, 'Substrate availability is a major determinant of gluconeogenic flux.'), T('gngenes', 0.3, 'Enzyme capacity (PEPCK, G6Pase) set by FOXO1, CREB, GR.'),
-      T('pc', 0.3, 'Pyruvate carboxylase activation by acetyl-CoA.'), T('fbp', 0.35, 'FBPase-1 released from F-2,6-BP inhibition.'),
+      T('pc', 0.5, 'Pyruvate carboxylase activation by acetyl-CoA from lipolysis-driven β-oxidation — a major controller of fasting gluconeogenesis (Perry 2015).'), T('fbp', 0.35, 'FBPase-1 released from F-2,6-BP inhibition.'),
       T('glucose', -0.6, 'Glucose effectiveness: hyperglycemia per se suppresses hepatic glucose production (substrate cycling at glucokinase/G6Pase), independent of hormones.'),
     ], { ent: 'gluconeogenesis' }),
     N('oaa', 'OAA available to TCA', 'liver', 'signal', [
@@ -165,7 +165,7 @@
     // ---------------- MUSCLE ----------------
     N('m_ins', 'Muscle insulin signaling (Akt)', 'muscle', 'signal', [
       T('insulin', 0.9, 'Insulin receptor → IRS-1 → PI3K → Akt2.'), T('sens', 1, 'Muscle insulin resistance: sarcolemmal sn-1,2-DAG → PKCθ → IRS-1 Ser1101 phosphorylation → ↓ PI3K/Akt → ↓ GLUT4 translocation. Glucose transport is the rate-controlling defect (Petersen & Shulman 2018).'),
-      T('cortisol', -0.2, 'Glucocorticoids impair post-receptor signaling.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.25, 'Lipid-induced insulin resistance: intramyocellular DAG → PKCθ. During lipid infusion intracellular G6P falls rather than rises, so impaired GLUT4 transport, not the classic Randle substrate-competition cycle, is the main defect.'),
+      T('cortisol', -0.4, 'Glucocorticoids impair post-receptor signaling (↓ IRS-1/PI3K/Akt) and GLUT4 translocation — a major cause of steroid-induced hyperglycemia.'), T('gh', -0.2, 'GH antagonizes insulin action.'), T('ffa', -0.4, 'Lipid-induced insulin resistance: intramyocellular DAG → PKCθ. During lipid infusion intracellular G6P falls rather than rises, so impaired GLUT4 transport, not the classic Randle substrate-competition cycle, is the main defect.'),
     ], { ent: 'akt' }),
     N('m_ampk', 'Muscle AMPK', 'muscle', 'signal', [T('amp', 1, 'Rising AMP:ATP activates AMPK.')], { ent: 'ampk' }),
     N('m_contr', 'Contraction signals (Ca²⁺/CaMKII, Rac1)', 'muscle', 'signal', [T('exercise', 0.9, 'Excitation releases SR Ca²⁺; mechanical stress activates Rac1.')], { ent: 'camk' }),
@@ -246,7 +246,7 @@
     { id: 'ins_dn', label: '↓ Insulin', focus: 'insulin', apply: { inputs: { betacap: 0.15 } }, note: 'Loss of β-cell secretion.' },
     { id: 'gcg_up', label: '↑ Glucagon', focus: 'glucagon', apply: { exo: { glucagon: 3 } }, clampInsulin: true, note: 'Glucagon infusion with insulin held at basal (pancreatic clamp, as in human glucagon studies) — the liver responds while skeletal muscle barely does. Untick "hold insulin" to see how the resulting hyperglycemia recruits insulin and blunts ketogenesis.' },
     { id: 'gcg_dn', label: '↓ Glucagon', focus: 'glucagon', apply: { clamps: { glucagon: 0.3 } }, note: 'Glucagon held low (e.g., receptor antagonism).' },
-    { id: 'cort_up', label: '↑ Cortisol', focus: 'cortisol', apply: { exo: { cortisol: 2.5 } }, note: 'Glucocorticoid excess. Also see the HPA axis: CRH and ACTH fall.' , axis: 'hpa', axisPreset: 'exo' },
+    { id: 'cort_up', label: '↑ Cortisol', focus: 'cortisol', apply: { exo: { cortisol: 2.5 } }, note: 'Glucocorticoid excess: insulin resistance, ↑ gluconeogenic enzymes and proteolysis. With normal β-cells, compensatory hyperinsulinemia keeps fasting glucose near normal — overt steroid-induced hyperglycemia appears after meals or when β-cell reserve is limited (try lowering β-cell capacity). Also see the HPA axis: CRH and ACTH fall.' , axis: 'hpa', axisPreset: 'exo' },
     { id: 'cort_dn', label: '↓ Cortisol', focus: 'cortisol', apply: { clamps: { cortisol: 0.25 } }, note: 'Adrenal insufficiency (metabolic view).', axis: 'hpa', axisPreset: 'primary' },
     { id: 'gh_up', label: '↑ Growth hormone', focus: 'gh', apply: { exo: { gh: 3 } }, note: 'GH excess: lipolytic and diabetogenic.' },
     { id: 'epi_up', label: '↑ Catecholamines', focus: 'epi', apply: { exo: { epi: 3 } }, note: 'Epinephrine infusion / pheochromocytoma-like.' },

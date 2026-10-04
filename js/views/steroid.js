@@ -37,21 +37,31 @@
   const ZONES = {
     zg: { label: 'Zona glomerulosa', drive: 'angii', w: { preg: { hsd3b2: 1 }, prog: { cyp21: 1 }, doc: { cyp11b2: 1 }, b: { cyp11b2: 1 }, oh18b: { cyp11b2: 1 } } },
     zf: { label: 'Zona fasciculata', drive: 'acth', leak: { doc: 0.2, b: 1 }, w: { preg: { cyp17oh: 0.8, hsd3b2: 0.2 }, oh17preg: { hsd3b2: 0.9, cyp17ly: 0.1 }, prog: { cyp17oh: 0.7, cyp21: 0.3 }, oh17p: { cyp21: 0.95, cyp17ly: 0.05 }, s11: { cyp11b1: 1 }, doc: { cyp11b1: 1 } } },
-    zr: { label: 'Zona reticularis', drive: 'acth', w: { preg: { cyp17oh: 0.9, hsd3b2: 0.1 }, oh17preg: { cyp17ly: 0.9, hsd3b2: 0.1 }, dhea: { hsd3b2: 0.15 }, prog: { cyp17oh: 1 }, oh17p: { cyp17ly: 0.6, cyp21: 0.4 }, s11: { cyp11b1: 1 }, doc: { cyp11b1: 1 } } },
+    zr: { label: 'Zona reticularis', drive: 'acth', leak: { dhea: 0.85 }, w: { preg: { cyp17oh: 0.9, hsd3b2: 0.1 }, oh17preg: { cyp17ly: 0.9, hsd3b2: 0.1 }, dhea: { hsd3b2: 0.15 }, prog: { cyp17oh: 1 }, oh17p: { cyp17ly: 0.6, cyp21: 0.4 }, s11: { cyp11b1: 1 }, doc: { cyp11b1: 1 } } },
   };
-  const ZONE_SHARE = { zg: 0.12, zf: 0.6, zr: 0.28 }; // relative cholesterol throughput at baseline
-  const PERIPH = { a4: { hsd17b: 0.15, cyp19: 0.02 }, t: { srd5a2: 0.1, cyp19: 0.02 } };
+  const ZONE_SHARE = { zg: 0.12, zf: 0.6, zr: 0.28 }; // relative cholesterol throughput at baseline (drawn flux)
+  // Zona glomerulosa is drawn wide so its pathway is visible, but by mass it secretes ~1% as much
+  // steroid as the fasciculata (aldosterone ~0.1–0.15 mg/day vs cortisol ~15–20 mg/day), so its
+  // contribution to circulating levels is scaled down. Otherwise a blocked ZG would flood the blood with DOC.
+  const ZONE_MASS = { zg: 0.08, zf: 1, zr: 1 };
+  // Peripheral conversions; dhea→a4 is 3β-HSD type 1 (liver, skin, placenta), which is spared in 3β-HSD2 deficiency.
+  const PERIPH = { dhea: { hsd3b1: 0.04 }, a4: { hsd17b: 0.15, cyp19: 0.02 }, t: { srd5a2: 0.1, cyp19: 0.02 } };
+  // Share of normal receptor activity contributed by each steroid (relative-level weights; sum = 1).
+  // MR: aldosterone dominates; DOC (~1/20 potency, similar secretion) and corticosterone add a little.
+  // Cortisol is kept off the renal MR by 11β-HSD2. GR: cortisol dominates; corticosterone is a weak glucocorticoid.
+  const SPILL = 0.6; // fraction of blocked substrate re-routed when another enzyme can take it
+  const MC_W = { aldo: 0.85, doc: 0.1, b: 0.05 }, GC_W = { cortisol: 0.94, b: 0.06 };
 
   const DEFECTS = [
     { id: 'cyp21', label: '21-hydroxylase deficiency (classic)', set: { cyp21: 0.02 }, text: '>90% of CAH. Cortisol (± aldosterone) cannot be made; ACTH rises and drives precursors (17-OHP) into the androgen branch → virilization of 46,XX infants; salt-wasting crisis in the classic form (Speiser 2018).' },
-    { id: 'cyp21nc', label: '21-hydroxylase (non-classic, partial)', set: { cyp21: 0.25 }, text: 'Partial activity: cortisol maintained at the cost of higher ACTH; mild androgen excess (hirsutism, irregular menses) presenting later.' },
+    { id: 'cyp21nc', label: '21-hydroxylase (non-classic, partial)', set: { cyp21: 0.5 }, text: 'Partial activity (~20–50%): cortisol maintained at the cost of mildly higher ACTH; 17-OHP raised (diagnosis: ACTH-stimulated 17-OHP); mild androgen excess (hirsutism, acne, irregular menses) presenting later; no salt wasting.' },
     { id: 'cyp11b1', label: '11β-hydroxylase deficiency', set: { cyp11b1: 0.03 }, text: 'Cortisol ↓, ACTH ↑ → 11-deoxycortisol and **DOC** accumulate. DOC is a mineralocorticoid → **hypertension, hypokalemia, low renin**; androgens ↑ → virilization.' },
     { id: 'cyp17', label: '17α-hydroxylase deficiency', set: { cyp17oh: 0.02, cyp17ly: 0.02 }, text: 'No cortisol or sex steroids; flux is forced down the mineralocorticoid path: DOC and corticosterone ↑ → hypertension, hypokalemia, suppressed renin/aldosterone. 46,XY undervirilized; absent puberty (Miller & Auchus 2011).' },
     { id: 'hsd3b2', label: '3β-HSD2 deficiency', set: { hsd3b2: 0.03 }, text: 'Δ5 steroids (pregnenolone, 17-OH-pregnenolone, DHEA) accumulate; cortisol and aldosterone fall (salt wasting). Weak DHEA causes mild virilization in 46,XX and undervirilization in 46,XY.' },
     { id: 'star', label: 'Lipoid CAH (StAR)', set: { cyp11a1: 0.03 }, text: 'Cholesterol cannot enter mitochondria: all adrenal and gonadal steroids are deficient; cholesterol esters accumulate and destroy the cells.' },
     { id: 'cyp11b2', label: 'Aldosterone synthase deficiency', set: { cyp11b2: 0.03 }, text: 'Isolated aldosterone deficiency: salt wasting, hyperkalemia, ↑ renin; cortisol and androgens normal; corticosterone/18-OH-B pattern depends on the step affected.' },
     { id: 'srd5a2', label: '5α-reductase type 2 deficiency (periphery)', set: { srd5a2: 0.05 }, text: 'Adrenal output normal; DHT low (undervirilized external genitalia in 46,XY).' },
-    { id: 'cyp19', label: 'Aromatase deficiency (periphery)', set: { cyp19: 0.05 }, text: 'Estrogens low, androgens high; in pregnancy maternal virilization.' },
+    { id: 'cyp19', label: 'Aromatase deficiency (periphery)', set: { cyp19: 0.05 }, text: 'Estrogens low. Androgen excess arises mainly where aromatase normally acts — ovary and placenta (maternal and 46,XX fetal virilization in pregnancy) — so adrenal output here is unchanged. In men: tall stature with unfused epiphyses and osteoporosis, showing estrogen (not testosterone) closes growth plates.' },
   ];
   EP.data.steroidDefects = DEFECTS;
 
@@ -73,14 +83,22 @@
           const capacity = outs.reduce((a, r) => a + (m === 'chol' ? 1 : Z.w[m][r[2]]), 0) || 0;
           // fraction converted onward vs. retained (if enzymes deficient, more is retained)
           // a small fraction of every intermediate is secreted as such (basal precursor output)
-          const conv = capacity ? Math.min(1, wsum / capacity) * (m === 'chol' ? 1 : 1 - ((Z.leak && Z.leak[m]) || 0.04)) : 0;
+          // When one branch is blocked, the accumulating substrate is partly re-routed through any
+          // remaining fully active enzyme (mass action: e.g. pregnenolone → progesterone → DOC in 17α-hydroxylase deficiency).
+          const alt = outs.some((r) => m !== 'chol' && (act[r[2]] == null || act[r[2]] >= 0.5));
+          const rFrac = capacity ? Math.min(1, wsum / capacity) : 0;
+          const conv = capacity ? (alt ? rFrac + (1 - rFrac) * SPILL : rFrac) * (m === 'chol' ? 1 : 1 - ((Z.leak && Z.leak[m]) || 0.04)) : 0;
           const moved = amt * conv;
-          outs.forEach((r, i) => { const f = wsum ? moved * ws[i] / wsum : 0; pool[r[1]] = (pool[r[1]] || 0) + f; flux[zk + ':' + r[0] + '>' + r[1] + ':' + r[2]] = f; });
+          // normal share is split by enzyme activity; the spilled share goes only to the active enzymes
+          const spillAmt = alt && capacity ? amt * (1 - rFrac) * SPILL * (conv / ((rFrac + (1 - rFrac) * SPILL) || 1)) : 0;
+          const okW = outs.map((r, i) => (act[r[2]] == null || act[r[2]] >= 0.5 ? ws[i] : 0)); const okSum = okW.reduce((a, b) => a + b, 0);
+          outs.forEach((r, i) => { const f = (wsum ? (moved - spillAmt) * ws[i] / wsum : 0) + (okSum ? spillAmt * okW[i] / okSum : 0); pool[r[1]] = (pool[r[1]] || 0) + f; flux[zk + ':' + r[0] + '>' + r[1] + ':' + r[2]] = f; });
           zoneOut[m] = amt - moved; // retained / secreted precursor
         });
-        Object.keys(zoneOut).forEach((m) => { lev[m] += zoneOut[m]; });
+        Object.keys(zoneOut).forEach((m) => { lev[m] += zoneOut[m] * ZONE_MASS[zk]; });
       });
-      // periphery: A4 → T → DHT/E2
+      // periphery: DHEA → A4 (3β-HSD1), A4 → T → DHT/E2
+      const pA4 = lev.dhea * PERIPH.dhea.hsd3b1; lev.a4 += pA4;
       const a4 = lev.a4; const tA = a4 * PERIPH.a4.hsd17b * (act.hsd17b != null ? act.hsd17b : 1);
       lev.t += tA; flux['p:a4>t:hsd17b'] = tA;
       const e1 = a4 * PERIPH.a4.cyp19 * (act.cyp19 != null ? act.cyp19 : 1); lev.e1 += e1; flux['p:a4>e1:cyp19'] = e1;
@@ -90,20 +108,21 @@
     };
     const baseRun = run(1, 1); // normal enzymes (act = {})
     const base = baseRun.lev;
+    const activity = (W, lev) => Object.keys(W).reduce((a, k) => a + W[k] * lev[k] / base[k], 0);
     act = actIn;
     // feedback iteration
     let acth = 1, angii = 1, out;
     for (let i = 0; i < 80; i++) {
       out = run(acth, angii);
       // activity = Σ amount × relative receptor potency (teaching approximations)
-      const gc = (out.lev.cortisol + 0.03 * out.lev.b) / (base.cortisol + 0.03 * base.b) + (exoGC || 0);
-      const mc = (out.lev.aldo + 0.5 * out.lev.doc + 0.03 * out.lev.b) / (base.aldo + 0.5 * base.doc + 0.03 * base.b);
+      const gc = activity(GC_W, out.lev) + (exoGC || 0);
+      const mc = activity(MC_W, out.lev);
       const tA = EP.clamp(Math.pow(Math.max(gc, 0.02), -1.1), 0.05, 12);
       const tR = EP.clamp(Math.pow(Math.max(mc, 0.02), -1.2), 0.05, 10);
       acth += 0.3 * (tA - acth); angii += 0.3 * (tR - angii);
     }
     const rel = {}; Object.keys(MET).forEach((k) => { rel[k] = (out.lev[k] + 1e-6) / (base[k] + 1e-6); });
-    const mcNow = (out.lev.aldo + 0.5 * out.lev.doc + 0.03 * out.lev.b) / (base.aldo + 0.5 * base.doc + 0.03 * base.b);
+    const mcNow = activity(MC_W, out.lev);
     return { rel, flux: out.flux, baseFlux: baseRun.flux, acth, renin: angii, mc: mcNow };
   }
 

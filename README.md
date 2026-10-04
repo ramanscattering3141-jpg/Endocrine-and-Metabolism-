@@ -28,6 +28,8 @@ js/data/*.js          Entities, references, pathways, axes, metabolic model, fat
 js/views/*.js         Pages
 ```
 
+Physiology regression tests: `node tests/physiology.test.js` runs every axis preset, adrenal enzyme defect, metabolic state and what-if perturbation and checks each hormone/flux against its textbook direction of change (no dependencies; exits non-zero on failure). Add an expectation there whenever you add a preset.
+
 New pathways are data: add an object to `EP.pathways` (nodes, edges with `why` text, steps, clinical states) and register it in a page in `js/app.js`.
 
 ## Sources and model honesty
