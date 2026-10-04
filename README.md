@@ -12,7 +12,7 @@ Open `index.html` in a browser (no build step, no server needed), or serve the f
 | Hypothalamus & pituitary | Dynamic HPA, HPT, HPG (♂/♀ incl. LH-surge positive feedback), GH–IGF-1, prolactin (dopamine-dominant), ADH and RAAS axes with disorder presets, lab-pattern interpretation and time courses |
 | Thyroid | Follicular cell (NIS → pendrin → TPO → coupling → release) and target-cell deiodinase/TR action |
 | Adrenal | Steroidogenesis flux map across the three zones with enzyme-deficiency mode (ACTH and renin feedback re-route flux), catecholamine synthesis, cortisol actions |
-| Pancreas & glucose | **Insulin prototype**: animated GLUT4 cell (11 steps, play/step/slow-mo, insulin resistance, contraction route), signaling map with organ effects, whole-body read-out; glucagon liver-vs-muscle simulation; β-cell coupling |
+| Pancreas & glucose | **Insulin resistance lab** (Petersen & Shulman 2018): dose–response curves, direct vs indirect control of glucose output, lipid infusion vs Randle, GTT reader, evidence board; **Insulin prototype**: animated GLUT4 cell (11 steps, play/step/slow-mo, insulin resistance, contraction route), signaling map with organ effects, whole-body read-out; glucagon liver-vs-muscle simulation; β-cell coupling |
 | Calcium & bone | Ca/PTH/calcitriol/FGF23 network separating direct from vitamin-D-mediated effects; nephron/enterocyte and RANK/RANKL/OPG diagrams |
 | Reproduction | Testis, ovary two-cell model, androgen metabolism, menstrual cycle explorer, feto-placental unit |
 | Metabolism | Flux simulator (8 organs, 17 knobs, presets: fed, fasting, prolonged fasting, exercise, stress, insulin resistance, T1D, T2D), hepatocyte map, acetyl-CoA hub, malonyl-CoA/CPT-1 module, amino acids & urea cycle, lipoproteins |
