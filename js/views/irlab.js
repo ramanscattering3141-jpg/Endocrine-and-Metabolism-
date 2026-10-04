@@ -1,16 +1,15 @@
-/* Insulin resistance lab — interactive panels built from Petersen & Shulman, Physiol Rev 2018.
- * 1. Insulin dose–response curves (Fig. 7; ED50s from sect. II–IV) and the "selective" hepatic IR question.
- * 2. Direct vs indirect control of hepatic glucose production (Figs. 3 and 6; Rothman 1991; Perry 2015).
- * 3. Lipid infusion: Randle prediction vs ¹³C/³¹P-MRS observation (Fig. 12).
- * 4. Reading a glucose tolerance test (Fig. 10).
- * 5. Evidence board for proposed mediators (sects. V–VII) and the integrated model (Fig. 19).
- * All curves are schematic teaching shapes anchored to the numbers quoted in the paper. */
+/* Insulin action & resistance — a visual guide to Petersen & Shulman, Physiol Rev 2018.
+ * The page follows the review section by section (I–VIII). Every section is a collapsible chapter of
+ * diagrams (js/views/irguide1.js = I–IV, irguide2.js = V–VIII) built with EP.flow (js/core/flowdiagram.js).
+ * This file holds the shared helpers, the interactive experiments and the page assembly.
+ * All curves are schematic teaching shapes anchored to numbers quoted in the review. */
 (function () {
   'use strict';
   const EP = window.EP;
   const { h, s } = EP;
+  const IRV = (EP.irv = EP.irv || {});
 
-  // ------------------------------------------------------------------ small SVG chart helper
+  // ------------------------------------------------------------------ chart helpers
   function chart(W, H, pad) {
     const svg = s('svg', { class: 'irl-svg', viewBox: `0 0 ${W} ${H}`, role: 'img' });
     const P = Object.assign({ l: 52, r: 16, t: 14, b: 40 }, pad || {});
@@ -40,21 +39,53 @@
     items.forEach((it, i) => { const b = h('button.chip' + (it.on || (!multi && i === 0) ? '.on' : ''), { 'data-id': it.id, onclick: () => { if (multi) b.classList.toggle('on'); else bar.querySelectorAll('.chip').forEach((x) => x.classList.toggle('on', x === b)); on(it.id, b.classList.contains('on')); } }, it.label); bar.appendChild(b); });
     return bar;
   };
-  const panel = (n, title, q) => h('div.irl-head', h('span.irl-num', String(n)), h('div', h('h2', title), q ? h('p.muted', q) : null));
-  const fig = (t) => h('span.irl-fig', t);
+  Object.assign(IRV, { chart, line, text, axes, slider, chips });
 
-  // ================================================================== 1. dose–response
-  function doseResponse(el) {
-    el.appendChild(panel(1, 'Insulin dose–response: what "resistance" means', 'Insulin resistance is a shifted dose–response curve, not an on/off switch, so hyperinsulinemia can compensate. Different insulin actions sit at different points on the insulin scale.'));
+  /** Small static line chart: {w,h,x:[a,b],y:[a,b],xt:[[v,l]],yt, xl, yl, series:[{f|pts,col,dash,w,label,lx,ly}], bands:[{x0,x1,col,label}], vl:[{x,label}], logx} */
+  IRV.mini = function (o) {
+    const c = chart(o.w || 420, o.h || 220, o.pad || { l: 60, b: 36, r: 14, t: 12 });
+    const lg = (v) => (o.logx ? Math.log10(v) : v);
+    const X = (v) => c.P.l + (lg(v) - lg(o.x[0])) / (lg(o.x[1]) - lg(o.x[0])) * c.iw;
+    const Y = (v) => c.P.t + (1 - (v - o.y[0]) / (o.y[1] - o.y[0])) * c.ih;
+    (o.bands || []).forEach((b) => { c.g.appendChild(s('rect', { x: X(b.x0), y: c.P.t, width: X(b.x1) - X(b.x0), height: c.ih, style: `fill:color-mix(in srgb, ${b.col || 'var(--accent)'} 13%, transparent)` })); if (b.label) c.g.appendChild(text((X(b.x0) + X(b.x1)) / 2, c.P.t + 12, b.label, `fill:${b.col || 'var(--accent)'};font-weight:600`, 'middle')); });
+    axes(c, (o.xt || []).map(([v, l]) => [X(v), l]), (o.yt || []).map(([v, l]) => [Y(v), l]), o.xl, o.yl);
+    (o.series || []).forEach((sr) => {
+      let pts = sr.pts;
+      if (sr.f) { pts = []; for (let i = 0; i <= 160; i++) { const v = o.logx ? Math.pow(10, lg(o.x[0]) + (lg(o.x[1]) - lg(o.x[0])) * i / 160) : o.x[0] + (o.x[1] - o.x[0]) * i / 160; pts.push([v, sr.f(v)]); } }
+      c.g.appendChild(line(pts.map(([a, b]) => [X(a), Y(b)]), `stroke:${sr.col};stroke-width:${sr.w || 2.6};` + (sr.dash ? `stroke-dasharray:${sr.dash}` : '')));
+      if (sr.label) c.g.appendChild(text(X(sr.lx), Y(sr.ly), sr.label, `fill:${sr.col};font-weight:700`, sr.la || 'start'));
+    });
+    (o.vl || []).forEach((v) => { c.g.appendChild(s('line', { x1: X(v.x), x2: X(v.x), y1: c.P.t, y2: c.P.t + c.ih, style: `stroke:${v.col || 'var(--faint)'};stroke-dasharray:4 3` })); if (v.label) c.g.appendChild(text(X(v.x) + 4, c.P.t + c.ih - 6, v.label, `fill:${v.col || 'var(--muted)'}`)); });
+    (o.marks || []).forEach((m) => { c.g.appendChild(s('circle', { cx: X(m.x), cy: Y(m.y), r: 4, style: `fill:${m.col}` })); if (m.label) c.g.appendChild(text(X(m.x) + (m.dx || 6), Y(m.y) + (m.dy || -6), m.label, `fill:${m.col};font-weight:600`, m.la)); });
+    c.svg.classList.add('irv-mini');
+    return c.svg;
+  };
+
+  // ------------------------------------------------------------------ layout helpers
+  /** A figure block: number tag, title, one-line take-home, then content. */
+  IRV.fig = (num, title, take, ...kids) => h('section.irv-fig', h('div.irv-fh', num ? h('span.irv-fn', num) : null, h('h3', title)), take ? h('p.irv-take', { html: EP.md(take) }) : null, ...kids);
+  /** Icon bullet tiles: [[icon, markdown]] */
+  IRV.pts = (items) => h('ul.irv-pts', items.map(([ic, t]) => h('li', h('b', ic), h('span', { html: EP.md(t) }))));
+  /** Collapsible evidence list: rows [[verdict y|n|m|q, model, result]] */
+  IRV.ev = (title, rows, open) => h('details.irv-ev', { open: !!open }, h('summary', `🔬 ${title} (${rows.length})`),
+    h('div.irv-evrows', rows.map(([v, m, r]) => h('div.irv-evr', h('i.' + v, { title: { y: 'supports', n: 'argues against', m: 'mixed / partial', q: 'open question' }[v] }, { y: '✓', n: '✗', m: '~', q: '?' }[v]), h('b', { html: EP.md(m) }), h('span', { html: EP.md(r) })))));
+  /** Cards: [{t, p, v:[cls,label], ico}] */
+  IRV.cards = (items) => h('div.irv-cards', items.map((c) => h('div.irv-card', h('h4', c.ico || null, h('span', { html: EP.md(c.t) })), h('p', { html: EP.md(c.p) }), c.v ? h('span.irv-verdict.' + c.v[0], c.v[1]) : null)));
+  IRV.chipRow = (items) => h('div.irv-chips', items.map(([cls, t]) => h('span.irv-chip.' + cls, { html: EP.md(t) })));
+  IRV.cap = (t) => h('p.irv-cap', { html: EP.md(t) });
+
+  // ================================================================== interactive: dose–response (Fig. 7)
+  IRV.doseResponse = function () {
+    const el = h('div');
     // EC50 in µU/mL of the concentration each tissue sees; the liver sees portal insulin (≈ 2.5× peripheral).
     const PROC = [
-      { id: 'lip', label: 'Adipose: suppression of lipolysis', ec: 20, n: 2.2, c: 'var(--tr0)', portal: false, note: 'ED50 ≈ 20 µU/mL — the most insulin-sensitive action' },
-      { id: 'srebp', label: 'Liver: SREBP-1c / lipogenic program', ec: 8, n: 1.6, c: 'var(--tr3)', portal: true, note: '≈ 4× more sensitive than the FOXO1 arm (schematic)' },
-      { id: 'gly', label: 'Liver: glycogen synthesis / FOXO1 inhibition', ec: 32, n: 1.6, c: 'var(--tr4)', portal: true, note: 'half-max at portal insulin ≈ 20–25 µU/mL for glycogen synthesis' },
-      { id: 'glu', label: 'Whole-body glucose uptake (mostly muscle)', ec: 60, n: 1.6, c: 'var(--tr1)', portal: false, note: 'ED50 ≈ 60 µU/mL; maximal only at > 200 µU/mL' },
+      { id: 'lip', label: 'WAT: suppress lipolysis', ec: 20, n: 2.2, c: 'var(--tr0)', portal: false, note: 'ED50 ≈ 20 µU/mL' },
+      { id: 'srebp', label: 'Liver: SREBP-1c (lipogenic)', ec: 8, n: 1.6, c: 'var(--tr3)', portal: true, note: '~4× more sensitive than FOXO1 arm' },
+      { id: 'gly', label: 'Liver: glycogen / FOXO1 off', ec: 32, n: 1.6, c: 'var(--tr4)', portal: true, note: 'half-max at portal 20–25 µU/mL' },
+      { id: 'glu', label: 'Muscle: glucose uptake', ec: 60, n: 1.6, c: 'var(--tr1)', portal: false, note: 'ED50 ≈ 60; max only > 200' },
     ];
     const st = { rec: 100, post: 0, ins: 10 };
-    const c = chart(760, 330, { l: 56, b: 44 });
+    const c = chart(760, 320, { l: 56, b: 44 });
     const lx0 = Math.log10(1), lx1 = Math.log10(1000);
     const X = (i) => c.P.l + (Math.log10(i) - lx0) / (lx1 - lx0) * c.iw, Y = (v) => c.P.t + (1 - v) * c.ih;
     const resp = (p, ins, defect) => {
@@ -65,19 +96,18 @@
     };
     const read = h('div.irl-read');
     const ctrl = h('div.irl-ctrl',
-      slider('Surface insulin receptors remaining', 3, 100, 1, 100, (v) => v + '%', (v) => { st.rec = v; draw(); }),
-      slider('Post-receptor defect (DAG → PKCε / PKCθ)', 0, 1, 0.05, 0, (v) => (v === 0 ? 'none' : v < 0.4 ? 'mild' : v < 0.75 ? 'moderate' : 'severe'), (v) => { st.post = v; draw(); }),
-      slider('Plasma (peripheral) insulin', 0, 1, 0.005, Math.log10(10) / 3, (v) => Math.pow(10, v * 3).toFixed(0) + ' µU/mL', (v) => { st.ins = Math.pow(10, v * 3); draw(); }));
-    const presets = chips([{ id: 'norm', label: 'Normal' }, { id: 'rec', label: 'Receptor loss only (−80%)' }, { id: 'ir', label: 'Typical obesity IR (post-receptor)' }, { id: 'comp', label: 'IR + compensatory hyperinsulinemia' }], (id) => {
+      slider('Surface insulin receptors', 3, 100, 1, 100, (v) => v + '%', (v) => { st.rec = v; draw(); }),
+      slider('Post-receptor defect (e.g. DAG → PKCε)', 0, 1, 0.05, 0, (v) => (v === 0 ? 'none' : v < 0.4 ? 'mild' : v < 0.75 ? 'moderate' : 'severe'), (v) => { st.post = v; draw(); }),
+      slider('Plasma insulin', 0, 1, 0.005, Math.log10(10) / 3, (v) => Math.pow(10, v * 3).toFixed(0) + ' µU/mL', (v) => { st.ins = Math.pow(10, v * 3); draw(); }));
+    const presets = chips([{ id: 'norm', label: 'Normal' }, { id: 'rec', label: 'Receptor loss only (−80%)' }, { id: 'ir', label: 'Obesity IR (post-receptor)' }, { id: 'comp', label: '+ compensatory hyperinsulinemia' }], (id) => {
       const set = { norm: [100, 0, 10], rec: [20, 0, 10], ir: [80, 0.6, 10], comp: [80, 0.6, 25] }[id];
       [st.rec, st.post, st.ins] = set; ctrl.children[0].set(set[0]); ctrl.children[1].set(set[1]); ctrl.children[2].set(Math.log10(set[2]) / 3); draw();
     });
-    const key = EP.colorKey([['Curves', PROC.map((p) => ({ line: p.c, label: p.label })).concat([{ line: 'var(--muted)', dash: '5 4', label: 'Dashed = normal; solid = with the defects you set' }, { fill: 'color-mix(in srgb, var(--accent) 14%, transparent)', label: 'Physiological peripheral insulin, ~5–60 µU/mL' }, { line: 'var(--text)', w: 1.5, label: 'Current insulin level (slider)' }])]], { compact: true });
-    el.append(h('div.card', presets, h('div.irl-grid', h('div', c.svg, key), h('div', ctrl, read)),
-      h('p.small.muted', 'Hepatic curves are plotted against peripheral insulin but computed at the portal concentration (≈ 2.5× higher, Petersen & Shulman 2018). Receptor loss right-shifts the curve but lowers the maximum only when < ~10% of receptors remain (spare receptors); a post-receptor defect shifts it right **and** down (Fig. 7). EC50 values for lipolysis and glucose uptake are from the review; the SREBP-1c vs FOXO1 separation is schematic.'.replace(/\*\*(.+?)\*\*/g, '$1'))));
+    const key = EP.colorKey([['Curves', PROC.map((p) => ({ line: p.c, label: p.label })).concat([{ line: 'var(--muted)', dash: '5 4', label: 'Dashed = normal · solid = with your defects' }, { fill: 'color-mix(in srgb, var(--accent) 14%, transparent)', label: 'Normal plasma insulin range (~5–60)' }])]], { compact: true });
+    el.append(presets, h('div.irl-grid', h('div', c.svg, key), h('div', ctrl, read)));
     function draw() {
       c.clear();
-      axes(c, [1, 3, 10, 30, 100, 300, 1000].map((v) => [X(v), String(v)]), [0, 0.25, 0.5, 0.75, 1].map((v) => [Y(v), (v * 100) + '%']), 'Plasma insulin, µU/mL (log scale)', 'Response (% of max)');
+      axes(c, [1, 3, 10, 30, 100, 300, 1000].map((v) => [X(v), String(v)]), [0, 0.25, 0.5, 0.75, 1].map((v) => [Y(v), (v * 100) + '%']), 'Plasma insulin, µU/mL (log)', 'Response');
       c.g.appendChild(s('rect', { x: X(5), y: c.P.t, width: X(60) - X(5), height: c.ih, style: 'fill:color-mix(in srgb, var(--accent) 12%, transparent)' }));
       PROC.forEach((p) => {
         const pts = (def) => { const a = []; for (let i = 0; i <= 120; i++) { const ins = Math.pow(10, lx0 + (lx1 - lx0) * i / 120); a.push([X(ins), Y(resp(p, ins, def))]); } return a; };
@@ -85,48 +115,47 @@
         c.g.appendChild(line(pts(true), `stroke:${p.c};stroke-width:3`));
       });
       c.g.appendChild(s('line', { x1: X(st.ins), x2: X(st.ins), y1: c.P.t, y2: c.P.t + c.ih, style: 'stroke:var(--text);stroke-width:1.5' }));
-      // readout
       const rows = PROC.map((p) => { const n0 = resp(p, 10, false), now = resp(p, st.ins, true); const rel = now / n0; const cls = rel > 1.15 ? 'up' : rel < 0.87 ? 'dn' : 'eq';
-        return `<tr><td><span class="irl-sw" style="background:${p.c}"></span>${EP.esc(p.label)}<div class="small muted">${EP.esc(p.note)}</div></td><td class="qual ${cls}">${(now * 100).toFixed(0)}%</td><td class="small muted">${rel >= 1 ? '×' + rel.toFixed(1) : '×' + rel.toFixed(2)} vs normal fasting</td></tr>`; }).join('');
+        return `<tr><td><span class="irl-sw" style="background:${p.c}"></span>${EP.esc(p.label)}<div class="small muted">${EP.esc(p.note)}</div></td><td class="qual ${cls}">${(now * 100).toFixed(0)}%</td></tr>`; }).join('');
       const ratio = (i) => resp(PROC[i], st.ins, true) / resp(PROC[i], 10, false);
       const pct = (v) => Math.round(v * 100) + '%';
       let msg;
-      if (st.post > 0.3 && st.ins >= 18) msg = `**Compensation works — for every arm.** At ${st.ins.toFixed(0)} µU/mL, glucose uptake is back to ${pct(ratio(3))} and the SREBP-1c (lipogenic) arm to ${pct(ratio(1))} of normal-fasting values. The same receptor-level defect hits all branches, but hyperinsulinemia keeps lipogenesis running. Add substrate push (FFA re-esterification) and nutrient drivers (ChREBP, fructose, mTORC1) and steatosis follows, so no true pathway split ("selective" IR) is needed (Fig. 9).`;
-      else if (st.post > 0.3) msg = `**At fasting insulin, antilipolysis fails first:** suppression of lipolysis is only ${pct(ratio(0))} of normal. Its curve is steep, so even mild adipose insulin resistance raises fatty acid and glycerol delivery to liver and muscle — the trigger for ectopic lipid (sect. IV-E). Now raise insulin (or pick the compensation preset).`;
-      else if (st.rec < 100) msg = '**Receptor loss alone** only right-shifts the curves (spare receptors): a little extra insulin restores full responses. Obesity-related insulin resistance also lowers the maximum, which implies a post-receptor (signaling) defect (Fig. 7).';
-      else msg = 'Move the sliders or pick a preset. Compare where each action sits relative to the shaded physiological range.';
+      if (st.post > 0.3 && st.ins >= 18) msg = `**Hyperinsulinemia compensates every arm:** uptake ${pct(ratio(3))}, lipogenic arm ${pct(ratio(1))} of normal.`;
+      else if (st.post > 0.3) msg = `**Antilipolysis fails first:** only ${pct(ratio(0))} of normal → more fatty acid to liver & muscle.`;
+      else if (st.rec < 100) msg = '**Receptor loss alone:** curves shift right only (spare receptors). A little more insulin fixes it.';
+      else msg = 'Pick a preset or drag the sliders.';
       read.innerHTML = `<table class="labs irl-tab">${rows}</table><p>${EP.md(msg)}</p>`;
     }
     draw();
-  }
+    return el;
+  };
 
-  // ================================================================== 2. hepatic glucose production
-  function hgp(el) {
-    el.appendChild(panel(2, 'Who suppresses hepatic glucose production?', 'Insulin suppresses glycogenolysis directly in the liver but suppresses gluconeogenesis mostly indirectly, by shutting off adipose lipolysis (less acetyl-CoA to activate pyruvate carboxylase and less glycerol). The balance depends on how much glycogen is left.'));
+  // ================================================================== interactive: sources of HGP + key experiments (Figs. 3, 6)
+  IRV.hgp = function () {
+    const el = h('div');
     const st = { t: 12, sp: 'human', sc: 'normal' };
     // Rothman 1991 (humans): gluconeogenesis 64% of HGP over 0–22 h, 82% over 22–36 h, 96% over 36–54 h.
     const GNG = (t) => 6.5 * (t < 44 ? 1 : 1 - 0.3 * Math.min(1, (t - 44) / 20));
     const GLY = (t) => (st.sp === 'human' ? 6.0 * Math.exp(-0.065 * (t - 4)) : 6.0 * Math.exp(-0.32 * (t - 2)));
     const SC = {
-      normal: { label: 'Normal', hep: 0.85, adip: 1, text: 'Insulin stops net glycogenolysis in the liver (phosphorylase kinase ⊣, PP1 ↑) and suppresses adipose lipolysis, lowering hepatic acetyl-CoA, pyruvate carboxylase flux and glycerol supply.' },
-      tlko: { label: 'No hepatic insulin signaling (Akt1/2 + FOXO1 knockout)', hep: 0, adip: 1, text: 'Mice lacking hepatic Akt1, Akt2 and FOXO1 still suppress HGP normally in fasted clamps: the gluconeogenic component is controlled from adipose tissue. Only glycogenolysis — small after a fast — escapes control.' },
-      acetate: { label: 'Normal + acetate & glycerol infusion', hep: 0.85, adip: 1, block: true, text: 'Perry 2015: preventing the insulin-induced fall in hepatic acetyl-CoA (acetate) and replacing glycerol abolished insulin suppression of pyruvate carboxylase flux and HGP in fasted rats.' },
-      adipir: { label: 'Adipose insulin resistance', hep: 0.85, adip: 0.3, text: 'Lipolysis is not suppressed, so fatty acids keep acetyl-CoA high and gluconeogenesis continues. In a glycogen-depleted liver, impaired HGP suppression can mean adipose — not hepatic — insulin resistance.' },
-      aso: { label: 'Liver + WAT INSR knockdown', hep: 0, adip: 0, text: 'Antisense knockdown of the insulin receptor in liver and fat: insulin cannot suppress HGP…' },
-      atgl: { label: '… + atglistatin (ATGL inhibitor)', hep: 0, adip: 0, drug: true, text: '…but blocking lipolysis pharmacologically restores suppression of HGP even without insulin receptors in liver (Perry 2015) — the indirect pathway is sufficient.' },
-      t2d: { label: 'Type 2 diabetes', hep: 0.45, adip: 0.45, gngUp: 1.3, glyDn: 0.7, text: 'Basal HGP is raised entirely by gluconeogenesis (glycogen content and glycogenolysis are lower), and both direct and indirect suppression are impaired.' },
+      normal: { label: 'Normal', hep: 0.85, adip: 1, text: 'Insulin stops glycogen breakdown **directly** and shuts off lipolysis → ↓ acetyl-CoA & glycerol → ↓ gluconeogenesis **indirectly**.' },
+      tlko: { label: 'Liver can\'t respond (Akt1/2 + FoxO1 KO)', hep: 0, adip: 1, text: 'HGP is still suppressed: gluconeogenesis is controlled from fat. Only glycogenolysis escapes.' },
+      acetate: { label: '+ acetate & glycerol infusion', hep: 0.85, adip: 1, block: true, text: 'Clamp hepatic acetyl-CoA & glycerol supply → insulin can no longer suppress PC flux or HGP.' },
+      adipir: { label: 'Adipose insulin resistance', hep: 0.85, adip: 0.3, text: 'Lipolysis keeps going → acetyl-CoA stays high → gluconeogenesis continues. Looks like "hepatic" IR but is adipose IR.' },
+      aso: { label: 'INSR knockdown (liver + fat)', hep: 0, adip: 0, text: 'No insulin receptors in liver or fat: no suppression…' },
+      atgl: { label: '… + atglistatin', hep: 0, adip: 0, drug: true, text: '…block lipolysis with a drug and suppression returns — no hepatic INSR needed.' },
+      t2d: { label: 'Type 2 diabetes', hep: 0.45, adip: 0.45, gngUp: 1.3, glyDn: 0.7, text: 'Raised HGP is **all gluconeogenesis**; glycogen is lower. Direct and indirect suppression both impaired.' },
     };
-    const c = chart(560, 280, { l: 50, b: 42 });
-    const bars = chart(300, 280, { l: 44, b: 42 });
+    const c = chart(560, 270, { l: 50, b: 42 });
+    const bars = chart(300, 270, { l: 44, b: 42 });
     const X = (t) => c.P.l + t / 48 * c.iw, Y = (v) => c.P.t + (1 - v / 16) * c.ih;
     const info = h('div.irl-read');
     const tS = slider('Hours since last meal', 4, 48, 1, 12, (v) => v + ' h', (v) => { st.t = v; draw(); });
     const sp = chips([{ id: 'human', label: 'Human' }, { id: 'rat', label: 'Rat (glycogen gone overnight)' }], (id) => { st.sp = id; draw(); });
     const sc = chips(Object.keys(SC).map((k) => ({ id: k, label: SC[k].label })), (id) => { st.sc = id; draw(); });
-    const key = EP.colorKey([['Hepatic glucose production', [{ fill: 'color-mix(in srgb, var(--tr0) 55%, transparent)', label: 'Net glycogenolysis — controlled directly by hepatic insulin action' }, { fill: 'color-mix(in srgb, var(--tr1) 55%, transparent)', label: 'Gluconeogenesis — controlled mostly indirectly, via adipose lipolysis' }, { line: 'var(--text)', w: 1.5, label: 'Selected fasting time' }]]], { compact: true });
-    el.append(h('div.card', h('div.irl-row', h('div.small.muted', 'Species'), sp), h('div.irl-row', h('div.small.muted', 'Experiment'), sc), tS,
-      h('div.irl-grid', h('div', c.svg), h('div', bars.svg)), key, info,
-      h('p.small.muted', 'Human curve calibrated to Rothman 1991 (gluconeogenesis 64% of glucose production over the first 22 h, 82% over 22–36 h, 96% over 36–54 h); rat glycogen is almost exhausted after an overnight fast, which is why indirect control dominates rodent clamp studies. Suppression fractions are schematic.')));
+    const key = EP.colorKey([['Hepatic glucose production', [{ fill: 'color-mix(in srgb, var(--tr0) 55%, transparent)', label: 'Glycogenolysis — DIRECT insulin control' }, { fill: 'color-mix(in srgb, var(--tr1) 55%, transparent)', label: 'Gluconeogenesis — mostly INDIRECT (via fat)' }]]], { compact: true });
+    el.append(h('div.irl-row', h('div.small.muted', 'Species'), sp), h('div.irl-row', h('div.small.muted', 'Experiment'), sc), tS,
+      h('div.irl-grid', h('div', c.svg), h('div', bars.svg)), key, info);
     function draw() {
       c.clear(); bars.clear();
       const S = SC[st.sc];
@@ -137,8 +166,9 @@
       const area = (top, bot, col) => s('path', { d: 'M' + top.map((p) => p.join(',')).join('L') + 'L' + bot.slice().reverse().map((p) => p.join(',')).join('L') + 'Z', style: `fill:color-mix(in srgb, ${col} 50%, transparent);stroke:${col};stroke-width:1.5` });
       c.g.appendChild(area(a, a.map((p) => [p[0], Y(0)]), 'var(--tr1)'));
       c.g.appendChild(area(b, a, 'var(--tr0)'));
+      c.g.appendChild(text(X(30), Y(gng(30)) + 22, 'Gluconeogenesis', 'fill:var(--text);font-weight:700', 'middle'));
+      c.g.appendChild(text(X(9), Y(gng(9) + gly(9) / 2) + 4, 'Glycogenolysis', 'fill:var(--text);font-weight:700', 'middle'));
       c.g.appendChild(s('line', { x1: X(st.t), x2: X(st.t), y1: c.P.t, y2: c.P.t + c.ih, style: 'stroke:var(--text);stroke-width:1.5' }));
-      // bars: basal vs clamp
       const G0 = gly(st.t), N0 = gng(st.t);
       const lip = S.drug ? 1 : S.adip, indirect = S.block ? 0 : 0.75 * lip;
       const G1 = G0 * (1 - S.hep), N1 = N0 * (1 - indirect);
@@ -152,16 +182,17 @@
       });
       const sup = 1 - (G1 + N1) / (G0 + N0);
       const share = G0 / (G0 + N0);
-      info.innerHTML = `<div class="irl-stats"><div><b>${(share * 100).toFixed(0)}%</b><span>of basal HGP from glycogen at ${st.t} h</span></div><div><b class="${sup > 0.5 ? 'up' : 'dn'}">${(sup * 100).toFixed(0)}%</b><span>suppression of HGP by insulin</span></div><div><b>${(N0 ? (1 - N1 / N0) * 100 : 0).toFixed(0)}%</b><span>of gluconeogenesis suppressed (indirect)</span></div></div><p>${EP.md(S.text)}</p>`;
+      info.innerHTML = `<div class="irl-stats"><div><b>${(share * 100).toFixed(0)}%</b><span>of HGP from glycogen at ${st.t} h</span></div><div><b class="${sup > 0.5 ? 'up' : 'dn'}">${(sup * 100).toFixed(0)}%</b><span>HGP suppressed by insulin</span></div><div><b>${(N0 ? (1 - N1 / N0) * 100 : 0).toFixed(0)}%</b><span>of gluconeogenesis suppressed</span></div></div><p>${EP.md(S.text)}</p>`;
     }
     draw();
-  }
+    return el;
+  };
 
-  // ================================================================== 3. lipid infusion
-  function lipidInfusion(el) {
-    el.appendChild(panel(3, 'Lipid infusion: Randle was not the answer', 'Randle predicted that fatty-acid oxidation would back glucose up inside the muscle cell (↑ G6P, ↑ free glucose). MRS showed the opposite after a few hours: both fall, because glucose transport itself is blocked.'));
+  // ================================================================== interactive: lipid infusion time course (Fig. 12)
+  IRV.lipidInfusion = function () {
+    const el = h('div');
     const st = { t: 5 };
-    const c = chart(620, 290, { l: 52, b: 42 });
+    const c = chart(620, 280, { l: 52, b: 42 });
     const X = (t) => c.P.l + t / 6 * c.iw, Y = (v) => c.P.t + (1 - (v - 0.2) / 1.6) * c.ih;
     const sig = (t, t50, k) => 1 / (1 + Math.exp(-(t - t50) * k));
     const S = {
@@ -170,38 +201,41 @@
       g6pObs: (t) => 1 + 0.15 * Math.sin(Math.min(t, 3) / 3 * Math.PI) * (t < 3 ? 1 : 0) - 0.35 * sig(t, 3.8, 2.2),
       g6pRandle: (t) => 1 + 0.45 * sig(t, 1.5, 2.5),
     };
-    const SER = [['dag', 'var(--tr3)', '', 'Intramyocellular sn-1,2-DAG / PKCθ activation'], ['tr', 'var(--tr1)', '', 'Insulin-stimulated glucose transport (GLUT4)'], ['g6pObs', 'var(--tr2)', '', 'Intracellular G6P — measured (³¹P-MRS)'], ['g6pRandle', 'var(--tr0)', '6 4', 'Intracellular G6P — Randle prediction']];
+    const SER = [['dag', 'var(--tr3)', '', 'Muscle sn-1,2-DAG / PKCθ'], ['tr', 'var(--tr1)', '', 'Insulin-stimulated glucose transport'], ['g6pObs', 'var(--tr2)', '', 'G6P — measured (³¹P-MRS)'], ['g6pRandle', 'var(--tr0)', '6 4', 'G6P — Randle prediction']];
     const tbl = h('div.irl-read');
     const tS = slider('Hours of lipid–heparin infusion', 0, 6, 0.1, 5, (v) => v.toFixed(1) + ' h', (v) => { st.t = v; draw(); });
-    const key = EP.colorKey([['Lines (relative to start)', SER.map(([, col, d, l]) => ({ line: col, dash: d || null, label: l })).concat([{ line: 'var(--text)', w: 1.5, label: 'Selected time' }])]], { compact: true });
-    el.append(h('div.card', tS, h('div.irl-grid', h('div', c.svg, key), tbl), h('p.small.muted', 'Schematic time course after Fig. 12: during the first ~3 h G6P rises slightly and glycolysis falls (Randle allostery operates); insulin resistance appears only after 3–5 h, in parallel with the peak in DAG and PKCθ translocation, not ceramide or triglyceride. Pdk2/4-knockout mice, in which the Randle cycle cannot operate, still develop lipid-induced muscle insulin resistance.')));
+    const key = EP.colorKey([['Lines (relative to start)', SER.map(([, col, d, l]) => ({ line: col, dash: d || null, label: l }))]], { compact: true });
+    el.append(tS, h('div.irl-grid', h('div', c.svg, key), tbl));
     function draw() {
       c.clear();
       axes(c, [0, 1, 2, 3, 4, 5, 6].map((v) => [X(v), v + ' h']), [0.4, 0.8, 1.0, 1.2, 1.6].map((v) => [Y(v), '×' + v]), 'Time', 'Relative level');
+      c.g.appendChild(s('rect', { x: X(3), y: c.P.t, width: X(5) - X(3), height: c.ih, style: 'fill:color-mix(in srgb, var(--tr3) 9%, transparent)' }));
+      c.g.appendChild(text(X(4), c.P.t + 12, 'IR appears (3–5 h)', 'fill:var(--tr3);font-weight:600', 'middle'));
       c.g.appendChild(s('line', { x1: c.P.l, x2: c.P.l + c.iw, y1: Y(1), y2: Y(1), style: 'stroke:var(--faint);stroke-dasharray:2 3' }));
       SER.forEach(([k, col, d]) => { const pts = []; for (let i = 0; i <= 120; i++) { const t = i / 20; pts.push([X(t), Y(S[k](t))]); } c.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6;${d ? 'stroke-dasharray:' + d : ''}`)); });
       c.g.appendChild(s('line', { x1: X(st.t), x2: X(st.t), y1: c.P.t, y2: c.P.t + c.ih, style: 'stroke:var(--text);stroke-width:1.5' }));
       const late = st.t >= 3.5;
       const arrow = (v) => (v > 1.08 ? '<span class="qual up">↑</span>' : v < 0.92 ? '<span class="qual dn">↓</span>' : '<span class="qual eq">↔</span>');
-      const rows = [['Intracellular free glucose', 1.3, late ? 0.7 : 1.0], ['Glucose-6-phosphate', S.g6pRandle(st.t), S.g6pObs(st.t)], ['Glycolysis', 0.75, late ? 0.7 : 0.85], ['Glycogen synthesis', late ? 0.7 : 0.9, late ? 0.55 : 0.95], ['GLUT4 translocation / transport', 1.0, S.tr(st.t)]];
+      const rows = [['Free glucose in cell', 1.3, late ? 0.7 : 1.0], ['Glucose-6-phosphate', S.g6pRandle(st.t), S.g6pObs(st.t)], ['Glycolysis', 0.75, late ? 0.7 : 0.85], ['Glycogen synthesis', late ? 0.7 : 0.9, late ? 0.55 : 0.95], ['GLUT4 transport', 1.0, S.tr(st.t)]];
       tbl.innerHTML = `<table class="cmp-table"><tr><th></th><th>Randle predicted</th><th>Measured</th></tr>${rows.map(([n, a, b]) => `<tr><td>${n}</td><td>${arrow(a)}</td><td>${arrow(b)}</td></tr>`).join('')}</table>
-        <p>${EP.md(late ? '**Now:** G6P and free glucose are **lower**, not higher — the block is at glucose transport, upstream of hexokinase. Lipid-derived DAG → PKCθ → IRS-1 (Ser1101) / GIV phosphorylation → less PI3K/Akt → less GLUT4 at the membrane.' : '**Early:** substrate competition (acetyl-CoA, NADH ⊣ PDH; citrate ⊣ PFK) slightly raises G6P — the Randle cycle is real but governs fuel choice, not insulin resistance.')}</p>`;
+        <p>${EP.md(late ? '**Late:** glucose & G6P **fall** → block is at **transport**, not downstream.' : '**Early (< 3 h):** G6P rises a little — Randle allostery is real, but only sets fuel choice.')}</p>`;
     }
     draw();
-  }
+    return el;
+  };
 
-  // ================================================================== 4. GTT reader
-  function gtt(el) {
-    el.appendChild(panel(4, 'Reading a glucose tolerance test', 'A glucose curve alone cannot tell defective insulin secretion from defective insulin action — you need the insulin curve too (Himsworth\'s point, and Fig. 10).'));
+  // ================================================================== interactive: GTT reader (Fig. 10)
+  IRV.gtt = function () {
+    const el = h('div');
     const CO = [
       { id: 'lean', label: 'Lean, chow-fed', c: 'var(--tr2)', g: [110, 140, 18], i: [12, 35, 15], ans: 'ref' },
-      { id: 'hfd', label: 'Obese, high-fat-fed', c: 'var(--tr0)', g: [135, 210, 30], i: [40, 120, 22], ans: 'ir', why: 'Glucose high **despite more insulin** → impaired insulin action (insulin resistance).' },
-      { id: 'nod', label: 'Pre-diabetic NOD (insulitis)', c: 'var(--tr3)', g: [125, 240, 28], i: [8, 12, 15], ans: 'sec', why: 'Glucose high with **little insulin response** → β-cell secretory defect, not insulin resistance.' },
-      { id: 'fgf', label: 'FGF21-treated', c: 'var(--tr4)', g: [95, 85, 16], i: [8, 18, 15], ans: 'sens', why: 'Better glucose with **less insulin** → increased insulin sensitivity.' },
-      { id: 'su', label: 'Sulfonylurea-treated', c: 'var(--tr1)', g: [95, 85, 16], i: [28, 80, 15], ans: 'secup', why: 'Better glucose with **more insulin** → increased secretion, not sensitivity.' },
+      { id: 'hfd', label: 'Obese, high-fat-fed', c: 'var(--tr0)', g: [135, 210, 30], i: [40, 120, 22], ans: 'ir', why: 'High glucose **despite more insulin** → insulin resistance.' },
+      { id: 'nod', label: 'Pre-diabetic NOD', c: 'var(--tr3)', g: [125, 240, 28], i: [8, 12, 15], ans: 'sec', why: 'High glucose with **little insulin** → β-cell secretory defect.' },
+      { id: 'fgf', label: 'FGF21-treated', c: 'var(--tr4)', g: [95, 85, 16], i: [8, 18, 15], ans: 'sens', why: 'Better glucose with **less insulin** → more insulin-sensitive.' },
+      { id: 'su', label: 'Sulfonylurea-treated', c: 'var(--tr1)', g: [95, 85, 16], i: [28, 80, 15], ans: 'secup', why: 'Better glucose with **more insulin** → more secretion, not sensitivity.' },
     ];
     const on = new Set(['lean', 'hfd', 'nod']);
-    const gc = chart(380, 250, { l: 48, b: 40 }), ic = chart(380, 250, { l: 48, b: 40 });
+    const gc = chart(380, 240, { l: 48, b: 40 }), ic = chart(380, 240, { l: 48, b: 40 });
     const curve = (base, amp, tau) => (t) => base + amp * (t / tau) * Math.exp(1 - t / tau);
     const draw1 = (cc, key, yMax, lab) => {
       cc.clear();
@@ -212,69 +246,89 @@
     const keyEl = h('div');
     const redraw = () => { draw1(gc, 'g', 400, 'Glucose, mg/dL'); draw1(ic, 'i', 160, 'Insulin, µU/mL'); EP.clear(keyEl); keyEl.appendChild(EP.colorKey([['Groups shown', CO.filter((x) => on.has(x.id)).map((x) => ({ line: x.c, label: x.label }))]], { compact: true })); };
     const bar = chips(CO.map((x) => ({ id: x.id, label: x.label, on: on.has(x.id) })), (id, isOn) => { if (isOn) on.add(id); else on.delete(id); redraw(); }, true);
-    // quiz
     const quiz = h('div.irl-quiz');
     const ANS = [['ir', 'Insulin resistance'], ['sec', 'Secretion defect'], ['sens', '↑ Insulin sensitivity'], ['secup', '↑ Insulin secretion']];
     function newQ() {
       const x = CO.slice(1)[Math.floor(Math.random() * 4)];
-      const qc = chart(360, 200, { l: 44, b: 34 }), X = (t) => qc.P.l + t / 120 * qc.iw, Y = (v) => qc.P.t + (1 - v / 400) * qc.ih;
+      const qc = chart(360, 190, { l: 44, b: 34 }), X = (t) => qc.P.l + t / 120 * qc.iw, Y = (v) => qc.P.t + (1 - v / 400) * qc.ih;
       axes(qc, [0, 60, 120].map((v) => [X(v), v + ' min']), [0, 200, 400].map((v) => [Y(v), String(v)]), '', 'Glucose');
       [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.g); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([X(t), Y(f(t))]); qc.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); });
       const fb = h('p'); const ins = h('div');
       EP.clear(quiz);
-      quiz.append(h('h3', 'Mystery mouse'), h('p.small.muted', 'Grey = lean control, blue = mystery. Step 1: look at glucose. Step 2: reveal insulin, then decide.'), qc.svg,
-        h('button.btn', { onclick: (ev) => { ev.target.disabled = true; const ic2 = chart(360, 160, { l: 44, b: 30 }); const Yi = (v) => ic2.P.t + (1 - v / 160) * ic2.ih; axes(ic2, [0, 60, 120].map((v) => [ic2.P.l + v / 120 * ic2.iw, v + ' min']), [0, 80, 160].map((v) => [Yi(v), String(v)]), '', 'Insulin'); [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.i); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([ic2.P.l + t / 120 * ic2.iw, Yi(f(t))]); ic2.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); }); ins.appendChild(ic2.svg); } }, 'Reveal insulin curve'), ins,
+      quiz.append(h('h3', '🐭 Mystery mouse'), h('p.small.muted', 'Grey = lean control, blue = mystery. Look at glucose, reveal insulin, then decide.'), qc.svg,
+        h('button.btn', { onclick: (ev) => { ev.target.disabled = true; const ic2 = chart(360, 150, { l: 44, b: 30 }); const Yi = (v) => ic2.P.t + (1 - v / 160) * ic2.ih; axes(ic2, [0, 60, 120].map((v) => [ic2.P.l + v / 120 * ic2.iw, v + ' min']), [0, 80, 160].map((v) => [Yi(v), String(v)]), '', 'Insulin'); [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.i); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([ic2.P.l + t / 120 * ic2.iw, Yi(f(t))]); ic2.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); }); ins.appendChild(ic2.svg); } }, 'Reveal insulin curve'), ins,
         h('div.statebar', ANS.map(([id, l]) => h('button.chip', { onclick: () => { fb.innerHTML = (id === x.ans ? '<b class="qual up">Correct.</b> ' : '<b class="qual dn">Not quite.</b> ') + EP.md(x.why) + ` <span class="muted">(${EP.esc(x.label)})</span>`; } }, l))), fb,
         h('button.btn', { onclick: newQ }, 'Another mouse'));
     }
-    el.append(h('div.card', bar, h('div.irl-grid2', gc.svg, ic.svg), keyEl, h('p.small.muted', 'Schematic intraperitoneal GTT shapes after Fig. 10 (hypothetical data in the review). The clamp avoids this ambiguity by fixing insulin and measuring the glucose infusion needed to hold euglycemia.')), h('div.card', quiz));
+    el.append(bar, h('div.irl-grid2', gc.svg, ic.svg), keyEl, h('div.card', quiz));
     redraw(); newQ();
-  }
+    return el;
+  };
 
-  // ================================================================== 5. evidence board
-  function evidence(el) {
-    el.appendChild(panel(5, 'Proposed causes of insulin resistance: how strong is the evidence?', 'The review weighs each candidate by whether it is sufficient, necessary, and present in typical human insulin resistance. Ratings below summarize that discussion (3 dots = strong).'));
+  // ================================================================== evidence board (sects. V–VII)
+  IRV.evidence = function () {
+    const el = h('div');
     const M = [
-      { t: ['liver', 'muscle'], name: 'Diacylglycerol → novel PKC', mech: 'Lipogenic **sn-1,2-DAG** activates PKCε in liver → **INSR Thr1160** phosphorylation (kinase nearly dead when phosphomimetic); PKCθ in muscle → IRS-1 Ser1101 / GIV / PDK1. sn-1,3-DAG from ATGL lipolysis does not activate PKC.', s: 3, n: 2, hu: 3, key: 'PKCε knockdown or knockout protects against high-fat-diet hepatic IR; Insr T1150A knock-in mice are protected; PKCθ-knockout mice are protected from lipid infusion. Hepatic DAG tracks IR in 5 human studies; PKCε translocation in obese human liver. Dissociations (CGI-58 knockdown, ChREBP overexpression, Mttp knockout) point to DAG compartment (lipid droplet vs Golgi/membrane).', verdict: 'The only fully defined mechanism linking a lipid to impaired hepatocellular insulin signaling.' },
-      { t: ['muscle', 'liver', 'wat'], name: 'Ceramides', mech: 'Ceramide → PP2A activation and PKCζ → reduced Akt activity (downstream of IRS/PI3K).', s: 2, n: 1, hu: 2, key: 'Myriocin partly prevents palmitate/lard-induced IR; acid ceramidase overexpression protects liver. But unsaturated fatty acids cause equal IR without raising ceramides; many IR models have normal ceramides; typical IR shows **proximal** (receptor/IRS) defects, not just Akt.', verdict: 'Sufficient in some models, not necessary; strongest in muscle (C18:0 ceramide).' },
-      { t: ['muscle'], name: 'Acylcarnitines / incomplete fat oxidation', mech: 'Fat oxidation outrunning the TCA cycle → acylcarnitines and ROS.', s: 1, n: 1, hu: 1, key: 'Acylcarnitines modestly (20–30%) lower Akt Ser473 in myotubes; plasma levels reflect liver more than muscle; fasted insulin-sensitive rats have similar levels.', verdict: 'Most likely a marker of metabolic inflexibility — a consequence, not a cause.' },
-      { t: ['liver', 'wat'], name: 'ER stress / unfolded protein response', mech: 'PERK, IRE1, ATF6 → JNK; XBP1s drives de novo lipogenesis.', s: 2, n: 1, hu: 1, key: 'Liver-specific Xbp1 knockout mice have **more** ER stress but **less** liver fat and are **more** insulin sensitive; liver-specific JNK knockout worsens steatosis. In WAT, ER stress may drive lipolysis.', verdict: 'Probably acts through ectopic lipid (lipogenesis → DAG), not directly.' },
-      { t: ['muscle'], name: 'Mitochondrial dysfunction & ROS', mech: 'Reduced ATP synthesis (elderly, lean insulin-resistant offspring) favors lipid storage; excess H₂O₂ oxidizes the cell.', s: 2, n: 1, hu: 2, key: 'Mitochondrial catalase (MCAT) mice are protected from diet- and age-induced muscle IR, with less DAG/PKCθ. But severe mitochondrial knockouts (Tfam, Aif) improve glucose uptake; 78 antioxidant trials showed no mortality benefit.', verdict: 'An amplifier of lipid accumulation; therapeutic value unproven.' },
-      { t: ['wat', 'liver'], name: 'Inflammation (macrophages, TNF-α, JNK)', mech: 'Dead-adipocyte crown-like structures → macrophage cytokines → **more lipolysis** (and possibly impaired signaling).', s: 2, n: 1, hu: 1, key: 'Adipose IR appears after days of high-fat feeding; macrophage infiltration only after ~12 weeks. Lipodystrophy causes severe IR without inflammation. T2D risk variants are not enriched in immune cells. TNF-α blockers do not consistently improve human insulin sensitivity; IRS-1 Ser307Ala mice are **more** insulin resistant.', verdict: 'Exacerbates IR, mainly by increasing lipolysis; not the primary defect.' },
-      { t: ['muscle', 'wat'], name: 'Branched-chain amino acids', mech: 'Leucine → mTORC1/S6K1 → IRS-1 serine phosphorylation; valine catabolite 3-HIB → muscle fatty acid uptake → DAG/PKCθ.', s: 1, n: 1, hu: 2, key: 'Strong biomarker and predictor of T2D; BCAA alone does not cause IR in chow-fed rats; BCATm-knockout mice have very high BCAAs yet are protected. Genetics suggest high BCAA is a consequence of IR.', verdict: 'Excellent biomarker; causal role uncertain.' },
-      { t: ['wat', 'liver'], name: 'Adipokines & hepatokines', mech: 'RBP4 (↑ in obesity), adiponectin (↓; AdipoR ceramidase activity), fetuin-A (inhibits INSR kinase), FGF21 (↑ fat oxidation; obesity is FGF21-resistant).', s: 2, n: 1, hu: 2, key: 'RBP4 correlates with clamp IR and falls with exercise; adiponectin-transgenic ob/ob mice weigh twice as much yet are insulin sensitive; lean insulin-resistant offspring have normal adiponectin; FGF21 rises in humans only after ~10 days of fasting.', verdict: 'Modulators that largely act by redistributing lipid.' },
-      { t: ['muscle'], name: 'Randle glucose–fatty acid cycle', mech: 'Fat oxidation → acetyl-CoA/NADH ⊣ PDH, citrate ⊣ PFK → G6P ↑ → hexokinase ⊣.', s: 1, n: 1, hu: 1, key: 'MRS during lipid infusion: G6P and glucose fall rather than rise; Pdk2/4-knockout mice still develop IR.', verdict: 'Governs fuel selection; does not explain insulin resistance (see panel 3).' },
+      { t: ['liver', 'muscle'], name: 'Diacylglycerol → novel PKC', mech: 'sn-1,2-DAG → PKCε → INSR Thr1160 (liver); PKCθ → IRS1 / GIV / PDK1 (muscle).', s: 3, n: 2, hu: 3, verdict: 'Only fully defined lipid → hepatocyte signaling link.' },
+      { t: ['muscle', 'liver', 'wat'], name: 'Ceramides', mech: 'PP2A + PKCζ → ↓ AKT.', s: 2, n: 1, hu: 2, verdict: 'Sufficient in some models, not necessary.' },
+      { t: ['muscle'], name: 'Acylcarnitines', mech: 'Incomplete fat oxidation → acylcarnitines, ROS.', s: 1, n: 1, hu: 1, verdict: 'Probably a marker of inflexibility.' },
+      { t: ['liver', 'wat'], name: 'ER stress', mech: 'UPR → JNK; XBP1s → lipogenesis.', s: 2, n: 1, hu: 1, verdict: 'Acts mainly through ectopic lipid.' },
+      { t: ['muscle'], name: 'Mitochondria & ROS', mech: '↓ ATP synthesis → lipid storage; H₂O₂.', s: 2, n: 1, hu: 2, verdict: 'Amplifier; therapy unproven.' },
+      { t: ['wat', 'liver'], name: 'Inflammation', mech: 'Macrophages → TNF-α, IL-1β → ↑ lipolysis.', s: 2, n: 1, hu: 1, verdict: 'Exacerbates; not the first hit.' },
+      { t: ['muscle', 'wat'], name: 'BCAAs', mech: 'mTORC1/S6K1; 3-HIB → muscle fat uptake.', s: 1, n: 1, hu: 2, verdict: 'Great biomarker; cause uncertain.' },
+      { t: ['wat', 'liver'], name: 'Adipokines / hepatokines', mech: 'RBP4 ↑, adiponectin ↓, fetuin-A ↑, FGF21 resistance.', s: 2, n: 1, hu: 2, verdict: 'Modulators; mostly via lipid.' },
+      { t: ['muscle'], name: 'Randle cycle', mech: 'Fat oxidation ⊣ PDH, PFK → G6P ↑ ⊣ HK.', s: 1, n: 1, hu: 1, verdict: 'Fuel choice, not IR.' },
     ];
     const grid = h('div.irl-cards');
     const dots = (n) => '●●●'.slice(0, n) + '<span class="irl-off">' + '●●●'.slice(n) + '</span>';
     function show(tissue) {
       EP.clear(grid);
       M.filter((m) => tissue === 'all' || m.t.includes(tissue)).forEach((m) => {
-        const body = h('div.irl-more', { html: `<p>${EP.md(m.mech)}</p><p class="small"><b>Key experiments:</b> ${EP.md(m.key)}</p>` });
-        const card = h('div.irl-mcard', h('div.irl-mtop', h('b', m.name), h('span.small.muted', m.t.map((x) => ({ liver: 'liver', muscle: 'muscle', wat: 'adipose' })[x]).join(' · '))),
-          h('div.irl-dots', { html: `<span>Sufficient</span><i>${dots(m.s)}</i><span>Necessary</span><i>${dots(m.n)}</i><span>Human evidence</span><i>${dots(m.hu)}</i>` }),
-          h('p.irl-verdict', m.verdict), body);
-        card.addEventListener('click', () => card.classList.toggle('open'));
-        grid.appendChild(card);
+        grid.appendChild(h('div.irl-mcard.open', h('div.irl-mtop', h('b', m.name), h('span.small.muted', m.t.map((x) => ({ liver: 'liver', muscle: 'muscle', wat: 'fat' })[x]).join(' · '))),
+          h('div.irl-dots', { html: `<span>Sufficient</span><i>${dots(m.s)}</i><span>Necessary</span><i>${dots(m.n)}</i><span>In humans</span><i>${dots(m.hu)}</i>` }),
+          h('p.irl-verdict', { html: EP.md(m.verdict) }), h('p.small.muted', { style: { margin: '6px 0 0' }, html: EP.md(m.mech) })));
       });
     }
-    el.append(h('div.card', chips([{ id: 'all', label: 'All tissues' }, { id: 'liver', label: 'Liver' }, { id: 'muscle', label: 'Skeletal muscle' }, { id: 'wat', label: 'Adipose' }], show), h('p.small.muted', 'Click a card for the mechanism and the key experiments.'), grid,
-      h('div.irl-conclude', { html: EP.md('**The review\'s synthesis (Fig. 19):** every proposed mediator is a response to **nutrient oversupply**, and they converge on **ectopic lipid** in liver and muscle. ER stress promotes lipogenesis; mitochondrial changes favour lipid storage; inflammation drives lipolysis. In humans, **muscle IR comes first** (lean offspring of people with T2D have muscle IR with normal liver fat); diverted glucose then fuels hepatic lipogenesis, NAFLD and hepatic IR. In rodents the order is reversed (liver within days of fat feeding).') })));
+    el.append(chips([{ id: 'all', label: 'All tissues' }, { id: 'liver', label: 'Liver' }, { id: 'muscle', label: 'Muscle' }, { id: 'wat', label: 'Fat' }], show), grid);
     show('all');
-  }
+    return el;
+  };
 
-  // ================================================================== 6. hepatic IR readouts (Table 1)
-  function readouts(el) {
-    el.appendChild(panel(6, 'Measuring hepatic insulin resistance', 'Popular readouts mix direct (hepatocyte) and indirect (adipose) insulin action. Pick the readout that matches the question (Table 1).'));
-    const R = [['Net hepatic glycogen synthesis', 'Direct', 'Acute', '↓', 'Needs both hyperinsulinemia and hyperglycemia; insulin is permissive, portal glucose the driver.'], ['Suppression of gluconeogenesis', 'Indirect', 'Acute', '↓', 'Mostly via adipose lipolysis → acetyl-CoA, glycerol.'], ['Suppression of hepatic glucose production', 'Direct + indirect', 'Acute', '↓', 'Mix depends on species and fasting duration (panel 2).'], ['INSR kinase activity / Tyr phosphorylation', 'Direct', 'Acute', '↓', 'Most proximal site — where PKCε acts (Thr1160).'], ['IRS Tyr phosphorylation', 'Direct', 'Acute', '↓', ''], ['Akt Ser/Thr phosphorylation', 'Direct', 'Acute', '↓', 'Ser473 has many non-insulin inputs.'], ['Gluconeogenic gene expression (G6pc, Pck1)', 'Direct', 'Chronic', '↑ (rodents)', 'Not increased in human T2D liver; >90% less Pck1 cuts flux only ~40%.'], ['De novo lipogenesis', 'Direct', 'Chronic', 'variable', 'Many inputs (mTORC1, ChREBP); ↓ in fat-fed rats, ↑ in human NAFLD.'], ['Fasting plasma insulin (HOMA-IR)', 'Direct + indirect', 'Chronic', '↑', 'Crude; also reflects ↓ hepatic insulin clearance and β-cell function.']];
+  // ================================================================== Table 1: readouts of hepatic IR
+  IRV.readouts = function () {
+    const R = [['Net hepatic glycogen synthesis', 'Direct', 'Acute', '↓', 'Needs hyperinsulinemia + hyperglycemia.'], ['Suppression of gluconeogenesis', 'Indirect', 'Acute', '↓', 'Via WAT lipolysis → acetyl-CoA, glycerol.'], ['Suppression of HGP', 'Direct + indirect', 'Acute', '↓', 'Mix depends on species & fast length.'], ['INSR Tyr-P / kinase activity', 'Direct', 'Acute', '↓', 'Most proximal; where PKCε acts.'], ['IRS Tyr-P', 'Direct', 'Acute', '↓', ''], ['AKT Ser/Thr-P', 'Direct', 'Acute', '↓', 'Ser473 has many non-insulin inputs.'], ['Gluconeogenic genes (G6pc, Pck1)', 'Direct', 'Chronic', '↑', 'Not ↑ in human T2D liver.'], ['De novo lipogenesis', 'Direct', 'Chronic', '↓', 'Many inputs (mTORC1, ChREBP).'], ['Fasting insulin (HOMA-IR)', 'Direct + indirect', 'Chronic', '↑', 'Crude; good for big cohorts.']];
     const tag = (v) => `<span class="irl-tag ${/Indirect/.test(v) && !/Direct/.test(v) ? 'ind' : /\+/.test(v) ? 'mix' : 'dir'}">${v}</span>`;
-    el.appendChild(h('div.card', h('table.cmp-table', { html: `<tr><th>Readout</th><th>Direct / indirect</th><th>Timescale</th><th>In hepatic IR</th><th>Notes</th></tr>` + R.map((r) => `<tr><td>${r[0]}</td><td>${tag(r[1])}</td><td>${r[2]}</td><td>${r[3]}</td><td class="small muted">${EP.esc(r[4])}</td></tr>`).join('') })));
-  }
+    const ar = (v) => `<span class="qual ${v.startsWith('↑') ? 'up' : 'dn'}" style="font-size:1.1rem">${v}</span>`;
+    return h('div', { style: { overflowX: 'auto' } }, h('table.cmp-table', { html: `<tr><th>Readout</th><th>Direct / indirect</th><th>Timescale</th><th>In hepatic IR</th><th>Note</th></tr>` + R.map((r) => `<tr><td>${r[0]}</td><td>${tag(r[1])}</td><td>${r[2] === 'Acute' ? '⚡ acute' : '🐢 chronic'}</td><td>${ar(r[3])}</td><td class="small muted">${EP.esc(r[4])}</td></tr>`).join('') }));
+  };
+
+  // ================================================================== page assembly
+  IRV.chapters = [];
+  /** Registered by irguide1.js / irguide2.js: {rn, id, title, sub, col, build(body)} */
+  IRV.chapter = (c) => IRV.chapters.push(c);
 
   EP.views.irlab = function (el) {
-    el.appendChild(EP.pageHeader('Insulin resistance lab', 'What exactly is resistant, where, and why? Six interactive experiments built from Petersen & Shulman (Physiol Rev 2018).', { section: 'Pancreas & Glucose', lede: 'Each panel reproduces a figure or argument from the review. Drag the sliders, switch experiments, and read the conclusion underneath. The multi-organ cycle itself (Fig. 19) is on the Insulin signaling page.' }));
-    el.appendChild(h('p', h('a', { href: '#/insulin' }, 'Open the integrated insulin-resistance cycle (adipose → liver → muscle → β-cell) →')));
-    doseResponse(el); hgp(el); lipidInfusion(el); gtt(el); evidence(el); readouts(el);
-    el.appendChild(EP.sources(['petersen2018', 'rothman1991', 'perry2015', 'petersen2007', 'brown2008', 'donnelly2005', 'lambert2014', 'shulman1990']));
+    el.appendChild(EP.pageHeader('Insulin action & resistance — visual guide', 'How does insulin work in muscle, liver and fat — and what exactly breaks in insulin resistance?', { section: 'Pancreas & Glucose · Petersen & Shulman, Physiol Rev 2018' }));
+    const order = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+    const CH = order.map((rn) => IRV.chapters.find((c) => c.rn === rn)).filter(Boolean);
+    const dets = {};
+    const map = h('nav.irv-map', { 'aria-label': 'Sections of the review' }, CH.map((c) => h('button.irv-tile', { style: { '--c': c.col }, onclick: () => { dets[c.rn].open = true; dets[c.rn].scrollIntoView({ behavior: 'smooth', block: 'start' }); } }, h('b', 'Section ' + c.rn), h('span', c.title), h('i', c.tile || ''))));
+    const tools = h('div.irv-tools',
+      h('button.btn', { onclick: () => Object.values(dets).forEach((d) => { d.open = true; }) }, '▾ Expand all sections'),
+      h('button.btn', { onclick: () => Object.values(dets).forEach((d) => { d.open = false; }) }, '▸ Collapse all'),
+      h('a.btn', { href: '#/insulin' }, 'Insulin signaling map →'), h('a.btn', { href: '#/glut4' }, 'GLUT4 animation →'));
+    el.append(map, tools, EP.flowKey());
+    CH.forEach((c, i) => {
+      const body = h('div.irv-body');
+      let built = false;
+      const d = h('details.irv-ch', { id: 'irv-' + c.rn, style: { '--c': c.col }, open: i === 0 },
+        h('summary', h('span.irv-rn', c.rn), h('h2', c.title), h('span.irv-chev', '▸'), h('p', c.sub)), body);
+      const build = () => { if (built) return; built = true; try { c.build(body); } catch (err) { console.error(err); body.appendChild(h('p.error', 'Could not draw this section: ' + err.message)); } };
+      d.addEventListener('toggle', () => { if (d.open) build(); });
+      if (d.open) build();
+      dets[c.rn] = d;
+      el.appendChild(d);
+    });
+    el.appendChild(EP.sources(['petersen2018', 'rothman1991', 'perry2015', 'petersen2007', 'petersen2005', 'brown2008', 'donnelly2005', 'lambert2014', 'shulman1990']));
   };
 })();
