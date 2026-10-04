@@ -2,8 +2,8 @@
  * 1. Insulin dose–response curves (Fig. 7; ED50s from sect. II–IV) and the "selective" hepatic IR question.
  * 2. Direct vs indirect control of hepatic glucose production (Figs. 3 and 6; Rothman 1991; Perry 2015).
  * 3. Lipid infusion: Randle prediction vs ¹³C/³¹P-MRS observation (Fig. 12).
- * 4. Reading a glucose tolerance test (Fig. 10).
- * 5. Evidence board for proposed mediators (sects. V–VII) and the integrated model (Fig. 19).
+ * 4. Evidence board for proposed mediators (sects. V–VII) and the integrated model (Fig. 19).
+ * 5. Readouts of hepatic insulin resistance (Table 1).
  * All curves are schematic teaching shapes anchored to the numbers quoted in the paper. */
 (function () {
   'use strict';
@@ -190,50 +190,9 @@
     draw();
   }
 
-  // ================================================================== 4. GTT reader
-  function gtt(el) {
-    el.appendChild(panel(4, 'Reading a glucose tolerance test', 'A glucose curve alone cannot tell defective insulin secretion from defective insulin action — you need the insulin curve too (Himsworth\'s point, and Fig. 10).'));
-    const CO = [
-      { id: 'lean', label: 'Lean, chow-fed', c: 'var(--tr2)', g: [110, 140, 18], i: [12, 35, 15], ans: 'ref' },
-      { id: 'hfd', label: 'Obese, high-fat-fed', c: 'var(--tr0)', g: [135, 210, 30], i: [40, 120, 22], ans: 'ir', why: 'Glucose high **despite more insulin** → impaired insulin action (insulin resistance).' },
-      { id: 'nod', label: 'Pre-diabetic NOD (insulitis)', c: 'var(--tr3)', g: [125, 240, 28], i: [8, 12, 15], ans: 'sec', why: 'Glucose high with **little insulin response** → β-cell secretory defect, not insulin resistance.' },
-      { id: 'fgf', label: 'FGF21-treated', c: 'var(--tr4)', g: [95, 85, 16], i: [8, 18, 15], ans: 'sens', why: 'Better glucose with **less insulin** → increased insulin sensitivity.' },
-      { id: 'su', label: 'Sulfonylurea-treated', c: 'var(--tr1)', g: [95, 85, 16], i: [28, 80, 15], ans: 'secup', why: 'Better glucose with **more insulin** → increased secretion, not sensitivity.' },
-    ];
-    const on = new Set(['lean', 'hfd', 'nod']);
-    const gc = chart(380, 250, { l: 48, b: 40 }), ic = chart(380, 250, { l: 48, b: 40 });
-    const curve = (base, amp, tau) => (t) => base + amp * (t / tau) * Math.exp(1 - t / tau);
-    const draw1 = (cc, key, yMax, lab) => {
-      cc.clear();
-      const X = (t) => cc.P.l + t / 120 * cc.iw, Y = (v) => cc.P.t + (1 - v / yMax) * cc.ih;
-      axes(cc, [0, 30, 60, 90, 120].map((v) => [X(v), v + '']), [0, yMax / 4, yMax / 2, 3 * yMax / 4, yMax].map((v) => [Y(v), String(Math.round(v))]), 'Minutes after glucose', lab);
-      CO.filter((x) => on.has(x.id)).forEach((x) => { const f = curve(...x[key]); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([X(t), Y(f(t))]); cc.g.appendChild(line(pts, `stroke:${x.c};stroke-width:2.8`)); });
-    };
-    const keyEl = h('div');
-    const redraw = () => { draw1(gc, 'g', 400, 'Glucose, mg/dL'); draw1(ic, 'i', 160, 'Insulin, µU/mL'); EP.clear(keyEl); keyEl.appendChild(EP.colorKey([['Groups shown', CO.filter((x) => on.has(x.id)).map((x) => ({ line: x.c, label: x.label }))]], { compact: true })); };
-    const bar = chips(CO.map((x) => ({ id: x.id, label: x.label, on: on.has(x.id) })), (id, isOn) => { if (isOn) on.add(id); else on.delete(id); redraw(); }, true);
-    // quiz
-    const quiz = h('div.irl-quiz');
-    const ANS = [['ir', 'Insulin resistance'], ['sec', 'Secretion defect'], ['sens', '↑ Insulin sensitivity'], ['secup', '↑ Insulin secretion']];
-    function newQ() {
-      const x = CO.slice(1)[Math.floor(Math.random() * 4)];
-      const qc = chart(360, 200, { l: 44, b: 34 }), X = (t) => qc.P.l + t / 120 * qc.iw, Y = (v) => qc.P.t + (1 - v / 400) * qc.ih;
-      axes(qc, [0, 60, 120].map((v) => [X(v), v + ' min']), [0, 200, 400].map((v) => [Y(v), String(v)]), '', 'Glucose');
-      [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.g); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([X(t), Y(f(t))]); qc.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); });
-      const fb = h('p'); const ins = h('div');
-      EP.clear(quiz);
-      quiz.append(h('h3', 'Mystery mouse'), h('p.small.muted', 'Grey = lean control, blue = mystery. Step 1: look at glucose. Step 2: reveal insulin, then decide.'), qc.svg,
-        h('button.btn', { onclick: (ev) => { ev.target.disabled = true; const ic2 = chart(360, 160, { l: 44, b: 30 }); const Yi = (v) => ic2.P.t + (1 - v / 160) * ic2.ih; axes(ic2, [0, 60, 120].map((v) => [ic2.P.l + v / 120 * ic2.iw, v + ' min']), [0, 80, 160].map((v) => [Yi(v), String(v)]), '', 'Insulin'); [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.i); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([ic2.P.l + t / 120 * ic2.iw, Yi(f(t))]); ic2.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); }); ins.appendChild(ic2.svg); } }, 'Reveal insulin curve'), ins,
-        h('div.statebar', ANS.map(([id, l]) => h('button.chip', { onclick: () => { fb.innerHTML = (id === x.ans ? '<b class="qual up">Correct.</b> ' : '<b class="qual dn">Not quite.</b> ') + EP.md(x.why) + ` <span class="muted">(${EP.esc(x.label)})</span>`; } }, l))), fb,
-        h('button.btn', { onclick: newQ }, 'Another mouse'));
-    }
-    el.append(h('div.card', bar, h('div.irl-grid2', gc.svg, ic.svg), keyEl, h('p.small.muted', 'Schematic intraperitoneal GTT shapes after Fig. 10 (hypothetical data in the review). The clamp avoids this ambiguity by fixing insulin and measuring the glucose infusion needed to hold euglycemia.')), h('div.card', quiz));
-    redraw(); newQ();
-  }
-
-  // ================================================================== 5. evidence board
+  // ================================================================== 4. evidence board
   function evidence(el) {
-    el.appendChild(panel(5, 'Proposed causes of insulin resistance: how strong is the evidence?', 'The review weighs each candidate by whether it is sufficient, necessary, and present in typical human insulin resistance. Ratings below summarize that discussion (3 dots = strong).'));
+    el.appendChild(panel(4, 'Proposed causes of insulin resistance: how strong is the evidence?', 'The review weighs each candidate by whether it is sufficient, necessary, and present in typical human insulin resistance. Ratings below summarize that discussion (3 dots = strong).'));
     const M = [
       { t: ['liver', 'muscle'], name: 'Diacylglycerol → novel PKC', mech: 'Lipogenic **sn-1,2-DAG** activates PKCε in liver → **INSR Thr1160** phosphorylation (kinase nearly dead when phosphomimetic); PKCθ in muscle → IRS-1 Ser1101 / GIV / PDK1. sn-1,3-DAG from ATGL lipolysis does not activate PKC.', s: 3, n: 2, hu: 3, key: 'PKCε knockdown or knockout protects against high-fat-diet hepatic IR; Insr T1150A knock-in mice are protected; PKCθ-knockout mice are protected from lipid infusion. Hepatic DAG tracks IR in 5 human studies; PKCε translocation in obese human liver. Dissociations (CGI-58 knockdown, ChREBP overexpression, Mttp knockout) point to DAG compartment (lipid droplet vs Golgi/membrane).', verdict: 'The only fully defined mechanism linking a lipid to impaired hepatocellular insulin signaling.' },
       { t: ['muscle', 'liver', 'wat'], name: 'Ceramides', mech: 'Ceramide → PP2A activation and PKCζ → reduced Akt activity (downstream of IRS/PI3K).', s: 2, n: 1, hu: 2, key: 'Myriocin partly prevents palmitate/lard-induced IR; acid ceramidase overexpression protects liver. But unsaturated fatty acids cause equal IR without raising ceramides; many IR models have normal ceramides; typical IR shows **proximal** (receptor/IRS) defects, not just Akt.', verdict: 'Sufficient in some models, not necessary; strongest in muscle (C18:0 ceramide).' },
@@ -263,18 +222,18 @@
     show('all');
   }
 
-  // ================================================================== 6. hepatic IR readouts (Table 1)
+  // ================================================================== 5. hepatic IR readouts (Table 1)
   function readouts(el) {
-    el.appendChild(panel(6, 'Measuring hepatic insulin resistance', 'Popular readouts mix direct (hepatocyte) and indirect (adipose) insulin action. Pick the readout that matches the question (Table 1).'));
+    el.appendChild(panel(5, 'Measuring hepatic insulin resistance', 'Popular readouts mix direct (hepatocyte) and indirect (adipose) insulin action. Pick the readout that matches the question (Table 1).'));
     const R = [['Net hepatic glycogen synthesis', 'Direct', 'Acute', '↓', 'Needs both hyperinsulinemia and hyperglycemia; insulin is permissive, portal glucose the driver.'], ['Suppression of gluconeogenesis', 'Indirect', 'Acute', '↓', 'Mostly via adipose lipolysis → acetyl-CoA, glycerol.'], ['Suppression of hepatic glucose production', 'Direct + indirect', 'Acute', '↓', 'Mix depends on species and fasting duration (panel 2).'], ['INSR kinase activity / Tyr phosphorylation', 'Direct', 'Acute', '↓', 'Most proximal site — where PKCε acts (Thr1160).'], ['IRS Tyr phosphorylation', 'Direct', 'Acute', '↓', ''], ['Akt Ser/Thr phosphorylation', 'Direct', 'Acute', '↓', 'Ser473 has many non-insulin inputs.'], ['Gluconeogenic gene expression (G6pc, Pck1)', 'Direct', 'Chronic', '↑ (rodents)', 'Not increased in human T2D liver; >90% less Pck1 cuts flux only ~40%.'], ['De novo lipogenesis', 'Direct', 'Chronic', 'variable', 'Many inputs (mTORC1, ChREBP); ↓ in fat-fed rats, ↑ in human NAFLD.'], ['Fasting plasma insulin (HOMA-IR)', 'Direct + indirect', 'Chronic', '↑', 'Crude; also reflects ↓ hepatic insulin clearance and β-cell function.']];
     const tag = (v) => `<span class="irl-tag ${/Indirect/.test(v) && !/Direct/.test(v) ? 'ind' : /\+/.test(v) ? 'mix' : 'dir'}">${v}</span>`;
     el.appendChild(h('div.card', h('table.cmp-table', { html: `<tr><th>Readout</th><th>Direct / indirect</th><th>Timescale</th><th>In hepatic IR</th><th>Notes</th></tr>` + R.map((r) => `<tr><td>${r[0]}</td><td>${tag(r[1])}</td><td>${r[2]}</td><td>${r[3]}</td><td class="small muted">${EP.esc(r[4])}</td></tr>`).join('') })));
   }
 
   EP.views.irlab = function (el) {
-    el.appendChild(EP.pageHeader('Insulin resistance lab', 'What exactly is resistant, where, and why? Six interactive experiments built from Petersen & Shulman (Physiol Rev 2018).', { section: 'Pancreas & Glucose', lede: 'Each panel reproduces a figure or argument from the review. Drag the sliders, switch experiments, and read the conclusion underneath. The multi-organ cycle itself (Fig. 19) is on the Insulin signaling page.' }));
-    el.appendChild(h('p', h('a', { href: '#/insulin' }, 'Open the integrated insulin-resistance cycle (adipose → liver → muscle → β-cell) →')));
-    doseResponse(el); hgp(el); lipidInfusion(el); gtt(el); evidence(el); readouts(el);
+    el.appendChild(EP.pageHeader('Insulin resistance lab', 'What exactly is resistant, where, and why? Interactive experiments built from Petersen & Shulman (Physiol Rev 2018).', { section: 'Pancreas & Glucose', lede: 'Each panel reproduces a figure or argument from the review. Drag the sliders, switch experiments, and read the conclusion underneath. The multi-organ cycle itself (Fig. 19) is on the Insulin signaling page.' }));
+    el.appendChild(h('p', h('a', { href: '#/irphys' }, 'Read the physiology first: Insulin action & resistance chapter →'), ' · ', h('a', { href: '#/insulin' }, 'Integrated insulin-resistance cycle →')));
+    doseResponse(el); hgp(el); lipidInfusion(el); evidence(el); readouts(el);
     el.appendChild(EP.sources(['petersen2018', 'rothman1991', 'perry2015', 'petersen2007', 'brown2008', 'donnelly2005', 'lambert2014', 'shulman1990']));
   };
 })();

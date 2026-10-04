@@ -644,3 +644,71 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
 @media (max-width: 860px) { .irl-grid { grid-template-columns: 1fr; } .irl-stats { grid-template-columns: 1fr; } .irl-row { grid-template-columns: 1fr; } }
 .irl-grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 @media (max-width: 860px) { .irl-grid2 { grid-template-columns: 1fr; } }
+
+/* ---------- reading chapter (Insulin action & resistance: the physiology) ---------- */
+.rd-wrap { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 28px; align-items: start; max-width: 1180px; }
+.rd-toc { position: sticky; top: 0; display: flex; flex-direction: column; gap: 2px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+.rd-toct { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 6px 4px; }
+.rd-tocl { display: flex; gap: 8px; align-items: baseline; text-align: left; background: none; border: 0; padding: 5px 6px; border-radius: 7px; color: var(--muted); font-size: .84rem; cursor: pointer; line-height: 1.3; }
+.rd-tocl:hover { background: var(--panel2); color: var(--text); }
+.rd-tocl span { flex: none; width: 18px; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+.rd-toclab { font-size: .82rem; margin: 10px 6px 2px; }
+.rd-body { max-width: 860px; min-width: 0; }
+.rd-ch { padding: 6px 0 22px; border-bottom: 1px solid var(--line); margin-bottom: 18px; scroll-margin-top: 10px; }
+.rd-ch:last-of-type { border-bottom: 0; }
+.rd-chh { display: flex; gap: 12px; align-items: flex-start; margin: 10px 0 12px; }
+.rd-chh h2 { margin: 0; font-size: 1.35rem; }
+.rd-chn { flex: none; width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; margin-top: 1px; }
+.rd-sub { margin: 2px 0 0; color: var(--muted); }
+.rd-body p, .rd-body li { font-size: .98rem; line-height: 1.68; }
+.rd-h3 { margin: 22px 0 8px; font-size: 1.06rem; color: var(--text); }
+.rd-ul, .rd-ol { margin: 0 0 .9em; padding-left: 1.3em; }
+.rd-ul li, .rd-ol li { margin-bottom: .45em; }
+.rd-tri { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 4px 0 16px; }
+.rd-tri > div { background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; font-size: .92rem; line-height: 1.55; }
+.rd-box { border-radius: 0 12px 12px 0; padding: 10px 14px; margin: 14px 0; border-left: 4px solid; }
+.rd-box > div:last-child { font-size: .95rem; line-height: 1.62; }
+.rd-box .rd-ul { margin: 4px 0 0; }
+.rd-boxt { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; margin-bottom: 4px; }
+.rd-key { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, var(--panel)); }
+.rd-key .rd-boxt { color: var(--accent); }
+.rd-how { border-color: var(--tr2); background: color-mix(in srgb, var(--tr2) 8%, var(--panel)); }
+.rd-how .rd-boxt { color: var(--tr2); }
+.rd-myth { border-color: var(--dn); background: color-mix(in srgb, var(--dn) 7%, var(--panel)); }
+.rd-myth .rd-boxt { color: var(--dn); }
+.rd-fig { margin: 18px 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+.rd-fig figcaption { font-size: .86rem; color: var(--muted); margin-top: 10px; line-height: 1.55; }
+.rd-fig figcaption b { color: var(--text); }
+.rd-svg { width: 100%; height: auto; display: block; }
+.rd-svg .rd-ntxt { font-size: 13px; font-weight: 600; fill: var(--text); }
+.rd-svg .rd-nsub { font-size: 11.5px; fill: var(--muted); }
+.rd-svg .rd-elab { font-size: 11px; font-weight: 600; paint-order: stroke; stroke: var(--panel); stroke-width: 4px; stroke-linejoin: round; }
+.rd-svg .rd-axis { font-size: 11px; fill: var(--muted); }
+.rd-svg .rd-panel { fill: color-mix(in srgb, var(--panel2) 60%, transparent); stroke: var(--line); stroke-dasharray: 4 4; }
+.rd-svg .rd-ptitle { font-size: 12px; font-weight: 700; fill: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.rd-fig .rd-svg { max-height: 520px; }
+.rd-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; font-size: .82rem; color: var(--muted); }
+.rd-legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.rd-fig > div > div:first-child .rd-svg { max-width: 560px; margin: 0 auto; }
+.rd-check { margin: 16px 0 4px; padding: 10px 14px; border: 1px dashed var(--line); border-radius: 12px; }
+.rd-check .rd-boxt { color: var(--accent2); }
+.rd-check details { border-top: 1px solid var(--line); padding: 8px 0; }
+.rd-check details:first-of-type { border-top: 0; }
+.rd-check summary { cursor: pointer; font-weight: 600; font-size: .95rem; }
+.rd-check details p { margin: 8px 0 2px; color: var(--muted); }
+.rd-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.rd-nums div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.rd-nums b { display: block; font-size: 1.15rem; color: var(--accent); font-variant-numeric: tabular-nums; }
+.rd-nums span { font-size: .86rem; color: var(--muted); line-height: 1.4; display: block; }
+.rd-myths { display: grid; gap: 10px; }
+.rd-myths > div { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.rd-myths p { margin: 0; font-size: .93rem; }
+.rd-myths .rd-m { color: var(--dn); font-weight: 600; margin-bottom: 4px; }
+.rd-myths .rd-m::before { content: '✗ '; }
+@media (max-width: 1000px) {
+  .rd-wrap { grid-template-columns: 1fr; gap: 14px; }
+  .rd-toc { position: static; }
+}
+@media (max-width: 700px) { .rd-tri { grid-template-columns: 1fr; } .rd-body p, .rd-body li { font-size: .95rem; } }
+.rd-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@media (max-width: 700px) { .rd-flow { min-width: 660px; } .rd-scroll::after { content: 'Scroll sideways to see the whole diagram →'; display: block; font-size: .75rem; color: var(--faint); margin-top: 4px; } }
