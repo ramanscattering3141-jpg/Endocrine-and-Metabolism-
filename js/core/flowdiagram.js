@@ -121,7 +121,13 @@
       if (stateBar) stateBar.querySelectorAll('.chip').forEach((b) => b.classList.toggle('on', b.dataset.s === state));
       if (grpBar) {
         EP.clear(grpBar);
-        Object.keys(groups).forEach((g) => grpBar.appendChild(h('button.fd-tog' + (open[g] ? '.on' : ''), { onclick: () => { open[g] = !open[g]; render(); }, 'aria-expanded': String(!!open[g]) }, (open[g] ? '▾ ' : '▸ ') + groups[g].label)));
+        const gk = Object.keys(groups);
+        grpBar.appendChild(h('span.fd-glab', 'Branches:'));
+        gk.forEach((g) => grpBar.appendChild(h('button.fd-tog' + (open[g] ? '.on' : ''), { onclick: () => { open[g] = !open[g]; render(); }, 'aria-expanded': String(!!open[g]), title: open[g] ? 'Click to collapse this branch' : 'Click to expand this branch' }, (open[g] ? '▾ ' : '▸ ') + groups[g].label, h('i', open[g] ? 'open' : 'closed'))));
+        if (gk.length > 1) {
+          const anyOpen = gk.some((g) => open[g]);
+          grpBar.appendChild(h('button.fd-tog.fd-all', { onclick: () => { gk.forEach((g) => { open[g] = !anyOpen; }); render(); } }, anyOpen ? '⊟ Collapse all' : '⊞ Expand all'));
+        }
       }
       // zones
       (spec.zones || []).forEach((z) => {
@@ -146,7 +152,7 @@
       const resolve = (nid) => { const n = spec.nodes.find((x) => x.id === nid); if (!n) return null; return hiddenG(n.g) ? '§' + n.g : nid; };
       // edges
       const gE = s('g', { class: 'fd-edges' }), gL = s('g', { class: 'fd-labels' });
-      const seen = new Set();
+      const seen = new Set(), routes = [], labels = [];
       (spec.edges || []).forEach((e0) => {
         let e = e0;
         const a = resolve(e.f), b = resolve(e.t);
@@ -161,41 +167,42 @@
         const A = box[a], B = box[b];
         const k = e.k || 'act';
         const via = e.via || [];
-        const first = via.length ? via[0] : [B.x, B.y], last = via.length ? via[via.length - 1] : [A.x, A.y];
-        let p0 = edgePt(A, first[0], first[1], 2), p1 = edgePt(B, last[0], last[1], k === 'inh' || k === 'fb' ? 3 : 4);
-        if (e.fp) p0 = e.fp; if (e.tp) p1 = e.tp;
-        let d, mid;
-        if (via.length) {
-          const pts = [p0].concat(via, [p1]);
-          d = 'M' + pts.map((p) => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' L');
-          const seg = pts.slice(1).map((p, i) => Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]));
-          let half = seg.reduce((a, x) => a + x, 0) / 2, i = 0;
-          while (i < seg.length - 1 && half > seg[i]) { half -= seg[i]; i++; }
-          const f = seg[i] ? half / seg[i] : 0;
-          mid = [pts[i][0] + (pts[i + 1][0] - pts[i][0]) * f, pts[i][1] + (pts[i + 1][1] - pts[i][1]) * f];
-        } else if (e.bend) {
-          const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2, dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1;
-          const cx = mx - dy / L * e.bend, cy = my + dx / L * e.bend;
-          d = `M${p0[0].toFixed(1)},${p0[1].toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${p1[0].toFixed(1)},${p1[1].toFixed(1)}`;
-          mid = [0.25 * p0[0] + 0.5 * cx + 0.25 * p1[0], 0.25 * p0[1] + 0.5 * cy + 0.25 * p1[1]];
+        const tipPad = k === 'inh' || k === 'fb' ? 3 : 4;
+        let d, pts;
+        if (via.length || e.fp || e.tp || e.bend) {
+          const first = via.length ? via[0] : [B.x, B.y], last = via.length ? via[via.length - 1] : [A.x, A.y];
+          const p0 = e.fp || edgePt(A, first[0], first[1], 2), p1 = e.tp || edgePt(B, last[0], last[1], tipPad);
+          if (e.bend && !via.length) {
+            const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2, dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1;
+            const cx = mx - dy / L * e.bend, cy = my + dx / L * e.bend;
+            d = `M${p0[0].toFixed(1)},${p0[1].toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${p1[0].toFixed(1)},${p1[1].toFixed(1)}`;
+            pts = [p0, [0.25 * p0[0] + 0.5 * cx + 0.25 * p1[0], 0.25 * p0[1] + 0.5 * cy + 0.25 * p1[1]], p1];
+          } else { pts = [p0].concat(via, [p1]); d = EP.pathD(pts); }
         } else {
-          d = `M${p0[0].toFixed(1)},${p0[1].toFixed(1)} L${p1[0].toFixed(1)},${p1[1].toFixed(1)}`;
-          mid = [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2];
+          // automatic routing: straight or right-angle paths that go around the other boxes
+          const obs = Object.keys(box).filter((x) => x !== a && x !== b).map((x) => box[x]);
+          pts = EP.route(A, B, obs, { padA: 2, padB: tipPad, diag: e.diag }).pts;
+          d = EP.pathD(pts);
         }
+        routes.push({ ek: e.f + '>' + e.t, pts });
         const ek = e.f + '>' + e.t;
         const g = s('g', { class: `fd-e ek-${k}` + (e.anim ? ' anim' : ''), 'data-e': ek, 'data-a': e.f, 'data-b': e.t });
         const path = s('path', { d, class: 'fd-ep', style: `stroke:${e.col || ECOL[k] || ECOL.act};stroke-width:${e.w || (k === 'flow' ? 2.6 : 2)}` + (k === 'inh' || k === 'fb' ? ';stroke-dasharray:6 4' : k === 'move' ? ';stroke-dasharray:2 4' : '') });
         if (k !== 'line') path.setAttribute('marker-end', `url(#${id}-${k === 'line' ? 'plain' : ECOL[k] ? k : 'act'})`);
         if (e.both) path.setAttribute('marker-start', `url(#${id}-${k})`);
         g.appendChild(path);
-        if (e.label) {
-          if (e.lp) mid = e.lp;
-          const off = e.lo || [0, -6];
-          gL.appendChild(s('text', { x: mid[0] + off[0], y: mid[1] + off[1], class: 'fd-el fd-e', 'data-e': ek, 'data-a': e.f, 'data-b': e.t, 'text-anchor': e.la || 'middle' }, e.label));
-        }
+        if (e.label) labels.push({ e, ek, pts });
         gE.appendChild(g);
       });
       svg.appendChild(gE);
+      // labels: placed after all routes so they avoid every box and each other
+      const allBoxes = Object.values(box), placed = [];
+      labels.forEach(({ e, ek, pts }) => {
+        const others = routes.filter((r) => r.pts !== pts).map((r) => r.pts);
+        const at = e.lp ? [e.lp[0], e.lp[1]] : EP.placeLabel(pts, e.label, allBoxes, placed, 10.5, others);
+        gL.appendChild(s('text', { x: at[0], y: at[1], class: 'fd-el fd-e', 'data-e': ek, 'data-a': e.f, 'data-b': e.t, 'text-anchor': e.lp ? (e.la || 'middle') : 'middle' }, e.label));
+      });
+      root.routes = routes; root.boxes = box;
       // nodes
       const gN = s('g', { class: 'fd-nodes' });
       Object.keys(box).forEach((bid) => {
@@ -230,6 +237,35 @@
         gN.appendChild(g);
       });
       svg.appendChild(gN);
+      // collapse tabs for open branches, placed where they cover nothing
+      const tabBoxes = Object.values(box).map((B) => ({ x: B.x, y: B.y, w: B.w, h: B.h }));
+      const tabLines = (root.routes || []);
+      Object.keys(groups).forEach((g) => {
+        if (!open[g]) return;
+        const mem = spec.nodes.filter((n) => n.g === g && box[n.id]).map((n) => box[n.id]);
+        if (!mem.length) return;
+        const lab = '▾ collapse ' + groups[g].label;
+        const w = EP.textWidth(lab, 11, 700) + 18, hh = 22;
+        const x0 = Math.min(...mem.map((B) => B.x - B.w / 2)), x1 = Math.max(...mem.map((B) => B.x + B.w / 2));
+        const y0 = Math.min(...mem.map((B) => B.y - B.h / 2)), y1 = Math.max(...mem.map((B) => B.y + B.h / 2));
+        const cands = [[groups[g].x, groups[g].y], [x0 + w / 2, y0 - hh / 2 - 6], [x1 - w / 2, y0 - hh / 2 - 6], [x0 + w / 2, y1 + hh / 2 + 6], [x1 - w / 2, y1 + hh / 2 + 6], [x1 + w / 2 + 8, (y0 + y1) / 2], [x0 - w / 2 - 8, (y0 + y1) / 2]];
+        const fits = ([cx, cy]) => {
+          if (cx - w / 2 < 2 || cx + w / 2 > spec.w - 2 || cy - hh / 2 < 2 || cy + hh / 2 > spec.h - 2) return false;
+          const r = { x0: cx - w / 2, x1: cx + w / 2, y0: cy - hh / 2, y1: cy + hh / 2 };
+          if (tabBoxes.some((B) => r.x0 < B.x + B.w / 2 + 3 && r.x1 > B.x - B.w / 2 - 3 && r.y0 < B.y + B.h / 2 + 3 && r.y1 > B.y - B.h / 2 - 3)) return false;
+          for (const R of tabLines) for (let i = 1; i < R.pts.length; i++) if (EP.segHits(R.pts[i - 1], R.pts[i], { x: cx, y: cy, w, h: hh }, 1)) return false;
+          return true;
+        };
+        const at = cands.find(fits);
+        if (!at) return;
+        tabBoxes.push({ x: at[0], y: at[1], w, h: hh });
+        const t = s('g', { class: 'fd-ctab', transform: `translate(${at[0]},${at[1]})`, tabindex: 0, role: 'button', 'aria-label': 'Collapse ' + groups[g].label });
+        t.appendChild(s('rect', { x: -w / 2, y: -hh / 2, width: w, height: hh, rx: hh / 2 }));
+        t.appendChild(s('text', { x: 0, y: 4, 'text-anchor': 'middle' }, lab));
+        const col = () => { open[g] = false; render(); };
+        t.addEventListener('click', col); t.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); col(); } });
+        svg.appendChild(t);
+      });
       svg.appendChild(gL);
       // state overlay
       if (st) {

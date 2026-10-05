@@ -94,6 +94,7 @@
   const searchInput = h('input', { type: 'search', placeholder: 'Search: GLUT4, cortisol, acetyl-CoA, 21-hydroxylase…', 'aria-label': 'Search' });
   const searchRes = h('div.search-results');
   const themeBtn = h('button.iconbtn', { title: 'Toggle light/dark', onclick: toggleTheme }, '◐');
+  const motionBtn = h('button.iconbtn.motion-btn', { onclick: () => EP.setMotion(EP.state.paused), 'aria-pressed': 'true' });
   const topbar = h('header.topbar',
     h('button.iconbtn.menu-toggle', { onclick: () => sidebar.classList.toggle('open'), 'aria-label': 'Menu' }, '☰'),
     h('a.brand', { href: '#/home' },
@@ -102,7 +103,7 @@
     h('div.search', searchInput, searchRes),
     h('div.levels', { role: 'group', 'aria-label': 'Detail level' }, levelBtns),
     h('button.whatif-btn', { onclick: () => go('whatif') }, '⚡', h('span', ' What if…?')),
-    themeBtn);
+    motionBtn, themeBtn);
   const info = h('aside.info', { 'aria-label': 'Explanation panel' },
     h('div.info-head', h('strong', 'Explain this'), h('button.iconbtn', { onclick: closeInfo, 'aria-label': 'Close' }, '✕')),
     h('div.info-body'));
@@ -130,6 +131,9 @@
   if (savedTheme) document.documentElement.dataset.theme = savedTheme; // otherwise follow the system/host theme
   EP.on('level', (lv) => { levelBtns.forEach((b, i) => b.classList.toggle('on', i + 1 === lv)); EP.store.set('level', lv); });
   EP.setLevel(EP.store.get('level', 2));
+  EP.on('motion', (on) => { motionBtn.textContent = on ? '⏸' : '▶'; motionBtn.title = on ? 'Stop all animations (moving dots, flowing arrows, cell animations)' : 'Animations are stopped — click to resume'; motionBtn.setAttribute('aria-pressed', String(on)); motionBtn.classList.toggle('off', !on); });
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  EP.setMotion(EP.store.get('motion', !reduce));
 
   // ------------------------------------------------------------------ router
   function parseHash() {

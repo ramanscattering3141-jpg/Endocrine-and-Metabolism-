@@ -43,10 +43,14 @@
       h('option', { value: '' }, 'Normal cell'), ...C.knock.map((k) => h('option', { value: k.id }, k.label))) : null;
     const walkBtn = C.steps && C.steps.length ? h('button.btn', { onclick: () => { st.step = st.step < 0 ? 0 : -1; update(); } }, '▶ Walk me through it') : null;
     bar.append(h('span.small.muted', (C.ligand || 'Hormone') + ':'), ligSel, knockSel ? h('span.small.muted', 'Cell / disorder / drug:') : null, knockSel, walkBtn);
+    // branch focus buttons: show one branch at a time so the map is easier to read
+    const focusBar = h('div.casc-focus', h('span.small.muted', 'Show branch:'),
+      h('button.chip.on', { 'data-b': '', onclick: () => { st.focus = null; update(); } }, 'All'),
+      C.branches.map((b) => h('button.chip', { 'data-b': b.id, style: { '--bc': `var(--tr${b.c})` }, onclick: () => { st.focus = st.focus === b.id ? null : b.id; update(); } }, b.label.split(':')[0])));
     const grid = h('div.casc-grid'); const left = h('div.casc-map'); const side = h('div.sim-panel.casc-side');
     grid.append(left, side);
     const cap = h('div.casc-cap', { hidden: true });
-    root.append(bar, cap, grid); container.appendChild(root);
+    root.append(bar, focusBar, cap, grid); container.appendChild(root);
 
     const svg = s('svg', { class: 'casc-svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': C.title });
     svg.appendChild(EP.svgDefs());
@@ -187,6 +191,7 @@
       });
       rG.classList.toggle('dim', !!stepNodes && !stepNodes.has('R'));
       Object.entries(bandEls).forEach(([b, g]) => g.classList.toggle('dim', !!st.focus && st.focus !== b));
+      focusBar.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', (c.dataset.b || null) === (st.focus || null)));
       links.forEach((L) => {
         const src = S.v[L.a] || 0; const eff = L.sign * src;
         L.active = Math.abs(src) > 0.15 && !(L.b in S.forced);

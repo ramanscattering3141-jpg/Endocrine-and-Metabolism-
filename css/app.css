@@ -766,3 +766,26 @@ canvas.chart { width: 100%; background: var(--bg); border: 1px solid var(--line)
 .irv-res { margin-top: 8px; font-size: .9rem; min-height: 1.4em; }
 .irv-tl { position: relative; }
 .fd-el.s-off { opacity: .15; }
+/* global animation switch */
+body.no-motion .flow, body.no-motion .port-flow, body.no-motion .particle { display: none; }
+body.no-motion .fd-e.anim .fd-ep { animation: none; stroke-dasharray: none; }
+body.no-motion *, body.no-motion *::before, body.no-motion *::after { animation-play-state: paused !important; transition-duration: 0s !important; }
+.motion-btn.off { color: var(--dn); border-color: var(--dn); }
+.fd-glab { font-size: .74rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.fd-tog i { font-style: normal; font-size: .68rem; margin-left: 6px; padding: 0 6px; border-radius: 99px; background: var(--panel2); color: var(--muted); }
+.fd-tog.on i { background: color-mix(in srgb, var(--accent) 25%, transparent); color: var(--text); }
+.fd-all { border-style: solid; }
+.fd-ctab { cursor: pointer; }
+.fd-ctab rect { fill: var(--panel); stroke: var(--accent); stroke-width: 1.2; stroke-dasharray: 3 2; opacity: .92; }
+.fd-ctab text { font-size: 11px; font-weight: 700; fill: var(--accent); }
+.fd-ctab:hover rect, .fd-ctab:focus rect { stroke-dasharray: none; fill: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+/* hover-to-reveal long connector lines (pathway maps) */
+.edge-g.ghost { opacity: 0; pointer-events: none; transition: opacity .2s; }
+.edge-g.ghost.hover, .pathway.show-links .edge-g.ghost { opacity: 1; pointer-events: auto; }
+.pathway.show-links .edge-g.ghost { opacity: .75; }
+.casc-focus { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; margin: 4px 0 10px; }
+.casc-focus .chip { margin: 0; border-left: 4px solid var(--bc, var(--line)); }
+.casc-node.dim { opacity: .1; } .casc-link.dim { opacity: .04; } .casc-band.dim { opacity: .2; }
+body.no-motion .casc-dot { display: none; }
+@media (max-width: 600px) { .cmp-table { display: block; overflow-x: auto; } }
+select.btn { max-width: 100%; }

@@ -129,6 +129,14 @@
     paused: false,
     textScale: 1,
   };
+  /** Global animation switch (top bar): stops flowing dots/dashes and paused canvas loops everywhere. */
+  EP.setMotion = (on) => {
+    EP.state.paused = !on;
+    document.body.classList.toggle('paused', !on);
+    document.body.classList.toggle('no-motion', !on);
+    EP.store.set('motion', on);
+    EP.emit('motion', on);
+  };
   EP.setLevel = (lv) => { EP.state.level = lv; document.body.dataset.level = lv; EP.emit('level', lv); };
 
   /** Safe localStorage */
@@ -139,14 +147,15 @@
 
   /** Animation frame loop registry so views can be torn down cleanly on navigation */
   const loops = new Set();
-  EP.loop = function (fn) {
+  /** opts.always: keep running when animations are switched off (for simulations, not decoration). */
+  EP.loop = function (fn, opts) {
     let last = performance.now();
     const rec = { alive: true };
     const tick = (t) => {
       if (!rec.alive) return;
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
-      if (!EP.state.paused) fn(dt * EP.state.motion, t);
+      if (!EP.state.paused || (opts && opts.always)) fn(dt * EP.state.motion, t);
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);

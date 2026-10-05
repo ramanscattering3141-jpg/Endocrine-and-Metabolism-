@@ -30,7 +30,7 @@
             N('rm', 160, 152, 'INSR', 'receptor'), N('rl', 460, 152, 'INSR', 'receptor'), N('rw', 760, 152, 'INSR', 'receptor'),
             N('m1', 160, 200, 'GLUT4 → glucose uptake', 'process'), N('m2', 160, 240, 'Net glycogen synthesis', 'process'), N('m3', 160, 280, 'Glycolysis / oxidation', 'process'),
             N('m4', 160, 322, 'lactate & alanine → liver', 'note'),
-            N('l1', 460, 200, 'Net glycogen synthesis', 'process'), N('l3', 460, 240, '↓ G6PC/PCK1 genes (slow)', 'process'), N('l4', 460, 280, '↑ Lipogenesis — DNL (slow)', 'process'),
+            N('l1', 460, 200, 'Net glycogen synthesis', 'process'), N('l3', 460, 240, '↓ G6PC/PCK1 genes (slow)', 'process'), N('l4', 460, 280, '↑ Lipogenesis — DNL (slow)', 'process', { info: 'Insulin switches on the lipogenic genes, but **de novo lipogenesis is a small source of liver fat** (~10% of liver TG output in healthy people, ~25% in NAFLD). Most liver fat comes from re-esterified plasma fatty acids.' }),
             N('l2', 460, 322, '↓ Gluconeogenesis (fast)', 'process', { info: 'The fast fall in gluconeogenesis is mostly an **indirect** effect, routed through fat (Section III).' }),
             N('w2', 760, 200, 'Glucose uptake', 'process'), N('w3', 760, 240, 'Fat storage (esterification)', 'process'), N('w4', 760, 280, 'Adipogenesis (PPARγ)', 'process'),
             N('w1', 760, 322, '⊣ Lipolysis — most sensitive', 'process', { info: 'Half-maximal suppression of lipolysis at ~20 µU/mL insulin vs ~60 µU/mL for whole-body glucose uptake.' }),
@@ -80,7 +80,7 @@
         EP.flow({
           w: 920, h: 520,
           zones: [
-            { x: 10, y: 62, w: 900, h: 50, kind: 'membrane', label: 'Plasma membrane', lx: 900, ly: 80, anchor: 'end' },
+            { x: 10, y: 62, w: 900, h: 50, kind: 'membrane', label: 'Membrane', lx: 18, ly: 106 },
             { x: 10, y: 118, w: 900, h: 394, label: 'Cytosol' },
           ],
           groups: { mito: { label: 'Mitogenic arm', open: false, x: 790, y: 210 }, fb: { label: 'Feedback loops', open: false, x: 680, y: 300 } },
@@ -160,11 +160,11 @@
           edges: [
             E('ins', 'insr'), E('insr', 'irs1'), E('irs1', 'pi3k'), E('pi3k', 'akt2'),
             E('pi3k', 'rac1', 'act', null, { g: 'glut' }), E('rac1', 'actin', 'act', null, { g: 'glut' }), E('actin', 'gsv', 'act', null, { g: 'glut' }),
-            E('akt2', 'as160', 'inh', 'pThr649', { g: 'glut', lo: [0, 16] }), E('as160', 'rab', 'inh', 'GAP', { g: 'glut' }), E('rab', 'gsv', 'act', null, { g: 'glut' }),
+            E('akt2', 'as160', 'inh', 'pThr649', { g: 'glut', via: [[195, 275], [195, 220]] }), E('as160', 'rab', 'inh', 'GAP', { g: 'glut' }), E('rab', 'gsv', 'act', null, { g: 'glut' }),
             E('gsv', 'glut4', 'move', 'translocate + fuse', { lo: [52, 0] }), E('glcO', 'glut4', 'flow', null, { anim: true }), E('glut4', 'g6p', 'flow', 'hexokinase II', { anim: true, lo: [44, 0] }),
             E('g6p', 'glycol', 'flow', null, { g: 'glyc' }),
-            E('akt2', 'gsk3', 'inh', 'Ser21/9', { g: 'glyc' }), E('gsk3', 'gs', 'inh', null, { g: 'glyc' }), E('akt2', 'pp1', 'act', '(insulin)', { g: 'glyc', lo: [-30, 6] }),
-            E('pp1', 'gs', 'act', 'dephos', { g: 'glyc' }), E('pp1', 'gp', 'inh', 'dephos', { g: 'glyc', lo: [0, 14] }), E('akt2', 'phk', 'inh', null, { g: 'glyc' }), E('phk', 'gp', 'act', 'Ser15-P', { g: 'glyc' }),
+            E('akt2', 'gsk3', 'inh', 'Ser21/9', { g: 'glyc', via: [[195, 275], [195, 320]] }), E('gsk3', 'gs', 'inh', null, { g: 'glyc' }), E('akt2', 'pp1', 'act', null, { g: 'glyc', via: [[195, 275], [195, 385]] }),
+            E('pp1', 'gs', 'act', 'dephos', { g: 'glyc' }), E('pp1', 'gp', 'inh', 'dephos', { g: 'glyc', lo: [0, 14] }), E('akt2', 'phk', 'inh', null, { g: 'glyc', via: [[195, 275], [195, 452]] }), E('phk', 'gp', 'act', 'Ser15-P', { g: 'glyc' }),
             E('g6p', 'gs', 'act', 'allostery ★', { g: 'glyc', w: 3 }), E('g6p', 'gp', 'inh', 'allostery', { g: 'glyc', lo: [-40, 26] }),
             E('g6p', 'glycogen', 'flow', null, { g: 'glyc', anim: true }), E('gs', 'glycogen', 'act', 'builds', { g: 'glyc', lo: [-30, 12] }), E('gp', 'glycogen', 'inh', 'breaks down', { g: 'glyc' }),
           ],
@@ -218,7 +218,7 @@
             N('mtorc1', 320, 355, 'mTORC1 → S6K', 'kinase', { g: 'dnl', info: 'AKT activates mTORC1 by inhibiting TSC2 / PRAS40. S6K is required for SREBP-1c processing. mTORC1 also integrates amino acids.' }),
             N('srebp', 500, 355, 'SREBP-1c', 'tf', { g: 'dnl', info: 'Master lipogenic TF. Insulin ↑ its transcription and cleavage. Slow: nuclear SREBP-1 appears ~8 h after insulin. Liver SREBP-1c overexpression → steatosis; liver Akt2⁻/⁻ ob/ob mice get no steatosis.' }),
             N('dnlg', 680, 355, 'ACC · FAS · GPAT1', 'enzyme', { g: 'dnl', info: 'Acute too: insulin dephosphorylates **ACC Ser79** (maybe via ⊣ AMPK) within minutes. ACC Ser79/212Ala knock-in → constitutive lipogenesis.' }),
-            N('dnl', 860, 355, 'De novo\nlipogenesis', 'process', { g: 'dnl', info: 'Only ~25% of liver fat synthesis; ~60% is re-esterified plasma fatty acid, ~15% diet.' }),
+            N('dnl', 860, 355, 'De novo\nlipogenesis', 'process', { g: 'dnl', info: 'A **minor** source of liver fat: ~10% of fasting liver TG output in healthy people, ~25% in NAFLD (vs ~60% re-esterified plasma fatty acid, ~15% diet). Rises with carbohydrate/fructose intake and hyperinsulinemia.' }),
             N('prot', 320, 425, 'Protein synthesis\n(S6K · 4E-BP1/2)', 'process', { g: 'prot', info: 'mTORC1 drives translation of 5′-TOP mRNAs and phosphatidylcholine for VLDL.' }),
             N('foxo1', 330, 520, 'FOXO1 (+ PGC1α)', 'tf', { g: 'foxo', info: 'AKT phosphorylates Thr24, Ser256, Ser319 → nuclear exclusion. Liver FOXO1 KO → fasting hypoglycemia. Deleting Foxo1 **rescues** HGP in liver INSR, IRS1/2 or AKT1/2 knockouts.' }),
             N('genes', 700, 520, 'G6PC · PCK1\n(gluconeogenic capacity)', 'gene', { g: 'foxo', info: 'Slow: 2 h of insulin does not change G6pc protein. Control analysis suggests non-transcriptional mechanisms dominate day-to-day.' }),
@@ -228,13 +228,13 @@
           edges: [
             E('ins', 'insr'), E('insr', 'irs'), E('irs', 'pi3k'), E('pi3k', 'akt'),
             E('glc', 'glut2', 'flow', null, { anim: true }), E('glut2', 'g6p', 'flow', null, { g: 'gly', anim: true }),
-            E('akt', 'gck', 'act', '↑ GCK', { g: 'gly', lo: [-6, 18] }), E('gck', 'g6p', 'act', null, { g: 'gly' }), E('g6p', 'gys2', 'act', 'allostery', { g: 'gly' }), E('gys2', 'glycogen', 'act', null, { g: 'gly' }),
-            E('akt', 'gsk3', 'inh', null, { g: 'gly' }), E('gsk3', 'gys2', 'inh', null, { g: 'gly' }), E('pp1', 'gys2', 'act', null, { g: 'gly' }), E('pp1', 'gp', 'inh', null, { g: 'gly' }), E('gp', 'glycogen', 'inh', null, { g: 'gly' }),
-            E('glut2', 'gp', 'inh', 'glucose ⊣', { g: 'gly', via: [[925, 79], [925, 225]], lp: [918, 128], la: 'end' }), E('akt', 'pp1', 'act', null, { g: 'gly', bend: 18 }),
-            E('akt', 'mtorc1', 'act', '⊣ TSC2', { g: 'dnl', lo: [-10, 4] }), E('mtorc1', 'srebp', 'act', 'cleavage', { g: 'dnl' }), E('akt', 'srebp', 'act', '↑ transcription', { g: 'dnl', bend: -30, lo: [30, -10] }),
-            E('srebp', 'dnlg', 'act', null, { g: 'dnl' }), E('dnlg', 'dnl', 'act', null, { g: 'dnl' }), E('g6p', 'dnl', 'flow', 'substrate push', { g: 'dnl', bend: -50, lo: [60, 30] }),
+            E('akt', 'gck', 'act', '↑ GCK', { g: 'gly', via: [[205, 290], [205, 165]] }), E('gck', 'g6p', 'act', null, { g: 'gly' }), E('g6p', 'gys2', 'act', 'allostery', { g: 'gly' }), E('gys2', 'glycogen', 'act', null, { g: 'gly' }),
+            E('akt', 'gsk3', 'inh', null, { g: 'gly', via: [[205, 290], [205, 225]] }), E('gsk3', 'gys2', 'inh', null, { g: 'gly' }), E('pp1', 'gys2', 'act', null, { g: 'gly' }), E('pp1', 'gp', 'inh', null, { g: 'gly' }), E('gp', 'glycogen', 'inh', null, { g: 'gly' }),
+            E('glut2', 'gp', 'inh', 'glucose ⊣', { g: 'gly', via: [[925, 79], [925, 225]], lp: [918, 128], la: 'end' }), E('akt', 'pp1', 'act', null, { g: 'gly', via: [[205, 290], [205, 268], [700, 268]] }),
+            E('akt', 'mtorc1', 'act', '⊣ TSC2', { g: 'dnl', via: [[205, 290], [205, 355]] }), E('mtorc1', 'srebp', 'act', 'cleavage', { g: 'dnl' }), E('akt', 'srebp', 'act', '↑ transcription', { g: 'dnl', via: [[205, 290], [205, 400], [500, 400]] }),
+            E('srebp', 'dnlg', 'act', null, { g: 'dnl' }), E('dnlg', 'dnl', 'act', null, { g: 'dnl' }), E('g6p', 'dnl', 'flow', 'substrate push', { g: 'dnl' }),
             E('mtorc1', 'prot', 'act', null, { g: 'prot' }),
-            E('akt', 'foxo1', 'inh', 'P → out of nucleus', { g: 'foxo', lo: [-50, 8] }), E('foxo1', 'genes', 'act', null, { g: 'foxo' }), E('foxo1', 'gck', 'inh', '+SIN3A', { g: 'foxo', via: [[230, 520], [230, 165]], lp: [236, 292], la: 'start' }),
+            E('akt', 'foxo1', 'inh', 'P → nuclear exit', { g: 'foxo', via: [[205, 290], [205, 520]] }), E('foxo1', 'genes', 'act', null, { g: 'foxo' }), E('foxo1', 'gck', 'inh', '+SIN3A', { g: 'foxo', via: [[230, 520], [230, 165]], lp: [236, 292], la: 'start' }),
             E('akt', 'sik2', 'act', null, { g: 'foxo' }), E('sik2', 'crtc2', 'inh', 'Ser171', { g: 'foxo' }), E('crtc2', 'genes', 'act', 'early fast', { g: 'foxo' }),
           ],
           steps: [
@@ -255,7 +255,7 @@
               h('div.hd', '↑ Glucose'), h('div.n', 'helps'), h('div.y', 'Necessary & sufficient')),
             IRV.cap('**Net** glycogen storage needs **both** high insulin and high glucose. Insulin is permissive; portal glucose is the driver.')),
           h('div', h('h4', 'Where liver triglyceride comes from'), lipidSources(),
-            IRV.cap('Insulin also lowers plasma TG within 15 min (↑ TRL clearance, ↓ VLDL export).'))),
+            IRV.cap('**DNL is a minor route.** ~10% of liver TG output in healthy fasting people (Lambert 2014), ~25% in NAFLD (Donnelly 2005); it roughly doubles after carbohydrate meals in insulin-resistant people (Petersen 2007). Most liver fat is **re-esterified plasma fatty acid**. Insulin also lowers plasma TG within 15 min.'))),
         IRV.fig('Fig. 3', 'Where glucose output comes from during a fast', 'Glycogenolysis decays exponentially; gluconeogenesis stays flat for ~48 h. Plasma glucose during a fast signals how much liver glycogen is left.',
           h('div.irv-31', IRV.mini({
             w: 520, h: 230, x: [4, 48], y: [0, 14], xt: [[4, '4'], [12, '12'], [24, '24'], [36, '36'], [48, '48 h']], yt: [[0, '0'], [5, '5'], [10, '10']], xl: 'Fasting duration (h)', yl: 'HGP (µmol/kg/min)',
@@ -308,7 +308,7 @@
             E('insr', 'pde', 'act', 'signalosome', { g: 'lip', lo: [-20, -4] }), E('pde', 'camp', 'inh', 'degrades', { g: 'lip' }),
             E('insr', 'pp2a', 'act', null, { g: 'lip' }), E('pp2a', 'hsl', 'inh', 'dephos', { g: 'lip', lo: [30, 44] }), E('insr', 'pp1', 'act', null, { g: 'lip', via: [[460, 150], [460, 300]] }), E('pp1', 'plin', 'inh', 'dephos', { g: 'lip' }),
             E('insr', 'irs1', 'act', null, { g: 'glu' }), E('irs1', 'akt2', 'act', null, { g: 'glu' }), E('akt2', 'as160', 'inh', 'P', { g: 'glu' }), E('akt2', 'fus', 'act', null, { g: 'glu', via: [[625, 260], [625, 345]] }),
-            E('as160', 'gsv', 'inh', 'GAPs off', { g: 'glu', via: [[500, 440]] }), E('fus', 'gsv', 'act', null, { g: 'glu' }),
+            E('as160', 'gsv', 'inh', 'GAPs off', { g: 'glu' }), E('fus', 'gsv', 'act', null, { g: 'glu' }),
             E('insr2', 'tc10', 'act', 'PI3K-independent', { g: 'glu', lo: [62, 2] }), E('tc10', 'exo', 'act', null, { g: 'glu' }), E('tc10', 'tug', 'act', null, { g: 'glu' }), E('tug', 'gsv', 'act', 'release', { g: 'glu' }), E('exo', 'gsv', 'act', 'tether', { g: 'glu', via: [[920, 240], [920, 440]], lp: [914, 410], la: 'end' }),
             E('insr2', 'munc', 'act', 'pTyr', { g: 'glu' }), E('munc', 'gsv', 'act', null, { g: 'glu' }),
             E('gsv', 'glut', 'move', null), E('glcO', 'glut', 'flow', null, { anim: true }), E('glut', 'g3p', 'flow', null, { g: 'store', anim: true }), E('g3p', 'reest', 'flow', null, { g: 'store' }), E('nefa', 'reest', 'flow', 're-esterify', { g: 'store', bend: 20 }),
@@ -330,10 +330,22 @@
     },
   });
   function lipidSources() {
-    const W = 460, segs = [['Re-esterified plasma fatty acids', 60, 'var(--m-fat)'], ['DNL', 25, 'var(--tr3)'], ['Diet', 15, 'var(--tr5)']];
-    const svg = EP.s('svg', { class: 'irv-mini', viewBox: `0 0 ${W} 74` });
-    let x = 0;
-    segs.forEach(([l, p, c]) => { const w = W * p / 100; svg.appendChild(EP.s('rect', { x, y: 6, width: w - 2, height: 30, rx: 6, style: `fill:color-mix(in srgb, ${c} 55%, transparent);stroke:${c}` })); svg.appendChild(EP.s('text', { x: x + w / 2, y: 26, 'text-anchor': 'middle', style: 'font-size:13px;font-weight:800;fill:var(--text)' }, p + '%')); svg.appendChild(EP.s('text', { x: x + 2, y: 56, style: `font-size:11px;font-weight:600;fill:${c}` }, l.length > 22 && p < 30 ? l.split(' ').slice(0, 2).join(' ') : l)); x += w; });
+    // Healthy: ~10% of fasting VLDL-TG palmitate from DNL (Lambert 2014). NAFLD: 59% plasma NEFA, 26% DNL, 15% diet (Donnelly 2005).
+    const W = 470, rows = [['Healthy', [['Plasma fatty acids + diet', 90, 'var(--m-fat)'], ['DNL', 10, 'var(--tr3)']]], ['NAFLD', [['Re-esterified plasma fatty acids', 59, 'var(--m-fat)'], ['DNL', 26, 'var(--tr3)'], ['Diet', 15, 'var(--tr5)']]]];
+    const svg = EP.s('svg', { class: 'irv-mini', viewBox: `0 0 ${W} 112` });
+    rows.forEach(([name, segs], r) => {
+      const y = 4 + r * 56, x0 = 62, bw = W - x0;
+      svg.appendChild(EP.s('text', { x: 0, y: y + 19, style: 'font-size:12px;font-weight:700;fill:var(--muted)' }, name));
+      let x = x0;
+      segs.forEach(([l, p, c]) => {
+        const w = bw * p / 100;
+        svg.appendChild(EP.s('rect', { x, y, width: w - 2, height: 26, rx: 6, style: `fill:color-mix(in srgb, ${c} 55%, transparent);stroke:${c}` }));
+        svg.appendChild(EP.s('text', { x: x + w / 2, y: y + 18, 'text-anchor': 'middle', style: 'font-size:12px;font-weight:800;fill:var(--text)' }, '~' + p + '%'));
+        if (p >= 20 || l === 'DNL') svg.appendChild(EP.s('text', { x: x + (p < 20 ? w / 2 : 4), y: y + 41, 'text-anchor': p < 20 ? 'middle' : 'start', style: `font-size:10.5px;font-weight:600;fill:${c}` }, p < 15 && l !== 'DNL' ? '' : l));
+        else svg.appendChild(EP.s('text', { x: x + w / 2, y: y + 41, 'text-anchor': 'middle', style: `font-size:10.5px;font-weight:600;fill:${c}` }, l));
+        x += w;
+      });
+    });
     return svg;
   }
 
@@ -357,10 +369,10 @@
             N('nefaW', 95, 325, 'NEFA', 'lipid'), N('glyW', 240, 325, 'Glycerol', 'metab'),
             N('nefaB', 405, 265, 'NEFA', 'lipid'), N('glyB', 405, 345, 'Glycerol', 'metab'),
             N('insL', 700, 28, 'Insulin (portal)', 'hormone'), N('insrL', 700, 100, 'INSR', 'receptor'),
-            N('glycogen', 590, 175, 'Glycogen', 'glc'), N('box', 575, 265, 'β-oxidation', 'process'),
+            N('glycogen', 700, 175, 'Glycogen', 'glc'), N('box', 575, 265, 'β-oxidation', 'process'),
             N('acoa', 695, 265, 'Acetyl-CoA', 'metab', { info: 'Mitochondrial acetyl-CoA is an **allosteric activator of pyruvate carboxylase** — the link from fat to glucose production. Measured in vivo by LC-MS/MS (Perry 2015).' }),
             N('pc', 830, 265, 'Pyruvate\ncarboxylase', 'enzyme'),
-            N('gng', 780, 345, 'Gluconeogenesis', 'process'), N('hgp', 820, 175, 'Glucose output\n(HGP)', 'glc'),
+            N('gng', 780, 345, 'Gluconeogenesis', 'process'), N('hgp', 850, 175, 'Glucose output\n(HGP)', 'glc'),
           ],
           edges: [
             E('insW', 'insrW'), E('insrW', 'lipo', 'inh', null, { via: [[260, 100], [260, 245]] }), E('tag', 'lipo', 'flow'), E('lipo', 'nefaW', 'flow', null, { anim: true }), E('lipo', 'glyW', 'flow', null, { anim: true }),
@@ -372,9 +384,9 @@
           states: [
             { id: 'fast', label: '🌙 Fasting', n: { insW: { c: 'off' }, insL: { c: 'off' }, insrW: { c: 'off' }, insrL: { c: 'off' }, lipo: { b: '↑' }, acoa: { b: '↑' }, gng: { b: '↑' }, hgp: { b: '↑' } }, e: { 'insW>insrW': 'off', 'insL>insrL': 'off', 'insrW>lipo': 'off', 'insrL>glycogen': 'off', 'nefaB>box': 'thick', 'glyB>gng': 'thick' }, cap: '**Fasting:** low insulin → lipolysis runs → NEFA → acetyl-CoA → **pyruvate carboxylase ON**; glycogen breaks down.' },
             { id: 'fed', label: '🍽 Insulin / fed', n: { lipo: { b: '↓' }, nefaB: { c: 'off' }, glyB: { c: 'off' }, acoa: { b: '↓' }, pc: { b: '↓' }, gng: { b: '↓' }, glycogen: { b: '↑' }, hgp: { b: '↓' } }, e: { 'lipo>nefaW': 'weak', 'lipo>glyW': 'weak', 'nefaW>nefaB': 'weak', 'glyW>glyB': 'weak', 'nefaB>box': 'weak', 'glyB>gng': 'weak', 'glycogen>hgp': 'weak' }, cap: '**Insulin:** fat stops lipolysis (**indirect**) and liver stores glycogen (**direct**) → HGP falls fast.' },
-            { id: 'tlko', label: '🧪 Liver can\'t hear insulin', n: { insrL: { c: 'bad', b: '✕' }, lipo: { b: '↓' }, acoa: { b: '↓' }, gng: { b: '↓' }, hgp: { b: '↓' } }, e: { 'insrL>glycogen': 'off', 'nefaW>nefaB': 'weak', 'nefaB>box': 'weak', 'glyB>gng': 'weak' }, cap: '**Liver Akt1/Akt2/FoxO1 knockout (TLKO):** HGP still falls normally in clamps — because fat still obeys insulin.' },
-            { id: 'acet', label: '🧪 + acetate & glycerol', n: { lipo: { b: '↓' }, acoa: { c: 'hot', b: 'held' }, pc: { b: '↑' }, gng: { b: '↑' }, hgp: { b: '↑' } }, e: { 'nefaW>nefaB': 'weak' }, cap: '**Perry 2015:** keep liver acetyl-CoA and glycerol up with infusions → insulin can no longer suppress PC flux or HGP.' },
-            { id: 'adir', label: '⚠ Adipose insulin resistance', n: { insrW: { c: 'bad', b: '↓' }, lipo: { b: '↑' }, acoa: { b: '↑' }, gng: { b: '↑' }, hgp: { b: '↑' } }, e: { 'insrW>lipo': 'weak', 'nefaB>box': 'thick' }, cap: '**Adipose IR:** lipolysis keeps going → gluconeogenesis stays on. In a glycogen-depleted liver this looks like "hepatic" IR.' },
+            { id: 'tlko', label: '🧪 Liver signaling knocked out (TLKO)', n: { insrL: { c: 'bad', b: 'AKT ✕' }, glycogen: { b: '✕ synthesis' }, lipo: { b: '↓' }, acoa: { b: '↓' }, pc: { b: '↓' }, gng: { b: '↓' }, hgp: { b: '↓' } }, e: { 'insrL>glycogen': 'off', 'lipo>nefaW': 'weak', 'lipo>glyW': 'weak', 'nefaW>nefaB': 'weak', 'glyW>glyB': 'weak', 'nefaB>box': 'weak', 'glyB>gng': 'weak' }, cap: '**Liver Akt1 + Akt2 + FoxO1 knockout mice (fasted clamp):** the receptor is there but nothing downstream of AKT works, so insulin cannot drive liver glycogen synthesis. Yet glucose output still falls normally — fat still obeys insulin, so acetyl-CoA and glycerol supply drop. Intralipid (keeping NEFA up) abolishes this.' },
+            { id: 'acet', label: '🧪 Insulin + acetate & glycerol', n: { lipo: { b: '↓' }, acoa: { c: 'hot', b: 'held' }, glyB: { c: 'hot', b: 'held' }, pc: { b: '↔' }, gng: { b: '↔' }, hgp: { b: '↔ not ↓' } }, e: { 'lipo>nefaW': 'weak', 'nefaW>nefaB': 'weak' }, cap: '**Perry 2015 (fasted, glycogen-depleted rats):** insulin still stops lipolysis, but infusing acetate (keeps hepatic acetyl-CoA up) plus glycerol (replaces lost supply) leaves pyruvate carboxylase flux and glucose output at fasting levels — insulin can no longer suppress them.' },
+            { id: 'adir', label: '⚠ Adipose insulin resistance', n: { insrW: { c: 'bad', b: '↓' }, lipo: { b: '↑' }, acoa: { b: '↑' }, gng: { b: '↑' }, hgp: { b: '↑' } }, e: { 'insrW>lipo': 'weak', 'nefaB>box': 'thick' }, cap: '**Adipose IR (badges vs a normal insulin-stimulated state):** insulin fails to stop lipolysis → acetyl-CoA and glycerol stay high → gluconeogenesis is not suppressed. In a glycogen-depleted liver this looks like "hepatic" IR even if hepatocytes respond normally.' },
           ],
         }),
         IRV.pts([['🍗', '**Fed liver** (lots of glycogen) → direct effects dominate. **Fasted liver** (glycogen gone) → indirect effects dominate.'], ['🐀', 'Rodents lose liver glycogen overnight; humans and dogs keep it longer → explains conflicting studies.'], ['🩸', 'In poorly controlled T2D, the extra glucose output is **all gluconeogenesis**.']]),
@@ -406,6 +418,7 @@
       b.appendChild(IRV.fig('III-D', 'Brain, leptin and the gut', 'Brain insulin clearly cuts appetite. Its control of liver glucose output works in rodents but not in more careful dog studies. Leptin acts through the HPA axis.',
         EP.flow({
           w: 920, h: 390,
+          zones: [{ x: 600, y: 222, w: 320, h: 160, kind: 'soft', label: 'Gut → brain signals', g: 'gut', lx: 910, ly: 239, anchor: 'end' }],
           groups: { lep: { label: 'Leptin', open: false, x: 140, y: 300 }, gut: { label: 'Gut → brain', open: false, x: 790, y: 310 } },
           nodes: [
             N('ins', 110, 50, 'Insulin\n(transcytosed across BBB)', 'hormone'),
@@ -422,7 +435,7 @@
           ],
           edges: [E('ins', 'brain', 'move'), E('brain', 'app', 'act'), E('brain', 'auto', 'act'), E('auto', 'hgp', 'act', null, { col: 'var(--faint)' }), E('auto', 'mus', 'act', null, { col: 'var(--faint)' }), E('auto', 'lip', 'act', null, { col: 'var(--faint)' }), E('auto', 'glg', 'act', null, { col: 'var(--faint)' }),
             E('lepL', 'hpa', 'act', null, { g: 'lep' }), E('hpa', 'cort', 'act', null, { g: 'lep' }), E('cort', 'wl', 'act', null, { g: 'lep' }),
-            E('fgf19', 'brain', 'act', null, { g: 'gut' }), E('ace', 'brain', 'act', null, { g: 'gut' }), E('duo', 'brain', 'act', null, { g: 'gut' })],
+            E('fgf19', 'brain', 'act', 'act via brain', { g: 'gut' })],
         }),
         IRV.pts([['⚠️', 'Caveats in brain studies: unphysiological ICV doses, lost 3:1 portal:peripheral gradient, uncontrolled glucagon, rodent vs large-animal liver.'], ['🔁', 'Either leptin or insulin can reverse florid T1D hyperglycemia → "glucagon excess" view of diabetes.']])));
     },
@@ -500,12 +513,12 @@
             N('tag', 840, 300, 'Liver TAG (NAFLD)', 'lipid'),
           ],
           edges: [
-            E('ins', 'insr'), E('insr', 'foxo'), E('foxo', 'glcout'), E('insr', 'srebp'), E('srebp', 'dnl'), E('dnl', 'tag', 'flow'),
-            E('glc', 'dnl', 'act', null, { via: [[750, 220], [750, 165]] }), E('aa', 'srebp', 'act', null, { via: [[560, 275], [560, 160]] }), E('fru', 'dnl', 'act', null, { via: [[770, 330], [770, 170]] }),
-            E('watir', 'nefa', 'flow', null, { anim: true, via: [[110, 300]] }), E('nefa', 'tag', 'flow', '~60%', { anim: true }),
+            E('ins', 'insr'), E('insr', 'foxo'), E('foxo', 'glcout'), E('insr', 'srebp'), E('srebp', 'dnl'), E('dnl', 'tag', 'flow', '~25%', { w: 2.4 }),
+            E('glc', 'dnl', 'act', null, { via: [[750, 220], [750, 165]] }), E('aa', 'srebp', 'act', null, { via: [[560, 275], [560, 160]] }), E('fru', 'dnl', 'act'),
+            E('watir', 'nefa', 'flow', null, { anim: true, via: [[110, 300]] }), E('nefa', 'tag', 'flow', '~60%', { anim: true, w: 5 }),
           ],
           states: [
-            { id: 'norm', label: 'Normal (fed)', n: { glcout: { b: '↓' }, dnl: { b: '↑' }, glc: { c: 'off' }, aa: { c: 'off' }, fru: { c: 'off' }, watir: { c: 'off' } }, e: { 'glc>dnl': 'off', 'aa>srebp': 'off', 'fru>dnl': 'off', 'watir>nefa': 'off', 'nefa>tag': 'weak' }, cap: 'Normal: insulin → INSR → both arms (glucose and lipid).' },
+            { id: 'norm', label: 'Normal (fed)', n: { glcout: { b: '↓' }, dnl: { b: '↑' }, glc: { c: 'off' }, aa: { c: 'off' }, fru: { c: 'off' }, watir: { c: 'off' } }, e: { 'glc>dnl': 'off', 'aa>srebp': 'off', 'fru>dnl': 'off', 'watir>nefa': 'off' }, cap: 'Normal: insulin → INSR → both arms. Even normally, most liver TG comes from re-esterified plasma fatty acids, not DNL.' },
             { id: 'sel', label: '💭 "Selective IR" hypothesis', n: { insr: { b: '½' }, foxo: { c: 'bad', b: '✕' }, glcout: { b: '↑' }, srebp: { c: 'good', b: '✓' }, dnl: { b: '↑' }, tag: { b: '↑' }, glc: { c: 'off' }, aa: { c: 'off' }, fru: { c: 'off' }, watir: { c: 'off' } }, e: { 'insr>foxo': 'off', 'glc>dnl': 'off', 'aa>srebp': 'off', 'fru>dnl': 'off', 'watir>nefa': 'off' }, cap: 'Hypothesis: a signaling **branch point** after INSR — glucose arm resistant, lipid arm sensitive. No branch point has held up (below).' },
             { id: 'res', label: '✅ Review\'s explanation', n: { insr: { c: 'bad', b: '↓' }, foxo: { b: '↓' }, glcout: { b: '↑' }, srebp: { b: '↔' }, ins: { b: '↑↑' }, dnl: { b: '↑' }, nefa: { b: '↑↑' }, tag: { b: '↑↑' } }, e: { 'nefa>tag': 'thick', 'watir>nefa': 'thick' }, cap: 'All arms are resistant, but **hyperinsulinemia** keeps the very sensitive SREBP-1c arm going, **nutrients** drive lipogenesis without insulin, and **fatty acid re-esterification** (~60% of liver TG) needs no insulin at all.' },
           ],

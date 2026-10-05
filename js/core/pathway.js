@@ -363,23 +363,34 @@
       EP.clear(gComp); EP.clear(gEdge); EP.clear(gNode);
       (pw.compartments || []).forEach((c) => {
         if ((c.lv || 1) > lv()) return;
+        if (c.layer && layerOn[c.layer] === false) return;
         const g = s('g', { class: 'comp k-' + (c.kind || 'cytosol') });
         g.appendChild(s('rect', { x: c.x, y: c.y, width: c.w, height: c.h, rx: c.kind === 'membrane' ? 6 : 18 }));
         if (c.label) g.appendChild(Object.assign(c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label), { __comp: c }));
         gComp.appendChild(g);
       });
+      const routeBoxes = pw.route ? pw.nodes.filter(nodeVisible).map((n) => { const [w, hh] = sizeOf(n); return { id: n.id, x: n.x, y: n.y, w, h: hh }; }) : [];
       pw.edges.forEach((e) => {
         if (!edgeVisible(e)) return;
         const a = nodeById[e.from], b = nodeById[e.to];
         const type = e.type || 'stim';
         let d, mx, my;
         const ax = a.x + (e.dx1 || 0), ay = a.y + (e.dy1 || 0), bx = b.x + (e.dx2 || 0), by = b.y + (e.dy2 || 0);
-        if (e.via) {
+        const curveSet = e.curve != null ? e.curve : (type === 'fb' || type === 'fbpos' ? 60 : 0);
+        if (pw.route && !e.via && !curveSet && !e.dx1 && !e.dy1 && !e.dx2 && !e.dy2) {
+          // automatic routing around the other boxes (straight or right-angle, rounded corners)
+          const bx_ = (n) => { const [w, hh] = sizeOf(n); return { x: n.x, y: n.y, w, h: hh }; };
+          const obs = routeBoxes.filter((r) => r.id !== a.id && r.id !== b.id);
+          const pts = EP.route(bx_(a), bx_(b), obs, { padA: 3, padB: type === 'inhib' || type === 'fb' ? 4 : 6 }).pts;
+          d = EP.pathD(pts);
+          const segs = pts.slice(1).map((p, i) => [pts[i], p]).sort((u, v) => Math.hypot(v[1][0] - v[0][0], v[1][1] - v[0][1]) - Math.hypot(u[1][0] - u[0][0], u[1][1] - u[0][1]));
+          mx = (segs[0][0][0] + segs[0][1][0]) / 2; my = (segs[0][0][1] + segs[0][1][1]) / 2;
+        } else if (e.via) {
           const pts = [[ax, ay], ...e.via, [bx, by]];
           const p0 = boundary(a, pts[1][0], pts[1][1], 3);
           const pn = boundary(b, pts[pts.length - 2][0], pts[pts.length - 2][1], 6);
           pts[0] = p0; pts[pts.length - 1] = pn;
-          d = 'M' + pts.map((p) => p.join(',')).join(' L');
+          d = EP.pathD(pts, 7);
           const mid = pts[Math.floor(pts.length / 2)]; mx = mid[0]; my = mid[1];
         } else {
           const curve = e.curve != null ? e.curve : (type === 'fb' || type === 'fbpos' ? 60 : 0);
@@ -393,7 +404,7 @@
           mx = curve ? (p0[0] + 2 * qx + p1[0]) / 4 : (p0[0] + p1[0]) / 2; my = curve ? (p0[1] + 2 * qy + p1[1]) / 4 : (p0[1] + p1[1]) / 2;
         }
         const marker = { stim: 'stim', inhib: 'inhib', rxn: 'rxn', transport: 'transport', endo: 'endo', fb: 'fb', fbpos: 'fbpos', bind: 'bind' }[type] || 'stim';
-        const g = s('g', { class: 'edge-g', 'data-k': edgeKey(e) });
+        const g = s('g', { class: 'edge-g' + (e.ghost ? ' ghost' : ''), 'data-k': edgeKey(e) });
         const path = s('path', { d, class: `edge e-${type}`, 'marker-end': `url(#m-${marker})` });
         const flow = s('path', { d, class: `flow f-${type}` });
         const hit = s('path', { d, class: 'edge-hit' });
@@ -631,8 +642,11 @@
       });
       root.insertBefore(knobs, stage);
     }
+    if (pw.edges.some((e) => e.ghost)) {
+      toolbar.appendChild(h('label.chk', { title: 'Long signal → organ lines are hidden to keep the map readable. Hover any box to see its own lines.' }, h('input', { type: 'checkbox', onchange: (ev) => root.classList.toggle('show-links', ev.target.checked) }), 'Show all signal → organ lines'));
+    }
     if (pw.layers && pw.layers.length) {
-      const lay = h('div.tb-group', h('span.tb-label', 'Layers'),
+      const lay = h('div.tb-group', h('span.tb-label', 'Show branches'),
         pw.layers.map((L) => h('label.chk', h('input', { type: 'checkbox', checked: layerOn[L.id], onchange: (ev) => { layerOn[L.id] = ev.target.checked; render(); } }), L.label)));
       toolbar.appendChild(lay);
     }
@@ -645,7 +659,7 @@
       api.clinicalSelect = sel;
     }
     toolbar.appendChild(h('button.btn.ghost', { onclick: startQuiz, title: 'Hide labels and identify components' }, '✎ Test yourself'));
-    toolbar.appendChild(h('button.btn.ghost', { onclick: () => { EP.state.paused = !EP.state.paused; document.body.classList.toggle('paused', EP.state.paused); }, title: 'Pause/resume flow animations' }, '⏯ Motion'));
+    toolbar.appendChild(h('button.btn.ghost', { onclick: () => EP.setMotion(EP.state.paused), title: 'Pause/resume all animations (same as the switch in the top bar)' }, '⏯ Motion'));
     let keyEl = null;
     function buildKey() {
       const types = [...new Set(Object.values(nodeEls).map(({ g }) => (g.getAttribute('class').match(/t-(\w+)/) || [])[1]).filter(Boolean))];
