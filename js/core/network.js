@@ -42,15 +42,28 @@
         const inhib = t.w < 0;
         const isFb = !!t.fb;
         const type = isFb ? (inhib ? 'fb' : 'fbpos') : inhib ? 'inhib' : (t.endo ? 'endo' : 'stim');
-        const curve = net.route && t.curve == null ? 0 : t.curve != null ? t.curve : isFb ? 70 : 0;
+        let curve = net.route && t.curve == null ? 0 : t.curve != null ? t.curve : isFb ? 70 : 0;
         const ax = a.x, ay = a.y, bx = n.x, by = n.y;
         const len = Math.hypot(bx - ax, by - ay) || 1;
         const nx = -(by - ay) / len, ny = (bx - ax) / len;
+        // an arrow must not run through another box: try the curve on the other side / wider, else route it
+        const others = drawNodes.filter((m) => m !== a && m !== n).map(rbox);
+        const blocked = (cv) => {
+          const q = [(ax + bx) / 2 + nx * cv, (ay + by) / 2 + ny * cv];
+          const s0 = bnd(a, cv ? q[0] : bx, cv ? q[1] : by), s1 = bnd(n, cv ? q[0] : ax, cv ? q[1] : ay, 8);
+          const P = []; for (let i = 0; i <= 24; i++) { const u = i / 24, v = 1 - u; P.push([v * v * s0[0] + 2 * v * u * q[0] + u * u * s1[0], v * v * s0[1] + 2 * v * u * q[1] + u * u * s1[1]]); }
+          return P.slice(1).some((pt, i) => others.some((r) => EP.segHits(P[i], pt, r, 2)));
+        };
+        let forceRoute = false;
+        if (!t.via && blocked(curve)) {
+          const alt = (curve ? [-curve, curve * 1.6, -curve * 1.6, curve * 2.3, -curve * 2.3] : [50, -50, 90, -90]).find((cv) => !blocked(cv));
+          if (alt != null && (curve || !net.route)) curve = alt; else { curve = 0; forceRoute = true; }
+        }
         const qx = (ax + bx) / 2 + nx * curve, qy = (ay + by) / 2 + ny * curve;
         let p0 = bnd(a, curve ? qx : bx, curve ? qy : by), p1 = bnd(n, curve ? qx : ax, curve ? qy : ay, 8);
         let d = curve ? `M${p0[0]},${p0[1]} Q${qx},${qy} ${p1[0]},${p1[1]}` : `M${p0[0]},${p0[1]} L${p1[0]},${p1[1]}`;
         let rpts = null;
-        if (net.route && !curve) {
+        if ((net.route || forceRoute) && !curve) {
           // automatic right-angle routing around the other nodes (box includes the level meter)
           const obs = drawNodes.filter((m) => m !== a && m !== n).map(rbox);
           rpts = t.via ? [bnd(a, t.via[0][0], t.via[0][1]), ...t.via, bnd(n, t.via[t.via.length - 1][0], t.via[t.via.length - 1][1], 8)] : EP.route(rbox(a), rbox(n), obs, { padA: 3, padB: 8 }).pts;
@@ -155,7 +168,7 @@
       const b = h('button.chip', { onclick: () => choose(p, b), title: p.desc || '' }, p.label);
       presetBox.appendChild(b); pBtns.push(b);
     });
-    top.append(h('div.tb-label', 'Perturbation presets'), presetBox);
+    top.append(h('div.anim-bar', EP.animSwitch(root, { what: 'arrows' })), h('div.tb-label', 'Perturbation presets'), presetBox);
     const story = h('div.net-story');
     top.appendChild(story);
 

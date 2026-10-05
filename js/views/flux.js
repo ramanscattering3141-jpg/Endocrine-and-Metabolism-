@@ -47,6 +47,7 @@
     container.appendChild(filt);
     const svg = s('svg', { class: 'organmap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ fuel exchange map' });
     svg.appendChild(EP.svgDefs());
+    filt.appendChild(EP.animSwitch(svg));
     container.appendChild(svg);
     container.appendChild(EP.colorKey([
       ['Line colour = what is carried (click to filter, above)', Object.values(GROUPS).map((g) => ({ line: g.color, w: 4, dash: g === GROUPS.hor ? '6 4' : null, label: g.label }))],
@@ -107,6 +108,24 @@
         if (m.e - w / 2 < lastRight + 4) { alt = (alt + 1) % 2; p.tag.setAttribute('transform', `translate(${m.e},${m.f + (alt ? 20 : -20) * (row === 'top' ? 1 : 1)})`); } else alt = 0;
         lastRight = m.e + w / 2;
       });
+    });
+    // break each line where it meets a tag (its own, or a wider neighbour's), so no line runs under writing
+    portEls.forEach((p) => {
+      const d0 = p.line.getAttribute('d').match(/-?[\d.]+/g).map(Number); // [x, y1, x, y2]
+      const x = d0[0], ya = d0[1], yb = d0[3], dn = yb > ya;
+      const gaps = portEls.map((q) => {
+        const m = q.tag.transform.baseVal[0].matrix, w = +q.tag.querySelector('rect').getAttribute('width');
+        return Math.abs(m.e - x) < w / 2 + 3 && m.f + 12 > Math.min(ya, yb) && m.f - 12 < Math.max(ya, yb) ? [m.f - 12, m.f + 12] : null;
+      }).filter(Boolean).sort((u, v) => (dn ? u[0] - v[0] : v[0] - u[0]));
+      let d = `M${x},${ya}`, cur = ya;
+      gaps.forEach(([g0, g1]) => {
+        const near = dn ? g0 : g1, far = dn ? g1 : g0;
+        if (dn ? near > cur : near < cur) d += ` L${x},${near}`;
+        if (dn ? far > cur : far < cur) { cur = far; d += ` M${x},${cur}`; }
+      });
+      if (dn ? cur < yb - 4 : cur > yb + 4) d += ` L${x},${yb}`;
+      else d = d.replace(/ M[^M]*$/, ''); // the tag reaches the arrowhead: end the line at the tag
+      p.line.setAttribute('d', d); p.flow.setAttribute('d', d);
     });
     // organs
     const procEls = [], orgEls = {};
@@ -254,9 +273,9 @@
       shown.forEach((n) => { (byTier[n.tier] || byTier.pathway).push(n); });
       const order = ['liver', 'muscle', 'adipose', 'brain', 'kidney', 'pancreas', 'adrenal', 'pituitary', 'gut', 'systemic'];
       Object.values(byTier).forEach((arr) => arr.sort((a, b) => order.indexOf(a.organ) - order.indexOf(b.organ) || Math.abs(chg(b.id)) - Math.abs(chg(a.id))));
-      const colW = 190, rowH = 34, top = 40;
+      const colW = 196, rowH = 34, top = 40;
       const maxRows = Math.max(...Object.values(byTier).map((a) => a.length), 1);
-      const W = tiers.length * colW + 20, H = top + maxRows * rowH + 20;
+      const W = tiers.length * colW + 20, H = top + maxRows * rowH + 30;
       const svg = s('svg', { class: 'cascade', viewBox: `0 0 ${W} ${H}` });
       svg.appendChild(EP.svgDefs());
       const pos = {};
@@ -266,22 +285,38 @@
       });
       const gE = s('g'), gN = s('g'); svg.append(gE, gN);
       const edges = [];
+      // Orthogonal routing that only uses the empty space: the 34-px gutter between columns and
+      // the 8-px gap between rows, so no arrow ever runs across a box or its label.
+      const BW = colW - 34, BH = 26, gutter = (x) => x + BW + 17; // centre of the gutter right of a column at x
+      const rowGap = (y) => y + BH + (rowH - BH) / 2;             // centre of the gap below a row at y
+      const lane = (a, b, k) => {
+        const off = ((k % 5) - 2) * 3;
+        const x1 = a[0] + BW, y1 = a[1] + BH / 2, x2 = b[0], y2 = b[1] + BH / 2;
+        const gA = gutter(a[0]) + off, gB = b[0] - 17 + off;
+        if (x2 > x1 && Math.abs(gA - gB) < 1) return [[x1, y1], [gA, y1], [gA, y2], [x2 - 1, y2]];
+        // cross the columns in between along a row gap (next to the target row), or under everything for back-edges
+        const yc = x2 > x1 ? (y2 >= y1 ? rowGap(b[1]) - rowH : rowGap(b[1])) + (y2 === y1 ? rowH : 0) : H - 12 + off;
+        const ycc = Math.max(top - 4, yc);
+        return [[x1, y1], [gA, y1], [gA, ycc], [gB, ycc], [gB, y2], [x2 - 1, y2]];
+      };
       // stimulus pseudo-node: the perturbation itself
       if (!byTier.input.length) {
         const sx = 10, sy = top;
         const g = s('g', { class: 'cnode focus up', transform: `translate(${sx},${sy})` });
-        g.appendChild(s('rect', { width: colW - 22, height: 26, rx: 7 })); g.appendChild(s('text', { x: 8, y: 17 }, pert.label + (pert.apply.exo ? ' (infusion)' : pert.apply.clamps ? ' (clamp)' : '')));
+        // long perturbation names wrap onto a second line (the box then spans two rows; column 0 is otherwise empty)
+        const full = pert.label + (pert.apply.exo ? ' (infusion)' : pert.apply.clamps ? ' (clamp)' : '');
+        const words = full.split(' '), sl = ['']; words.forEach((w) => { const tt = sl[sl.length - 1] ? sl[sl.length - 1] + ' ' + w : w; if (EP.textWidth(tt, 11.5, 400) > BW - 16 && sl[sl.length - 1]) sl.push(w); else sl[sl.length - 1] = tt; });
+        g.appendChild(s('rect', { width: BW, height: sl.length > 1 ? 26 + rowH * (sl.length - 1) : 26, rx: 7 }));
+        sl.forEach((l, i) => g.appendChild(s('text', { x: 8, y: 17 + i * 15 }, l)));
         gN.appendChild(g);
-        if (pos[pert.focus]) { const b = pos[pert.focus]; gE.appendChild(s('path', { d: `M${sx + colW - 22},${sy + 13} C${sx + colW + 10},${sy + 13} ${b[0] - 30},${b[1] + 13} ${b[0]},${b[1] + 13}`, class: 'cedge pushup hl', 'marker-end': 'url(#m-stim)' })); }
+        if (pos[pert.focus]) gE.appendChild(s('path', { d: EP.pathD(lane([sx, sy], pos[pert.focus], 0), 5), class: 'cedge pushup hl', 'marker-end': 'url(#m-stim)' }));
       }
       shown.forEach((n) => {
         const scored = (n.terms || []).filter((t) => t.src && pos[t.src]).map((t) => ({ t, score: n.mode === 'sum' ? t.c * (m.eff(t.src) - m.ref[t.src]) : m.weight(n, t) * Math.log(m.seen(n, t) / (m.ref[t.src] || 1)) }))
           .filter((x) => Math.abs(x.score) >= 0.08).sort((a, b) => Math.abs(b.score) - Math.abs(a.score)).slice(0, 2);
         scored.forEach(({ t, score }) => {
           const a = pos[t.src], b = pos[n.id];
-          const x1 = a[0] + colW - 22, y1 = a[1] + 13, x2 = b[0], y2 = b[1] + 13;
-          const back = x2 <= x1;
-          const d = back ? `M${x1},${y1} C${x1 + 40},${y1 - 60} ${x2 - 40},${y2 - 60} ${x2},${y2}` : `M${x1},${y1} C${(x1 + x2) / 2},${y1} ${(x1 + x2) / 2},${y2} ${x2},${y2}`;
+          const d = EP.pathD(lane(a, b, edges.length), 5);
           const p = s('path', { d, class: 'cedge ' + (score > 0 ? 'pushup' : 'pushdn'), 'marker-end': `url(#m-${(n.mode === 'sum' ? t.c : m.weight(n, t)) < 0 ? 'inhib' : 'stim'})` });
           p.appendChild(s('title', {}, `${m.byId[t.src].label} → ${n.label}: ${t.why || ''}`));
           gE.appendChild(p); edges.push({ p, from: t.src, to: n.id });
@@ -290,10 +325,10 @@
       shown.forEach((n) => {
         const [x, y] = pos[n.id]; const l = chg(n.id); const q = EP.qual(m.eff(n.id), m.ref[n.id]);
         const g = s('g', { class: `cnode ${l > 0.2 ? 'up' : l < -0.2 ? 'dn' : ''} ${focusIds.includes(n.id) ? 'focus' : ''}`, transform: `translate(${x},${y})` });
-        g.appendChild(s('rect', { width: colW - 22, height: 26, rx: 7 }));
-        let lab = n.label; while (lab.length > 6 && EP.textWidth(lab, 11.5, 400) > colW - 66) lab = lab.slice(0, -2).trim() + '…'; if (lab !== n.label) lab = lab.replace(/…+$/, '…');
+        g.appendChild(s('rect', { width: BW, height: 26, rx: 7 }));
+        let lab = n.label; while (lab.length > 6 && EP.textWidth(lab, 11.5, 400) > BW - 44) lab = lab.slice(0, -2).trim() + '…'; if (lab !== n.label) lab = lab.replace(/…+$/, '…');
         g.appendChild(s('text', { x: 8, y: 17 }, lab));
-        g.appendChild(s('text', { x: colW - 30, y: 17, 'text-anchor': 'end', class: 'csym' }, q.sym));
+        g.appendChild(s('text', { x: BW - 8, y: 17, 'text-anchor': 'end', class: 'csym' }, q.sym));
         g.appendChild(s('title', {}, `${n.label}: ${q.word} — ${M.organs[n.organ] || ''}`));
         g.addEventListener('mouseenter', () => edges.forEach((e) => { const on = e.to === n.id || e.from === n.id; e.p.classList.toggle('hl', on); e.p.classList.toggle('dim', !on); }));
         g.addEventListener('mouseleave', () => edges.forEach((e) => { e.p.classList.remove('hl', 'dim'); }));

@@ -51,6 +51,7 @@
     grid.append(left, side);
     const cap = h('div.casc-cap', { hidden: true });
     root.append(bar, focusBar, cap, grid); container.appendChild(root);
+    bar.appendChild(EP.animSwitch(root));
 
     const svg = s('svg', { class: 'casc-svg', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': C.title });
     svg.appendChild(EP.svgDefs());
@@ -122,31 +123,52 @@
       g.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') info(n.id); });
       gNode.appendChild(g); els[n.id] = { g, badge, n };
     });
-    // links
+    // links: orthogonal paths that use only the gutters between columns and the gaps between rows,
+    // so an arrow never runs through a box or its text
+    const gx = (c) => colX(c + 1) - 10; // centre of the gutter right of column c (c = -1: next to the receptor bar)
+    const gutterUse = {};
+    function ortho(x1, ya, sc, tb) {
+      const yb = rowY(tb.row), x2 = tb._x, tc = tb.col;
+      const between = C.nodes.filter((n) => n.col > sc && n.col < tc);
+      const lane = (c) => { const k = (gutterUse[c] = (gutterUse[c] || 0) + 1); return ((k % 3) - 1) * 4; };
+      if (Math.abs(ya - yb) < 1 && !between.some((n) => n._y - 3 < ya && n._y + n._h + 3 > ya)) return `M${x1},${ya} L${x2},${yb}`;
+      const g1 = gx(sc) + lane(sc);
+      if (tc === sc + 1) return EP.pathD([[x1, ya], [g1, ya], [g1, yb], [x2, yb]], 6);
+      const yg = yb > ya ? rowY(tb.row) - ROWH / 2 : rowY(tb.row) + ROWH / 2;
+      const g2 = gx(tc - 1) + lane(tc - 1);
+      return EP.pathD([[x1, ya], [g1, ya], [g1, yg], [g2, yg], [g2, yb], [x2, yb]], 6);
+    }
     const links = C.links.map((raw) => {
       let [a, b, sign, why, o] = raw;
       if (why && typeof why === 'object') { o = why; why = undefined; }
       o = o || {};
       const tb = byId[b]; let d;
-      if (a === 'R') { const y = rowY(tb.row); d = `M${BARX + BARW},${y} C${BARX + BARW + 20},${y} ${tb._x - 20},${y} ${tb._x},${y}`; }
+      if (a === 'R') d = ortho(BARX + BARW, rowY(tb.row), -1, tb);
       else {
         const sa = byId[a];
         const ya = rowY(sa.row), yb = rowY(tb.row);
         if (o.fb && o.route === 'left') { // run along the row gap, down the left margin, into the target's left side
           const yLow = sa._y + sa._h + 7, xL = X0 - 4, yT = rowY(tb.row) + 9;
           d = `M${sa._x + nw / 2},${sa._y + sa._h} L${sa._x + nw / 2},${yLow} L${xL},${yLow} L${xL},${yT} L${tb._x},${yT}`;
+        } else if (o.fb && tb.col < sa.col) { // feedback: out of the source's left side, down the gutter, along the row gap under the target, up into it
+          const g1 = gx(sa.col - 1) + 4, yT = rowY(tb.row) + ROWH / 2, xT = tb._x + nw / 2;
+          d = EP.pathD([[sa._x, ya], [g1, ya], [g1, yT], [xT, yT], [xT, tb._y + tb._h]], 6);
         } else if (o.fb) { // feedback: arc below the source and back to target's bottom
           const yy = Math.max(sa._y + sa._h, tb._y + tb._h) + 16;
           d = `M${sa._x + nw / 2},${sa._y + sa._h} C${sa._x + nw / 2},${yy} ${tb._x + nw / 2},${yy} ${tb._x + nw / 2},${tb._y + tb._h}`;
         } else if (tb.col === sa.col) {
           const down = tb.row > sa.row; const x1 = sa._x + nw / 2 + (o.dx || 0);
-          d = `M${x1},${down ? sa._y + sa._h : sa._y} L${x1},${down ? tb._y : tb._y + tb._h}`;
+          const r0 = Math.min(sa.row, tb.row), r1 = Math.max(sa.row, tb.row);
+          if (C.nodes.some((n) => n.col === sa.col && n.row > r0 && n.row < r1)) { // boxes in between: go round them in the gutter on the left
+            const g = gx(sa.col - 1) + 4;
+            d = EP.pathD([[sa._x, ya], [g, ya], [g, yb], [tb._x, yb]], 6);
+          } else d = `M${x1},${down ? sa._y + sa._h : sa._y} L${x1},${down ? tb._y : tb._y + tb._h}`;
         } else if (tb.col > sa.col) {
-          const x1 = sa._x + nw, x2 = tb._x, mx = (x1 + x2) / 2;
-          d = `M${x1},${ya} C${mx},${ya} ${mx},${yb} ${x2},${yb}`;
-        } else {
-          const yy = Math.min(sa._y, tb._y) - 10;
-          d = `M${sa._x + nw / 2},${sa._y} C${sa._x + nw / 2},${yy} ${tb._x + nw / 2},${yy} ${tb._x + nw / 2},${tb._y}`;
+          d = ortho(sa._x + nw, ya, sa.col, tb);
+        } else { // backwards: out of the source's left side, through the gutters and row gaps, into the target's right side
+          const g1 = gx(sa.col - 1) - 4, g2 = gx(tb.col) + 4;
+          if (sa.col - 1 === tb.col) d = EP.pathD([[sa._x, ya], [g1, ya], [g1, yb], [tb._x + nw, yb]], 6);
+          else { const yg = yb > ya ? rowY(tb.row) - ROWH / 2 : rowY(tb.row) + ROWH / 2; d = EP.pathD([[sa._x, ya], [g1, ya], [g1, yg], [g2, yg], [g2, yb], [tb._x + nw, yb]], 6); }
         }
       }
       const p = s('path', { d, class: 'casc-link' + (sign === '-' ? ' neg' : '') + (o.fb ? ' fb' : ''), 'marker-end': sign === '-' ? 'url(#m-inhib)' : 'url(#m-stim)' });
@@ -250,7 +272,7 @@
         L.t = (L.t + dt * 95 / Math.max(L.len, 40)) % 1;
         const pt = L.p.getPointAtLength(L.t * L.len); L.dot.setAttribute('cx', pt.x); L.dot.setAttribute('cy', pt.y);
       });
-    });
+    }, { scope: root });
     EP.onTeardown && EP.onTeardown(stop);
     if (opts.knock) st.knock = C.knock.find((k) => k.id === opts.knock) || null;
     if (knockSel && st.knock) knockSel.value = st.knock.id;

@@ -52,7 +52,7 @@
     ] },
     { k: 'G', title: 'Reproductive', pages: [
       { id: 'sexdiff', title: 'Sexual differentiation ★', render: V.sexdiff, kw: 'sexual differentiation SRY SOX9 SF-1 WT1 AMH müllerian wolffian testosterone DHT 5-alpha reductase androgen insensitivity Turner Klinefelter Swyer CAH aromatase DSD Jost' },
-      { id: 'testis', title: 'Testis & androgens', render: V.testisPage, pathways: ['testis', 'androgen'], kw: 'Leydig Sertoli testosterone DHT 5-alpha reductase aromatase spermatogenesis' },
+      { id: 'testis', title: 'Testis & androgens', render: V.testisPage, pathways: ['testis', 'androgen'], kw: 'Leydig Sertoli testosterone DHT 5-alpha reductase aromatase spermatogenesis exogenous testosterone replacement TRT anabolic androgenic steroids AAS doping hCG clomiphene GnRH agonist antagonist gynecomastia azoospermia testicular atrophy' },
       { id: 'ovary', title: 'Ovary & menstrual cycle', render: V.cycle, pathways: ['ovary', 'pcos'], kw: 'menstrual cycle follicular luteal ovulation LH surge granulosa theca folliculogenesis estradiol progesterone' },
       { id: 'pregnancy', title: 'Pregnancy & puberty', render: V.pregnancy, pathways: ['placenta', 'parturition'], kw: 'pregnancy hCG placenta progesterone estriol puberty kisspeptin GnRH pulse' },
     ] },

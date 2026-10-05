@@ -14,7 +14,7 @@ Open `index.html` in a browser (no build step, no server needed), or serve the f
 | Adrenal | Steroidogenesis flux map across the three zones with enzyme-deficiency mode (ACTH and renin feedback re-route flux), catecholamine synthesis, cortisol actions |
 | Pancreas & glucose | **Insulin action & resistance — visual guide** (Petersen & Shulman 2018): the whole review section by section (I–VIII) as diagrams of all 19 figures + Table 1, with collapsible branches, step-through walk-throughs, normal-vs-resistant toggles and mouse-model switches, plus interactive dose–response, glucose-output, lipid-infusion and GTT experiments; **Insulin prototype**: animated GLUT4 cell (11 steps, play/step/slow-mo, insulin resistance, contraction route), signaling map with organ effects, whole-body read-out; glucagon liver-vs-muscle simulation; β-cell coupling |
 | Calcium & bone | Ca/PTH/calcitriol/FGF23 network separating direct from vitamin-D-mediated effects; nephron/enterocyte and RANK/RANKL/OPG diagrams |
-| Reproduction | Testis, ovary two-cell model, androgen metabolism, menstrual cycle explorer, feto-placental unit |
+| Reproduction | Testis, ovary two-cell model, androgen metabolism, **exogenous androgens** (TRT vs. anabolic steroids vs. after stopping: axis suppression, body-wide effects, lab patterns, other hormones acting on the male axis), menstrual cycle explorer, feto-placental unit |
 | Metabolism | Flux simulator (8 organs, 17 knobs, presets: fed, fasting, prolonged fasting, exercise, stress, insulin resistance, T1D, T2D), hepatocyte map, acetyl-CoA hub, malonyl-CoA/CPT-1 module, amino acids & urea cycle, lipoproteins |
 | Explore | What-if cascade generator, Follow the molecule / hormone, organ cross-talk map, Compare, clinical cases, global search, L1–L4 detail levels |
 
@@ -37,7 +37,8 @@ New pathways are data: add an object to `EP.pathways` (nodes, edges with `why` t
 - `js/core/router.js` routes arrows for all three diagram engines: straight or right-angle paths with rounded corners that go around boxes, and edge labels placed where they cover no box, label or line. Opt in per diagram with `route: true` (pathways, networks); explainer diagrams always use it unless an edge gives `via` points.
 - Long connector lines can be marked `ghost: true` (pathways): hidden until you hover either end, or tick "Show all signal → organ lines".
 - Pathway `layers` (and compartments with a `layer`) are the collapsible branches; networks can list `focus` groups for a "Show arrows from" filter.
-- The ⏸ button in the top bar stops every decorative animation (remembered; off by default with reduced-motion). Simulations keep running (`EP.loop(fn, { always: true })`).
+- Every animated diagram has its own **⏸ Pause / ▶ Play** button (`EP.animSwitch(scopeEl)`; loops opt in with `EP.loop(fn, { scope: scopeEl })`). The ⏸ button in the top bar sets all of them at once (remembered; off by default with reduced-motion). Simulations keep running (`EP.loop(fn, { always: true })`).
+- No text sits on a line: edge labels, +/− glyphs, change badges and compartment titles are moved beside their own arrow by `EP.labelFitter` / `EP.declutter`; arrows that would cross a box are routed around it; the cascade, what-if and organ maps route only through the gaps between rows and columns.
 
 ## Sources and model honesty
 

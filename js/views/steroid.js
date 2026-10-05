@@ -18,9 +18,9 @@
     t: ['Testosterone', 'testosterone'], dht: ['DHT', 'dht'], e2: ['Estradiol', 'estradiol'], e1: ['Estrone', 'estrone'],
   };
   const POS = {
-    chol: [480, 50], preg: [200, 150], oh17preg: [480, 150], dhea: [760, 150], prog: [200, 280], oh17p: [480, 280], a4: [760, 280],
-    doc: [200, 410], s11: [480, 410], b: [200, 530], cortisol: [480, 530], oh18b: [200, 640], aldo: [200, 740],
-    t: [1000, 280], dht: [1065, 400], e2: [935, 520], e1: [1000, 150],
+    chol: [500, 50], preg: [200, 150], oh17preg: [500, 150], dhea: [800, 150], prog: [200, 280], oh17p: [500, 280], a4: [800, 280],
+    doc: [200, 410], s11: [500, 410], b: [200, 530], cortisol: [500, 530], oh18b: [200, 640], aldo: [200, 740],
+    t: [1070, 280], dht: [1135, 410], e2: [1005, 530], e1: [1070, 150],
   };
   const ENZ = {
     cyp11a1: 'CYP11A1 (P450scc)', hsd3b2: '3β-HSD2', cyp17oh: 'CYP17 17α-hydroxylase', cyp17ly: 'CYP17 17,20-lyase', cyp21: '21-hydroxylase', cyp11b1: '11β-hydroxylase', cyp11b2: 'Aldosterone synthase', hsd17b: '17β-HSD', srd5a2: '5α-reductase', cyp19: 'Aromatase', star: 'StAR',
@@ -139,18 +139,18 @@
     const grid = h('div.cols'); const left = h('div'); const right = h('div.sim-panel');
     grid.append(left, right); el.appendChild(grid);
     const story = h('div.net-story'); left.appendChild(story);
-    const W = 1120, H = 800;
+    const W = 1210, H = 800;
     const svg = s('svg', { class: 'steroid-svg', viewBox: `0 0 ${W} ${H}` });
     svg.appendChild(EP.svgDefs());
-    left.appendChild(svg);
+    left.append(h('div.anim-bar', EP.animSwitch(svg)), svg);
     left.appendChild(EP.colorKey([
       ['Background column = where the steroid is made', [{ fill: 'color-mix(in srgb, #ffd166 22%, var(--panel))', label: 'Zona glomerulosa (aldosterone)' }, { fill: 'color-mix(in srgb, #6ea8ff 22%, var(--panel))', label: 'Zona fasciculata (cortisol)' }, { fill: 'color-mix(in srgb, #ff7eb3 22%, var(--panel))', label: 'Zona reticularis (androgens)' }, { fill: 'color-mix(in srgb, #9fe870 20%, var(--panel))', label: 'Gonads / peripheral tissues' }]],
       ['Steroid boxes', [{ fill: 'var(--panel)', stroke: 'var(--c-metabolite)', rx: 9, label: 'Intermediate' }, { fill: 'var(--panel)', stroke: 'var(--c-metabolite)', sw: 3, rx: 9, label: 'Final hormone (thick border)' }, { fill: 'color-mix(in srgb, var(--up) 24%, var(--panel))', stroke: 'var(--up)', rx: 9, label: '↑ accumulates' }, { fill: 'var(--panel)', stroke: 'var(--dn)', dash: '4 3', rx: 9, label: '↓ deficient (dashed)' }]],
       ['Enzymes & arrows', [{ fill: 'color-mix(in srgb, var(--c-enzyme) 18%, var(--panel))', stroke: 'var(--c-enzyme)', label: 'Enzyme (normal)' }, { fill: 'color-mix(in srgb, var(--dn) 15%, var(--panel))', stroke: 'var(--dn)', dash: '3 2', label: 'Partial deficiency' }, { fill: 'color-mix(in srgb, var(--dn2) 30%, var(--panel))', stroke: 'var(--dn2)', label: 'Complete deficiency (struck through)' }, { line: 'var(--c-rxn)', marker: 'rxn', label: 'Conversion; thicker = more flux' }, { line: 'var(--dn2)', dash: '3 5', label: 'Blocked step' }]],
     ]));
     // zone bands
-    [['zg', 70, 'Zona glomerulosa\n(mineralocorticoid)'], ['zf', 350, 'Zona fasciculata\n(glucocorticoid)'], ['zr', 630, 'Zona reticularis\n(androgen)'], ['zp', 880, 'Gonads / periphery']].forEach(([k, x, l]) => {
-      svg.appendChild(s('rect', { x, y: 95, width: k === 'zp' ? 230 : 265, height: 700, rx: 18, class: 'zone-band ' + k }));
+    [['zg', 70, 265, 'Zona glomerulosa\n(mineralocorticoid)'], ['zf', 365, 270, 'Zona fasciculata\n(glucocorticoid)'], ['zr', 665, 270, 'Zona reticularis\n(androgen)'], ['zp', 955, 245, 'Gonads / periphery']].forEach(([k, x, w, l]) => {
+      svg.appendChild(s('rect', { x, y: 95, width: w, height: 700, rx: 18, class: 'zone-band ' + k }));
       l.split('\n').forEach((t, i) => svg.appendChild(s('text', { x: x + 12, y: 770 + i * 14, class: 'zone-title' }, t)));
     });
     const gE = s('g'), gN = s('g'), gZ = s('g');
@@ -158,22 +158,34 @@
     const edgeEls = {}; const enzEls = {};
     const pairs = {};
     RX.forEach((r) => { const k = r[0] + '>' + r[1]; (pairs[k] = pairs[k] || []).push(r[2]); });
-    Object.keys(pairs).forEach((k) => {
-      const [a, b] = k.split('>'); const A = POS[a], B = POS[b];
+    // arrows start and stop at each box's real outline; enzyme labels sit beside the arrow, never on it
+    const nodeW = (k) => Math.max(110, MET[k][0].length * 7 + 20);
+    const box = (k) => ({ x: POS[k][0], y: POS[k][1], w: nodeW(k), h: 36 });
+    const LABEL_SIDE = { 'doc>b': ['left', 'right'], 'chol>preg': ['up'], 'a4>e1': ['left'], 't>e2': ['left'], 't>dht': ['right'] };
+    const lines = Object.keys(pairs).map((k) => {
+      const [a, b] = k.split('>');
+      const A = box(a), B = box(b);
+      return [EP.exitPt(A, B.x, B.y, 3), EP.exitPt(B, A.x, A.y, 7)];
+    });
+    Object.keys(pairs).forEach((k, li) => {
       const enzs = pairs[k];
-      const x1 = A[0], y1 = A[1], x2 = B[0], y2 = B[1];
-      const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy);
-      const sx = x1 + dx / L * 62, sy = y1 + dy / L * 22, ex = x2 - dx / L * 66, ey = y2 - dy / L * 24;
+      const [[sx, sy], [ex, ey]] = lines[li];
       const d = `M${sx},${sy} L${ex},${ey}`;
       const p = s('path', { d, class: 'st-edge', 'marker-end': 'url(#m-rxn)' });
       const fl = s('path', { d, class: 'flow' });
       gE.append(p, fl);
       edgeEls[k] = { p, fl, enzs };
-      enzs.forEach((en, i) => {
-        const mx = (sx + ex) / 2 + (dy === 0 ? 0 : 0), my = (sy + ey) / 2 + (enzs.length > 1 ? (i ? 14 : -14) : 0);
+      enzs.forEach((en) => {
         const label = ENZ[en];
-        const w = label.length * 6.1 + 14;
-        const g = s('g', { class: 'st-enz', transform: `translate(${mx - w / 2 + (dx === 0 ? (enzs.length > 1 ? (i ? 60 : -60) : 0) : 0)},${my - 10})` });
+        const w = EP.textWidth(label, 10.5, 400) + 14;
+        // side of the arrow: above a horizontal arrow, right of a vertical one (left + right when two enzymes share it)
+        const L = Math.hypot(ex - sx, ey - sy), ux = (ex - sx) / L, uy = (ey - sy) / L;
+        let nx = -uy, ny = ux;
+        const want = LABEL_SIDE[k] ? LABEL_SIDE[k][enzs.indexOf(en)] : Math.abs(uy) < 0.2 ? 'up' : 'right';
+        if ((want === 'up' && ny > 0) || (want === 'down' && ny < 0) || (want === 'right' && nx < 0) || (want === 'left' && nx > 0)) { nx = -nx; ny = -ny; }
+        const dist = Math.abs(nx) * w / 2 + Math.abs(ny) * 10 + 5;
+        const cx = (sx + ex) / 2 + nx * dist, cy = (sy + ey) / 2 + ny * dist;
+        const g = s('g', { class: 'st-enz', transform: `translate(${(cx - w / 2).toFixed(1)},${(cy - 10).toFixed(1)})` });
         g.appendChild(s('rect', { width: w, height: 20, rx: 4 }));
         g.appendChild(s('text', { x: 7, y: 14 }, label));
         g.appendChild(s('title', {}, label + ' — click to cycle normal / partial / deficient; details in the panel'));
@@ -193,6 +205,12 @@
       g.style.cursor = 'pointer';
       g.addEventListener('click', () => EP.showInfo(MET[k][1]));
       gN.appendChild(g); nodeEls[k] = { g, badge };
+    });
+    // change badges go to a corner of their box that no arrow crosses
+    requestAnimationFrame(() => {
+      const F = EP.labelFitter(svg, Object.keys(MET).map((k) => { const b = box(k); return { x: b.x - b.w / 2, y: b.y - b.h / 2, w: b.w, h: b.h }; }), 'path.st-edge');
+      gZ.querySelectorAll('.st-enz').forEach((e) => { const m = e.transform.baseVal[0].matrix, r = e.querySelector('rect'); F.placed.push({ x: m.e, y: m.f, width: +r.getAttribute('width'), height: 20 }); });
+      Object.keys(nodeEls).forEach((k) => { const b = box(k); F.badge(nodeEls[k].badge, b.x, b.y, b.w, b.h, { ox: b.w / 2, oy: 18 }); });
     });
     function setDefect(d, btn) {
       Object.keys(act).forEach((k) => delete act[k]);
