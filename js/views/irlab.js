@@ -139,11 +139,11 @@
     const GLY = (t) => (st.sp === 'human' ? 6.0 * Math.exp(-0.065 * (t - 4)) : 6.0 * Math.exp(-0.32 * (t - 2)));
     const SC = {
       normal: { label: 'Normal', hep: 0.85, adip: 1, text: 'Insulin stops glycogen breakdown **directly** and shuts off lipolysis → ↓ acetyl-CoA & glycerol → ↓ gluconeogenesis **indirectly**.' },
-      tlko: { label: 'Liver can\'t respond (Akt1/2 + FoxO1 KO)', hep: 0, adip: 1, text: 'HGP is still suppressed: gluconeogenesis is controlled from fat. Only glycogenolysis escapes.' },
-      acetate: { label: '+ acetate & glycerol infusion', hep: 0.85, adip: 1, block: true, text: 'Clamp hepatic acetyl-CoA & glycerol supply → insulin can no longer suppress PC flux or HGP.' },
+      tlko: { label: 'Liver Akt1/2 + FoxO1 KO (mouse)', rodent: true, hep: 0, adip: 1, text: 'HGP is still suppressed: gluconeogenesis is controlled from fat. Only glycogenolysis escapes.' },
+      acetate: { label: '+ acetate & glycerol (rat)', rodent: true, hep: 0.85, adip: 1, block: true, text: 'Clamp hepatic acetyl-CoA & glycerol supply → insulin can no longer suppress PC flux or HGP.' },
       adipir: { label: 'Adipose insulin resistance', hep: 0.85, adip: 0.3, text: 'Lipolysis keeps going → acetyl-CoA stays high → gluconeogenesis continues. Looks like "hepatic" IR but is adipose IR.' },
-      aso: { label: 'INSR knockdown (liver + fat)', hep: 0, adip: 0, text: 'No insulin receptors in liver or fat: no suppression…' },
-      atgl: { label: '… + atglistatin', hep: 0, adip: 0, drug: true, text: '…block lipolysis with a drug and suppression returns — no hepatic INSR needed.' },
+      aso: { label: 'INSR knockdown, liver + fat (rat)', rodent: true, hep: 0, adip: 0, text: 'No insulin receptors in liver or fat: no suppression…' },
+      atgl: { label: '… + atglistatin (rat)', rodent: true, hep: 0, adip: 0, drug: true, text: '…block lipolysis with a drug and suppression returns — no hepatic INSR needed.' },
       t2d: { label: 'Type 2 diabetes', hep: 0.45, adip: 0.45, gngUp: 1.3, glyDn: 0.7, text: 'Raised HGP is **all gluconeogenesis**; glycogen is lower. Direct and indirect suppression both impaired.' },
     };
     const c = chart(560, 270, { l: 50, b: 42 });
@@ -152,7 +152,7 @@
     const info = h('div.irl-read');
     const tS = slider('Hours since last meal', 4, 48, 1, 12, (v) => v + ' h', (v) => { st.t = v; draw(); });
     const sp = chips([{ id: 'human', label: 'Human' }, { id: 'rat', label: 'Rat (glycogen gone overnight)' }], (id) => { st.sp = id; draw(); });
-    const sc = chips(Object.keys(SC).map((k) => ({ id: k, label: SC[k].label })), (id) => { st.sc = id; draw(); });
+    const sc = chips(Object.keys(SC).map((k) => ({ id: k, label: SC[k].label })), (id) => { st.sc = id; if (SC[id].rodent && st.sp !== 'rat') { st.sp = 'rat'; sp.querySelectorAll('.chip').forEach((b) => b.classList.toggle('on', b.dataset.id === 'rat')); } draw(); });
     const key = EP.colorKey([['Hepatic glucose production', [{ fill: 'color-mix(in srgb, var(--tr0) 55%, transparent)', label: 'Glycogenolysis — DIRECT insulin control' }, { fill: 'color-mix(in srgb, var(--tr1) 55%, transparent)', label: 'Gluconeogenesis — mostly INDIRECT (via fat)' }]]], { compact: true });
     el.append(h('div.irl-row', h('div.small.muted', 'Species'), sp), h('div.irl-row', h('div.small.muted', 'Experiment'), sc), tS,
       h('div.irl-grid', h('div', c.svg), h('div', bars.svg)), key, info);
@@ -182,7 +182,8 @@
       });
       const sup = 1 - (G1 + N1) / (G0 + N0);
       const share = G0 / (G0 + N0);
-      info.innerHTML = `<div class="irl-stats"><div><b>${(share * 100).toFixed(0)}%</b><span>of HGP from glycogen at ${st.t} h</span></div><div><b class="${sup > 0.5 ? 'up' : 'dn'}">${(sup * 100).toFixed(0)}%</b><span>HGP suppressed by insulin</span></div><div><b>${(N0 ? (1 - N1 / N0) * 100 : 0).toFixed(0)}%</b><span>of gluconeogenesis suppressed</span></div></div><p>${EP.md(S.text)}</p>`;
+      const note = SC[st.sc].rodent && st.sp === 'rat' ? '<p class="small muted">Rodent experiment — shown with rat glycogen kinetics (liver glycogen is almost gone after an overnight fast).</p>' : '';
+      info.innerHTML = note + `<div class="irl-stats"><div><b>${(share * 100).toFixed(0)}%</b><span>of HGP from glycogen at ${st.t} h</span></div><div><b class="${sup > 0.5 ? 'up' : 'dn'}">${(sup * 100).toFixed(0)}%</b><span>HGP suppressed by insulin</span></div><div><b>${(N0 ? (1 - N1 / N0) * 100 : 0).toFixed(0)}%</b><span>of gluconeogenesis suppressed</span></div></div><p>${EP.md(S.text)}</p>`;
     }
     draw();
     return el;

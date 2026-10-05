@@ -42,13 +42,22 @@
         const inhib = t.w < 0;
         const isFb = !!t.fb;
         const type = isFb ? (inhib ? 'fb' : 'fbpos') : inhib ? 'inhib' : (t.endo ? 'endo' : 'stim');
-        const curve = t.curve != null ? t.curve : isFb ? 70 : 0;
+        const curve = net.route && t.curve == null ? 0 : t.curve != null ? t.curve : isFb ? 70 : 0;
         const ax = a.x, ay = a.y, bx = n.x, by = n.y;
         const len = Math.hypot(bx - ax, by - ay) || 1;
         const nx = -(by - ay) / len, ny = (bx - ax) / len;
         const qx = (ax + bx) / 2 + nx * curve, qy = (ay + by) / 2 + ny * curve;
-        const p0 = bnd(a, curve ? qx : bx, curve ? qy : by), p1 = bnd(n, curve ? qx : ax, curve ? qy : ay, 8);
-        const d = curve ? `M${p0[0]},${p0[1]} Q${qx},${qy} ${p1[0]},${p1[1]}` : `M${p0[0]},${p0[1]} L${p1[0]},${p1[1]}`;
+        let p0 = bnd(a, curve ? qx : bx, curve ? qy : by), p1 = bnd(n, curve ? qx : ax, curve ? qy : ay, 8);
+        let d = curve ? `M${p0[0]},${p0[1]} Q${qx},${qy} ${p1[0]},${p1[1]}` : `M${p0[0]},${p0[1]} L${p1[0]},${p1[1]}`;
+        let rpts = null;
+        if (net.route && !curve) {
+          // automatic right-angle routing around the other nodes (box includes the level meter)
+          const obs = drawNodes.filter((m) => m !== a && m !== n).map(rbox);
+          rpts = t.via ? [bnd(a, t.via[0][0], t.via[0][1]), ...t.via, bnd(n, t.via[t.via.length - 1][0], t.via[t.via.length - 1][1], 8)] : EP.route(rbox(a), rbox(n), obs, { padA: 3, padB: 8 }).pts;
+          d = EP.pathD(rpts);
+          const sg = rpts.slice(1).map((p, i) => [rpts[i], p]).sort((u, v) => Math.hypot(v[1][0] - v[0][0], v[1][1] - v[0][1]) - Math.hypot(u[1][0] - u[0][0], u[1][1] - u[0][1]))[0];
+          p0 = sg[0]; p1 = sg[1];
+        }
         const g = s('g', { class: 'edge-g' + (isFb ? ' fbk' : '') });
         const path = s('path', { d, class: `edge e-${type}`, 'marker-end': `url(#m-${type === 'endo' ? 'endo' : type})` });
         const flow = s('path', { d, class: `flow f-${type}` });
@@ -59,7 +68,7 @@
         g.append(path, flow, hit);
         const mx = curve ? (p0[0] + 2 * qx + p1[0]) / 4 : (p0[0] + p1[0]) / 2, my = curve ? (p0[1] + 2 * qy + p1[1]) / 4 : (p0[1] + p1[1]) / 2;
         if (t.label || t.fb) g.appendChild(s('text', { x: mx + (t.lx || 6), y: my + (t.ly || 0), class: 'edge-label' + (isFb ? ' fb-label' : '') }, t.label || (t.fb === 'short' ? 'short loop' : t.fb === 'ultra' ? 'ultrashort' : t.fb === 'ff' ? 'feed-forward' : 'long loop')));
-        else g.appendChild(s('text', { x: mx + 7, y: my + 4, class: 'edge-glyph g-' + (inhib ? 'inhib' : 'stim') }, inhib ? '−' : '+'));
+        else if (t.glyph !== false) g.appendChild(s('text', { x: mx + 7, y: my + 4, class: 'edge-glyph g-' + (inhib ? 'inhib' : 'stim') }, inhib ? '−' : '+'));
         gE.appendChild(g);
         edgeEl.push({ g, flow, t, a, n });
       });
@@ -70,6 +79,22 @@
       const k = Math.min((w / 2 + pad) / Math.abs(dx || 1e-9), (hh / 2 + 14 + pad) / Math.abs(dy || 1e-9));
       return [n.x + dx * k, n.y + dy * k];
     }
+    // "show arrows from" filter: fade every arrow (and untouched node) outside the chosen group
+    if (net.focus && net.focus.length) {
+      let cur = null;
+      const fbar = h('div.casc-focus', h('span.small.muted', 'Show arrows from:'));
+      const apply = () => {
+        const set = cur ? new Set(cur.src) : null;
+        const touched = new Set();
+        edgeEl.forEach(({ g, a, n }) => { const on = !set || set.has(a.id); g.classList.toggle('dim', !on); if (on && set) { touched.add(a.id); touched.add(n.id); } });
+        Object.entries(nodeEl).forEach(([id, o]) => o.g.classList.toggle('dim', !!set && !touched.has(id)));
+        fbar.querySelectorAll('.chip').forEach((c, i) => c.classList.toggle('on', i === 0 ? !cur : net.focus[i - 1] === cur));
+      };
+      fbar.appendChild(h('button.chip.on', { onclick: () => { cur = null; apply(); } }, 'All'));
+      net.focus.forEach((f) => fbar.appendChild(h('button.chip', { onclick: () => { cur = cur === f ? null : f; apply(); } }, f.label)));
+      left.insertBefore(fbar, svg);
+    }
+    function rbox(m) { const [w, hh] = sz(m); return { x: m.x, y: m.y + 7, w, h: hh + 16 }; }
     function sz(n) { if (!n._nsz) { const d = EP.SIZE[n.type || 'hormone'] || [110, 36]; n._nsz = EP.fitBox(n.type || 'hormone', n.label.split('\n'), n.w || d[0], n.h || d[1]); } return n._nsz; }
     drawNodes.forEach((n) => {
       const [w, hh] = sz(n);
@@ -246,7 +271,13 @@
       });
       // direct labels at the end of each line (nudged apart so they don't overlap)
       ends.sort((a, b) => a.y - b.y);
-      for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < 12) ends[k].y = ends[k - 1].y + 12;
+      const GAP = 15;
+      const meanY = ends.reduce((a, e) => a + e.y, 0) / (ends.length || 1);
+      for (let k = 1; k < ends.length; k++) if (ends[k].y - ends[k - 1].y < GAP) ends[k].y = ends[k - 1].y + GAP;
+      // re-centre the stack on the lines it labels, then keep it inside the chart
+      const shift = meanY - ends.reduce((a, e) => a + e.y, 0) / (ends.length || 1);
+      ends.forEach((e) => { e.y += shift; });
+      const under = ends.length ? 10 - ends[0].y : 0; if (under > 0) ends.forEach((e) => { e.y += under; });
       const over = ends.length ? ends[ends.length - 1].y - (ch - 4) : 0;
       if (over > 0) ends.forEach((e) => { e.y -= over; });
       ctx.font = '600 11px Inter, system-ui, sans-serif';
@@ -265,7 +296,7 @@
         traceIds.forEach((id, i) => { hist[i].push(model.eff(id) / (model.ref[id] || 1)); if (hist[i].length > HN) hist[i].shift(); });
         paint(); drawTrace();
       }
-    });
+    }, { always: true });
     EP.onTeardown(stop);
     const api = { model, choose, root };
     api.choose = (id) => { const p = (net.presets || []).find((x) => x.id === id); const i = (net.presets || []).indexOf(p); choose(p || null, pBtns[i + 1] || normalBtn); };

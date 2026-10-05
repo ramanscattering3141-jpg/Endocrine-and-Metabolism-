@@ -150,7 +150,7 @@
 
   // ---------------- kidney & gut mineral handling ----------------
   P.kidneymineral = {
-    id: 'kidneymineral', title: 'Kidney and gut handling of calcium and phosphate', view: { w: 1150, h: 560 },
+    id: 'kidneymineral', title: 'Kidney and gut handling of calcium and phosphate', view: { w: 1150, h: 560 }, route: true,
     compartments: [{ x: 10, y: 10, w: 270, h: 540, label: 'Proximal tubule', kind: 'cytosol' }, { x: 290, y: 10, w: 270, h: 540, label: 'Thick ascending limb', kind: 'cytosol' }, { x: 570, y: 10, w: 270, h: 540, label: 'Distal convoluted tubule', kind: 'cytosol' }, { x: 850, y: 10, w: 290, h: 540, label: 'Duodenum (enterocyte)', kind: 'organ' }],
     inputs: [{ node: 'pth', label: 'PTH', value: 1 }, { node: 'fgf23', label: 'FGF23', value: 1 }, { node: 'calcitriol', label: 'Calcitriol', value: 1 }, { node: 'ca', label: 'Plasma Ca²⁺', value: 1 }],
     nodes: [n('pth', 140, 50), n('fgf23', 140, 130), n('napi', 80, 260), n('pexc', 80, 360, { type: 'process', ent: 'phosphate', label: '↑ Phosphate excretion', w: 150 }), n('cyp27b1', 210, 260, { w: 110 }), n('cyp24a1', 210, 450, { lv: 2, w: 100 }), n('ca', 420, 50), n('casr', 420, 160), n('tal', 420, 280, { type: 'process', ent: 'casr', label: 'Paracellular Ca²⁺\nreabsorption (claudins)', h: 44, w: 180 }), n('trpv5', 700, 260), n('dctca', 700, 360, { type: 'process', ent: 'trpv5', label: '↑ Ca²⁺ reabsorption', w: 160 }), n('calcitriol', 1000, 50), n('vdr', 1000, 130), n('trpv6', 1000, 250), n('gutca', 1000, 350, { type: 'process', ent: 'trpv6', label: '↑ Ca²⁺ absorption', w: 150 }), n('napi2b', 1000, 450), n('pth2', 700, 50, { ent: 'pth', label: 'PTH' })],

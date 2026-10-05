@@ -32,6 +32,13 @@ Physiology regression tests: `node tests/physiology.test.js` runs every axis pre
 
 New pathways are data: add an object to `EP.pathways` (nodes, edges with `why` text, steps, clinical states) and register it in a page in `js/app.js`.
 
+## Diagram conventions
+
+- `js/core/router.js` routes arrows for all three diagram engines: straight or right-angle paths with rounded corners that go around boxes, and edge labels placed where they cover no box, label or line. Opt in per diagram with `route: true` (pathways, networks); explainer diagrams always use it unless an edge gives `via` points.
+- Long connector lines can be marked `ghost: true` (pathways): hidden until you hover either end, or tick "Show all signal → organ lines".
+- Pathway `layers` (and compartments with a `layer`) are the collapsible branches; networks can list `focus` groups for a "Show arrows from" filter.
+- The ⏸ button in the top bar stops every decorative animation (remembered; off by default with reduced-motion). Simulations keep running (`EP.loop(fn, { always: true })`).
+
 ## Sources and model honesty
 
 Primary sources: Kovacs & Ojeda, *Textbook of Endocrine Physiology* 6e; Molina, *Endocrine Physiology* 5e; Petersen & Shulman, *Physiol Rev* 2018 (all in this repo). Supporting literature was verified on PubMed (PMIDs and DOIs listed in the app's **Sources** page). *Williams Textbook of Endocrinology* was requested but is not in the repo, so nothing is attributed to specific Williams chapters.

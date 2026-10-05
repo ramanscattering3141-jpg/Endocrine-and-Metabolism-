@@ -26,7 +26,7 @@
           ],
           edges: [
             E('glcO', 'glut4', 'flow', null, { anim: true }), E('glut4', 'glcIn', 'flow', null, { anim: true }), E('glcIn', 'g6p', 'flow', 'hexokinase', { lo: [0, -8] }), E('g6p', 'pfk', 'flow'), E('pfk', 'pdh', 'flow'), E('g6p', 'glycogen', 'flow'),
-            E('fa', 'acoa', 'flow', 'β-oxidation'), E('acoa', 'pdh', 'inh'), E('acoa', 'cit', 'flow', null, { via: [[870, 45], [870, 245]] }), E('cit', 'pfk', 'inh'),
+            E('fa', 'acoa', 'flow', 'β-oxidation'), E('acoa', 'pdh', 'inh'), E('acoa', 'cit', 'flow'), E('cit', 'pfk', 'inh'),
             E('g6p', 'glcIn', 'inh', 'G6P ⊣ HK', { bend: -40, lo: [0, 14] }),
             E('fa', 'dag', 'flow', null, { via: [[220, 45]] }), E('dag', 'glut4', 'inh', 'IRS1 / GIV Ser-P'),
           ],
@@ -129,7 +129,7 @@
           ],
           states: [
             { id: 'ir', label: 'Lipogenic DAG (typical IR)', n: { pkcld: { c: 'off' }, gdag: { b: '↑' }, npkc: { b: '↑' }, insr: { c: 'bad', b: '↓' } }, cap: 'Lipogenic sn-1,2-DAG reaches Golgi/membranes → PKCε → INSR inhibited. (Golgi role is plausible but not yet tested directly.)' },
-            { id: 'cgi', label: 'CGI-58 knockdown', n: { tag: { b: '↑↑' }, d13: { b: '↑' }, npkc: { c: 'off' }, pkcld: { b: '!' }, insr: { c: 'good', b: '✓' } }, e: { 'npkc>insr': 'off' }, cap: 'CGI-58 ASO: huge liver fat and DAG, yet normal insulin action — PKCε moved to the **lipid droplet**, away from INSR.' },
+            { id: 'cgi', label: 'CGI-58 knockdown', n: { atgl: { c: 'bad', b: '↓' }, tag: { b: '↑↑' }, d13: { c: 'off' }, npkc: { c: 'off' }, pkcld: { b: 'DAG ↑' }, insr: { c: 'good', b: '✓' } }, e: { 'npkc>insr': 'off' }, cap: 'CGI-58 ASO: huge liver fat and DAG, yet normal insulin action — PKCε moved to the **lipid droplet**, away from INSR.' },
           ],
         }),
         IRV.ev('Models that seem to break the DAG link — and why', [
@@ -406,7 +406,7 @@
             N('ihtg', 420, 220, 'IHTG → DAG/PKCε', 'lipid'), N('hir', 630, 220, 'Hepatic IR: glycogen synthesis ↓', 'bad'), N('hgp', 850, 175, 'HGP ↑', 'glc'),
             N('pg', 860, 262, 'Plasma glucose ↑', 'glc'),
             N('imcl', 420, 330, 'IMCL → DAG/PKCθ', 'lipid'), N('mir', 660, 330, 'Muscle IR: glucose transport ↓,\nglycogen synthesis ↓', 'bad'),
-            N('dnl', 660, 425, 'Glucose diverted to liver → DNL', 'process'),
+            N('dnl', 660, 425, 'Glucose diverted to liver → DNL', 'process', { info: 'After carbohydrate meals, lean insulin-resistant people stored ~60% less muscle glycogen and had >2× more hepatic DNL (Petersen 2007). DNL still supplies only a minority of liver TG (~25% in NAFLD); fatty-acid supply is the bigger route.' }),
           ],
           edges: [
             E('over', 'stress', 'bad'), E('stress', 'death', 'bad'), E('death', 'mac'), E('rbp4', 'mac'), E('mac', 'jnk'), E('jnk', 'lipo'), E('stress', 'lipo', 'act', null, { via: [[290, 95], [290, 365]] }), E('lipo', 'out', 'flow'),
