@@ -189,6 +189,36 @@
     set(!EP.state.paused);
     return btn;
   };
+  /** Phones: a diagram scaled down to the screen width would shrink its text below legibility. Instead give every
+   *  diagram SVG a minimum width at which its smallest label renders at ~10 px, inside a horizontally scrolling box. */
+  const PHONE = '(max-width: 700px)';
+  EP.isPhone = () => !!(window.matchMedia && window.matchMedia(PHONE).matches);
+  EP.phoneFit = function (scope) {
+    const phone = EP.isPhone();
+    (scope || document).querySelectorAll('svg').forEach((svg) => {
+      if (svg.parentNode && svg.parentNode.closest && svg.parentNode.closest('svg')) return;
+      const vb = svg.viewBox && svg.viewBox.baseVal;
+      if (!vb || vb.width < 300 || svg.closest('.ck-sw, .lg-svg, .topbar')) return;
+      if (!phone) { if (svg.dataset.phoneFit) { svg.style.minWidth = svg.dataset.phoneMin0 || ''; delete svg.dataset.phoneFit; } return; }
+      let minFs = 99;
+      svg.querySelectorAll('text').forEach((t) => {
+        if (!t.textContent.trim() || t.closest('defs')) return;
+        const fs = parseFloat(getComputedStyle(t).fontSize);
+        if (fs >= 7 && fs < minFs) minFs = fs;
+      });
+      if (minFs === 99) return;
+      const need = Math.min(vb.width * 1.4, Math.ceil(vb.width * 10.3 / minFs));
+      if (!svg.dataset.phoneFit) svg.dataset.phoneMin0 = svg.style.minWidth || '';
+      svg.dataset.phoneFit = '1';
+      svg.style.minWidth = need + 'px';
+      // make sure something around the diagram scrolls sideways (never the whole page)
+      const par = svg.parentElement;
+      if (par && !par.matches('.pw-scroll, .net-scroll, .casc-scroll, .fd-stage, .phone-scroll')) {
+        if (par.children.length === 1) par.classList.add('phone-scroll');
+        else { const wrap = EP.h('div.phone-scroll'); par.insertBefore(wrap, svg); wrap.appendChild(svg); }
+      }
+    });
+  };
   EP.stopAllLoops = () => { loops.forEach((r) => (r.alive = false)); loops.clear(); };
 
   /** Teardown hooks for the current view */

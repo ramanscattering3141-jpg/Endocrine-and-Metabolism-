@@ -57,7 +57,7 @@
     svg.appendChild(EP.svgDefs());
     const gBand = s('g'), gLink = s('g'), gNode = s('g'), gDot = s('g');
     svg.append(gBand, gLink, gNode, gDot);
-    left.appendChild(svg);
+    left.appendChild(h('div.casc-scroll', svg));
     {
       const TV = { receptor: ['--c-receptor', 'Receptor'], kinase: ['--c-kinase', 'Kinase / signaling protein'], messenger: ['--c-messenger', 'Second messenger / G protein'], enzyme: ['--c-enzyme', 'Enzyme'], tf: ['--c-tf', 'Transcription factor'], gene: ['--c-tf', 'Gene / transcription (dashed)'], transporter: ['--c-transporter', 'Transporter / channel'], process: ['--c-process', 'Cell process'], hormone: ['--c-hormone', 'Hormone / mediator'], ion: ['--c-ion', 'Ion'], metabolite: ['--c-metabolite', 'Metabolite'] };
       const types = [...new Set(C.nodes.map((n) => n.type || 'kinase'))].filter((x) => TV[x]);

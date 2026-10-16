@@ -49,11 +49,26 @@
     const Y = (v) => c.P.t + (1 - (v - o.y[0]) / (o.y[1] - o.y[0])) * c.ih;
     (o.bands || []).forEach((b) => { c.g.appendChild(s('rect', { x: X(b.x0), y: c.P.t, width: X(b.x1) - X(b.x0), height: c.ih, style: `fill:color-mix(in srgb, ${b.col || 'var(--accent)'} 13%, transparent)` })); if (b.label) c.g.appendChild(text((X(b.x0) + X(b.x1)) / 2, c.P.t + 12, b.label, `fill:${b.col || 'var(--accent)'};font-weight:600`, 'middle')); });
     axes(c, (o.xt || []).map(([v, l]) => [X(v), l]), (o.yt || []).map(([v, l]) => [Y(v), l]), o.xl, o.yl);
+    const polys = [];
     (o.series || []).forEach((sr) => {
       let pts = sr.pts;
       if (sr.f) { pts = []; for (let i = 0; i <= 160; i++) { const v = o.logx ? Math.pow(10, lg(o.x[0]) + (lg(o.x[1]) - lg(o.x[0])) * i / 160) : o.x[0] + (o.x[1] - o.x[0]) * i / 160; pts.push([v, sr.f(v)]); } }
-      c.g.appendChild(line(pts.map(([a, b]) => [X(a), Y(b)]), `stroke:${sr.col};stroke-width:${sr.w || 2.6};` + (sr.dash ? `stroke-dasharray:${sr.dash}` : '')));
-      if (sr.label) c.g.appendChild(text(X(sr.lx), Y(sr.ly), sr.label, `fill:${sr.col};font-weight:700`, sr.la || 'start'));
+      const xy = pts.map(([a, b]) => [X(a), Y(b)]); polys.push(xy);
+      c.g.appendChild(line(xy, `stroke:${sr.col};stroke-width:${sr.w || 2.6};` + (sr.dash ? `stroke-dasharray:${sr.dash}` : '')));
+    });
+    // series labels: start at the suggested spot, then move to the nearest place inside the plot that no curve crosses
+    const taken = [];
+    (o.series || []).forEach((sr) => {
+      if (!sr.label) return;
+      const an = sr.la || 'start', w = EP.textWidth(sr.label, 11, 700) + 4, hh = 13;
+      const x0 = X(sr.lx), y0 = Y(sr.ly);
+      const rectAt = (x, y) => ({ x: an === 'start' ? x + w / 2 : an === 'end' ? x - w / 2 : x, y: y - 4, w, h: hh });
+      const free = (r) => r.x - r.w / 2 > c.P.l + 2 && r.x + r.w / 2 < c.P.l + c.iw - 2 && r.y - r.h / 2 > c.P.t + 2 && r.y + r.h / 2 < c.P.t + c.ih - 2 &&
+        !polys.some((P) => P.slice(1).some((q, i) => EP.segHits(P[i], q, r, 2))) && !taken.some((t) => Math.abs(t.x - r.x) < (t.w + r.w) / 2 + 2 && Math.abs(t.y - r.y) < (t.h + r.h) / 2 + 1);
+      let at = [x0, y0];
+      outer: for (const dy of [0, -10, 10, -20, 20, -30, 30, -42, 42, -56, 56]) for (const dx of [0, -24, 24, -48, 48, -80, 80]) { if (free(rectAt(x0 + dx, y0 + dy))) { at = [x0 + dx, y0 + dy]; break outer; } }
+      taken.push(rectAt(at[0], at[1]));
+      c.g.appendChild(text(at[0], at[1], sr.label, `fill:${sr.col};font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px`, an));
     });
     (o.vl || []).forEach((v) => { c.g.appendChild(s('line', { x1: X(v.x), x2: X(v.x), y1: c.P.t, y2: c.P.t + c.ih, style: `stroke:${v.col || 'var(--faint)'};stroke-dasharray:4 3` })); if (v.label) c.g.appendChild(text(X(v.x) + 4, c.P.t + c.ih - 6, v.label, `fill:${v.col || 'var(--muted)'}`)); });
     (o.marks || []).forEach((m) => { c.g.appendChild(s('circle', { cx: X(m.x), cy: Y(m.y), r: 4, style: `fill:${m.col}` })); if (m.label) c.g.appendChild(text(X(m.x) + (m.dx || 6), Y(m.y) + (m.dy || -6), m.label, `fill:${m.col};font-weight:600`, m.la)); });
@@ -211,7 +226,7 @@
       c.clear();
       axes(c, [0, 1, 2, 3, 4, 5, 6].map((v) => [X(v), v + ' h']), [0.4, 0.8, 1.0, 1.2, 1.6].map((v) => [Y(v), '×' + v]), 'Time', 'Relative level');
       c.g.appendChild(s('rect', { x: X(3), y: c.P.t, width: X(5) - X(3), height: c.ih, style: 'fill:color-mix(in srgb, var(--tr3) 9%, transparent)' }));
-      c.g.appendChild(text(X(4), c.P.t + 12, 'IR appears (3–5 h)', 'fill:var(--tr3);font-weight:600', 'middle'));
+      c.g.appendChild(text(X(4), c.P.t + c.ih - 8, 'IR appears (3–5 h)', 'fill:var(--tr3);font-weight:600;paint-order:stroke;stroke:var(--bg);stroke-width:3px', 'middle'));
       c.g.appendChild(s('line', { x1: c.P.l, x2: c.P.l + c.iw, y1: Y(1), y2: Y(1), style: 'stroke:var(--faint);stroke-dasharray:2 3' }));
       SER.forEach(([k, col, d]) => { const pts = []; for (let i = 0; i <= 120; i++) { const t = i / 20; pts.push([X(t), Y(S[k](t))]); } c.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6;${d ? 'stroke-dasharray:' + d : ''}`)); });
       c.g.appendChild(s('line', { x1: X(st.t), x2: X(st.t), y1: c.P.t, y2: c.P.t + c.ih, style: 'stroke:var(--text);stroke-width:1.5' }));
@@ -251,13 +266,13 @@
     const ANS = [['ir', 'Insulin resistance'], ['sec', 'Secretion defect'], ['sens', '↑ Insulin sensitivity'], ['secup', '↑ Insulin secretion']];
     function newQ() {
       const x = CO.slice(1)[Math.floor(Math.random() * 4)];
-      const qc = chart(360, 190, { l: 44, b: 34 }), X = (t) => qc.P.l + t / 120 * qc.iw, Y = (v) => qc.P.t + (1 - v / 400) * qc.ih;
-      axes(qc, [0, 60, 120].map((v) => [X(v), v + ' min']), [0, 200, 400].map((v) => [Y(v), String(v)]), '', 'Glucose');
+      const qc = chart(360, 200, { l: 52, b: 40, r: 22 }), X = (t) => qc.P.l + t / 120 * qc.iw, Y = (v) => qc.P.t + (1 - v / 400) * qc.ih;
+      axes(qc, [0, 60, 120].map((v) => [X(v), String(v)]), [0, 200, 400].map((v) => [Y(v), String(v)]), 'Minutes after glucose', 'Glucose, mg/dL');
       [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.g); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([X(t), Y(f(t))]); qc.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); });
       const fb = h('p'); const ins = h('div');
       EP.clear(quiz);
       quiz.append(h('h3', '🐭 Mystery mouse'), h('p.small.muted', 'Grey = lean control, blue = mystery. Look at glucose, reveal insulin, then decide.'), qc.svg,
-        h('button.btn', { onclick: (ev) => { ev.target.disabled = true; const ic2 = chart(360, 150, { l: 44, b: 30 }); const Yi = (v) => ic2.P.t + (1 - v / 160) * ic2.ih; axes(ic2, [0, 60, 120].map((v) => [ic2.P.l + v / 120 * ic2.iw, v + ' min']), [0, 80, 160].map((v) => [Yi(v), String(v)]), '', 'Insulin'); [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.i); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([ic2.P.l + t / 120 * ic2.iw, Yi(f(t))]); ic2.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); }); ins.appendChild(ic2.svg); } }, 'Reveal insulin curve'), ins,
+        h('button.btn', { onclick: (ev) => { ev.target.disabled = true; const ic2 = chart(360, 170, { l: 52, b: 40, r: 22 }); const Yi = (v) => ic2.P.t + (1 - v / 160) * ic2.ih; axes(ic2, [0, 60, 120].map((v) => [ic2.P.l + v / 120 * ic2.iw, String(v)]), [0, 80, 160].map((v) => [Yi(v), String(v)]), 'Minutes after glucose', 'Insulin, µU/mL'); [[CO[0], 'var(--muted)'], [x, 'var(--accent)']].forEach(([cc, col]) => { const f = curve(...cc.i); const pts = []; for (let t = 0; t <= 120; t += 2) pts.push([ic2.P.l + t / 120 * ic2.iw, Yi(f(t))]); ic2.g.appendChild(line(pts, `stroke:${col};stroke-width:2.6`)); }); ins.appendChild(ic2.svg); } }, 'Reveal insulin curve'), ins,
         h('div.statebar', ANS.map(([id, l]) => h('button.chip', { onclick: () => { fb.innerHTML = (id === x.ans ? '<b class="qual up">Correct.</b> ' : '<b class="qual dn">Not quite.</b> ') + EP.md(x.why) + ` <span class="muted">(${EP.esc(x.label)})</span>`; } }, l))), fb,
         h('button.btn', { onclick: newQ }, 'Another mouse'));
     }

@@ -399,12 +399,14 @@
     const pairs = [['hpa', 'primary', 'secondary'], ['hpt', 'primary', 'secondary'], ['hpgm', 'klinefelter', 'secondary']];
     let i = 0;
     const sel = h('div.statebar', pairs.map((p, j) => h('button.chip' + (j ? '' : '.on'), { onclick: (ev) => { i = j; sel.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c === ev.target)); run(); } }, EP.networks[p[0]].title)));
-    const grid = h('div.grid2');
+    const grid = h('div.cmp-stack');
     el.append(sel, grid);
     function run() {
       EP.teardown(); EP.clear(grid);
       const [net, a, b] = pairs[i];
-      const A = h('div'), B = h('div'); grid.append(A, B);
+      const lab = (id) => { const p = (EP.networks[net].presets || []).find((x) => x.id === id); return p ? p.label : id; };
+      // one above the other: side by side each axis diagram would shrink to unreadable text
+      const A = h('div.card', h('h3', 'A · ' + lab(a))), B = h('div.card', h('h3', 'B · ' + lab(b))); grid.append(A, B);
       EP.mountNetwork(A, net).choose(a); EP.mountNetwork(B, net).choose(b);
     }
     run();

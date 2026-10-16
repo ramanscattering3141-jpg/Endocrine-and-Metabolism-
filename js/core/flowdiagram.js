@@ -241,6 +241,12 @@
       svg.appendChild(gN);
       // collapse tabs for open branches, placed where they cover nothing
       const tabBoxes = Object.values(box).map((B) => ({ x: B.x, y: B.y, w: B.w, h: B.h }));
+      (spec.zones || []).forEach((z) => {
+        if (!z.label || (z.g && !open[z.g])) return;
+        const zw = EP.textWidth(String(z.label).toUpperCase(), 11, 700) * 1.08, zx = z.lx != null ? z.lx : z.x + 12, zy = z.ly != null ? z.ly : z.y + 18;
+        const x0 = z.anchor === 'end' ? zx - zw : z.anchor === 'middle' ? zx - zw / 2 : zx;
+        tabBoxes.push({ x: x0 + zw / 2, y: zy - 4, w: zw + 6, h: 16 });
+      });
       const tabLines = (root.routes || []);
       Object.keys(groups).forEach((g) => {
         if (!open[g]) return;
@@ -274,14 +280,27 @@
       let tries = 0;
       const tidy = () => {
         if (!svg.isConnected) { if (tries++ < 120) requestAnimationFrame(tidy); return; }
-        const F = EP.labelFitter(svg, fdBoxes, 'path.fd-ep');
-        gL.querySelectorAll('text.fd-el').forEach((tx) => { const pe = gE.querySelector(`[data-e="${tx.getAttribute('data-e')}"] path`); F.fit(tx, pe); });
+        const tabs = [...svg.querySelectorAll('.fd-ctab')].map((t) => t.getBBox && (() => { const m = t.transform.baseVal[0].matrix, b = t.getBBox(); return { x: m.e + b.x, y: m.f + b.y, w: b.width, h: b.height }; })());
+        const F = EP.labelFitter(svg, fdBoxes.concat(tabs), 'path.fd-ep');
+        const ovr = (a, b) => a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
         svg.querySelectorAll('text.fd-zl').forEach((tx) => {
-          const b = F.box(tx); if (!b || (!F.onLine(b) && !F.hits(b))) return;
+          const b = F.box(tx); if (!b) return;
+          if (!F.onLine(b) && !F.hits(b) && !F.placed.some((q) => ovr(b, q))) { F.placed.push(b); return; }
           const r = tx.parentNode.querySelector('rect'); const x = +r.getAttribute('x'), y = +r.getAttribute('y'), w = +r.getAttribute('width'), hh = +r.getAttribute('height');
           for (const [cx, cy, an] of [[x + 12, y + 18, 'start'], [x + w - 12, y + 18, 'end'], [x + 12, y + hh - 8, 'start'], [x + w - 12, y + hh - 8, 'end'], [x + w / 2, y + 18, 'middle'], [x + w / 2, y + hh - 8, 'middle']]) {
             tx.setAttribute('x', cx); tx.setAttribute('y', cy); tx.setAttribute('text-anchor', an);
-            const nb = F.box(tx); if (nb && !F.onLine(nb) && !F.hits(nb)) return;
+            const nb = F.box(tx); if (nb && !F.onLine(nb) && !F.hits(nb) && !F.placed.some((q) => ovr(nb, q))) { F.placed.push(nb); return; }
+          }
+        });
+        gL.querySelectorAll('text.fd-el').forEach((tx) => { const pe = gE.querySelector(`[data-e="${tx.getAttribute('data-e')}"] path`); F.fit(tx, pe); });
+        // change badges sit on a corner of their box: use the first corner no line runs through
+        gN.querySelectorAll('.fd-n').forEach((g) => {
+          const bg = g.querySelector('.fd-badge'); const B = box[g.dataset.n]; if (!bg || !B) return;
+          const bw = +bg.querySelector('rect').getAttribute('width');
+          for (const [dx, dy] of [[B.w / 2 - 2, -B.h / 2 + 1], [-B.w / 2 + 2, -B.h / 2 + 1], [B.w / 2 - 2, B.h / 2 - 1], [-B.w / 2 + 2, B.h / 2 - 1], [B.w / 2 + bw / 2 + 2, 0], [-B.w / 2 - bw / 2 - 2, 0]]) {
+            const r = { x: B.x + dx - bw / 2, y: B.y + dy - 9, width: bw, height: 18 };
+            const others = fdBoxes.some((q) => !(Math.abs(q.x + q.w / 2 - B.x) < 0.5 && Math.abs(q.y + q.h / 2 - B.y) < 0.5) && r.x < q.x + q.w && r.x + r.width > q.x && r.y < q.y + q.h && r.y + r.height > q.y);
+            if (!F.onLine(r) && !others) { bg.setAttribute('transform', `translate(${dx},${dy})`); return; }
           }
         });
       };

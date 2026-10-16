@@ -27,7 +27,8 @@
     svg.appendChild(EP.svgDefs());
     const gBg = s('g'), gE = s('g'), gN = s('g');
     svg.append(gBg, gE, gN);
-    left.appendChild(svg);
+    const svgWrap = h('div.net-scroll', svg);
+    left.appendChild(svgWrap);
     (net.bands || []).forEach((b) => {
       gBg.appendChild(s('rect', { x: b.x || 0, y: b.y, width: b.w || W, height: b.h, class: 'band', rx: 12 }));
       gBg.appendChild(Object.assign(s('text', { x: (b.x || 0) + 12, y: b.y + 18, class: 'comp-label' }, b.label), { __comp: { x: b.x || 0, y: b.y, w: b.w || W, h: b.h } }));
@@ -66,7 +67,7 @@
         if ((net.route || forceRoute) && !curve) {
           // automatic right-angle routing around the other nodes (box includes the level meter)
           const obs = drawNodes.filter((m) => m !== a && m !== n).map(rbox);
-          rpts = t.via ? [bnd(a, t.via[0][0], t.via[0][1]), ...t.via, bnd(n, t.via[t.via.length - 1][0], t.via[t.via.length - 1][1], 8)] : EP.route(rbox(a), rbox(n), obs, { padA: 3, padB: 8 }).pts;
+          rpts = t.via ? [bnd(a, t.via[0][0], t.via[0][1]), ...t.via, bnd(n, t.via[t.via.length - 1][0], t.via[t.via.length - 1][1], 8)] : EP.route(rbox(a), rbox(n), obs, { padA: 3, padB: 8, diag: net.diag != null ? net.diag : 200 }).pts;
           d = EP.pathD(rpts);
           const sg = rpts.slice(1).map((p, i) => [rpts[i], p]).sort((u, v) => Math.hypot(v[1][0] - v[0][0], v[1][1] - v[0][1]) - Math.hypot(u[1][0] - u[0][0], u[1][1] - u[0][1]))[0];
           p0 = sg[0]; p1 = sg[1];
@@ -105,7 +106,7 @@
       };
       fbar.appendChild(h('button.chip.on', { onclick: () => { cur = null; apply(); } }, 'All'));
       net.focus.forEach((f) => fbar.appendChild(h('button.chip', { onclick: () => { cur = cur === f ? null : f; apply(); } }, f.label)));
-      left.insertBefore(fbar, svg);
+      left.insertBefore(fbar, svgWrap);
     }
     function rbox(m) { const [w, hh] = sz(m); return { x: m.x, y: m.y + 7, w, h: hh + 16 }; }
     function sz(n) { if (!n._nsz) { const d = EP.SIZE[n.type || 'hormone'] || [110, 36]; n._nsz = EP.fitBox(n.type || 'hormone', n.label.split('\n'), n.w || d[0], n.h || d[1]); } return n._nsz; }

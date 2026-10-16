@@ -161,6 +161,11 @@
     main.scrollTop = 0;
   }
   window.addEventListener('hashchange', route);
+  // phones: keep diagram text legible (min-width + sideways scroll) for every diagram, including ones drawn later
+  let fitQueued = false;
+  const queueFit = () => { if (fitQueued) return; fitQueued = true; requestAnimationFrame(() => { fitQueued = false; EP.phoneFit(main); }); };
+  new MutationObserver((muts) => { if (muts.some((m) => [...m.addedNodes].some((n) => n.nodeType === 1 && (n.tagName === 'svg' || (n.querySelector && n.querySelector('svg')))))) queueFit(); }).observe(main, { childList: true, subtree: true });
+  if (window.matchMedia) window.matchMedia('(max-width: 700px)').addEventListener('change', queueFit);
 
   // ------------------------------------------------------------------ info drawer
   const infoBody = info.querySelector('.info-body');

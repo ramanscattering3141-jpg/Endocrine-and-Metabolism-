@@ -84,7 +84,9 @@
     const consider = (c) => {
       // a path must not run back through its own end boxes
       const self = hits(c.pts.slice(1), [A], -3) + hits(c.pts.slice(0, -1), [B], -3);
-      const score = (hits(c.pts, obs, op) + self) * 1000 + len(c.pts) + c.cost;
+      // an arrow shorter than its own head (boxes almost touching) reads as a stray tick: avoid it
+      const stub = len(c.pts) < 14 ? 400 : 0;
+      const score = (hits(c.pts, obs, op) + self) * 1000 + len(c.pts) + c.cost + stub;
       if (!best || score < best.score) best = { pts: c.pts, score, clean: !hits(c.pts, obs, op) && !self };
     };
     C.forEach(consider);
