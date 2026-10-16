@@ -129,12 +129,12 @@
     paused: false,
     textScale: 1,
   };
-  /** Global animation switch (top bar): stops flowing dots/dashes and paused canvas loops everywhere. */
+  /** Global animation switch (top bar): sets every diagram's own switch (see EP.animSwitch) to the same state. */
   EP.setMotion = (on) => {
     EP.state.paused = !on;
-    document.body.classList.toggle('paused', !on);
     document.body.classList.toggle('no-motion', !on);
     EP.store.set('motion', on);
+    animScopes.forEach((sc) => { if (sc.isConnected) sc.__epSetAnim(on); else animScopes.delete(sc); });
     EP.emit('motion', on);
   };
   EP.setLevel = (lv) => { EP.state.level = lv; document.body.dataset.level = lv; EP.emit('level', lv); };
@@ -147,20 +147,47 @@
 
   /** Animation frame loop registry so views can be torn down cleanly on navigation */
   const loops = new Set();
-  /** opts.always: keep running when animations are switched off (for simulations, not decoration). */
+  /** opts.always: keep running when animations are switched off (for simulations, not decoration).
+   *  opts.scope: element given to EP.animSwitch — the loop follows that diagram's own pause/play button. */
   EP.loop = function (fn, opts) {
     let last = performance.now();
     const rec = { alive: true };
+    const scope = opts && opts.scope;
     const tick = (t) => {
       if (!rec.alive) return;
       const dt = Math.min(0.05, (t - last) / 1000);
       last = t;
-      if (!EP.state.paused || (opts && opts.always)) fn(dt * EP.state.motion, t);
+      const off = scope ? scope.__epAnimOff : EP.state.paused;
+      if (!off || (opts && opts.always)) fn(dt * EP.state.motion, t);
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
     loops.add(rec);
     return () => { rec.alive = false; loops.delete(rec); };
+  };
+
+  /** Per-diagram pause/play. Marks `scope` as an animation scope and returns its button.
+   *  Pausing adds .anim-off to the scope (CSS stops flowing arrows/dashes inside it) and
+   *  freezes every EP.loop registered with { scope }. Starts in the global (top-bar) state;
+   *  the top-bar switch resets all diagrams, each button then overrides its own diagram. */
+  const animScopes = new Set();
+  EP.animSwitch = function (scope, opts = {}) {
+    const what = opts.what || 'animation';
+    const btn = EP.h('button.btn.ghost.anim-btn', { type: 'button', onclick: () => set(scope.__epAnimOff) });
+    function set(on) {
+      scope.__epAnimOff = !on;
+      scope.classList.toggle('anim-off', !on);
+      btn.textContent = on ? '⏸ Pause ' + what : '▶ Play ' + what;
+      btn.title = on ? 'Stop the moving dots / flowing arrows in this diagram' : 'Start the moving dots / flowing arrows in this diagram';
+      btn.setAttribute('aria-pressed', String(!on));
+      btn.classList.toggle('off', !on);
+      if (opts.onChange) opts.onChange(on);
+    }
+    scope.classList.add('anim-scope');
+    scope.__epSetAnim = set;
+    animScopes.add(scope);
+    set(!EP.state.paused);
+    return btn;
   };
   EP.stopAllLoops = () => { loops.forEach((r) => (r.alive = false)); loops.clear(); };
 

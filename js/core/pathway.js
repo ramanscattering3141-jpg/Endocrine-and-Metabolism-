@@ -163,36 +163,78 @@
     return [Math.ceil(w), Math.ceil(hh)];
   };
 
-  /** Declutter: slide edge labels along their path off any node box; move compartment titles to a free corner. */
-  EP.declutter = function (svg, boxes) {
+  /** Label fitter shared by the diagram engines: fit(text, ownPath) keeps a label where it covers no box
+   *  (boxes: {x,y,w,h} top-left), no other fitted label and no line matching lineSel; otherwise it slides the
+   *  label along its own arrow and puts it beside it (never on it), or hides it as a last resort. */
+  EP.labelFitter = function (svg, boxes, lineSel) {
+    const ov = (b, r) => b.x < r.x + r.width && b.x + b.width > r.x && b.y < r.y + r.height && b.y + b.height > r.y;
     const hits = (b) => boxes.some((r) => b.x < r.x + r.w - 1 && b.x + b.width > r.x + 1 && b.y < r.y + r.h - 1 && b.y + b.height > r.y + 1);
+    const pts = [];
+    svg.querySelectorAll(lineSel).forEach((p) => {
+      if (p.closest('[style*="display: none"]')) return;
+      let L = 0; try { L = p.getTotalLength(); } catch (e) { return; }
+      for (let d = 0; d <= L; d += 3) { const q = p.getPointAtLength(d); pts.push(q.x, q.y); }
+    });
+    const onLine = (b) => { for (let i = 0; i < pts.length; i += 2) if (pts[i] > b.x - 1.5 && pts[i] < b.x + b.width + 1.5 && pts[i + 1] > b.y - 1 && pts[i + 1] < b.y + b.height + 1) return true; return false; };
     const placed = [];
-    const clash = (b) => hits(b) || placed.some((r) => b.x < r.x + r.width && b.x + b.width > r.x && b.y < r.y + r.height && b.y + b.height > r.y);
-    svg.querySelectorAll('text.edge-label').forEach((t) => {
-      const path = t.parentNode && t.parentNode.querySelector('path.edge');
-      let b; try { b = t.getBBox(); } catch (e) { return; }
-      if (!b.width) return;
+    const clash = (b) => hits(b) || onLine(b) || placed.some((r) => ov(b, r));
+    const box = (t) => { try { return t.getBBox(); } catch (e) { return null; } };
+    const fit = (t, path) => {
+      const b = box(t); if (!b || !b.width) return;
       if (!clash(b)) { placed.push(b); return; }
       if (path) {
         let L = 0; try { L = path.getTotalLength(); } catch (e) { /* noop */ }
-        const tries = [0.5, 0.38, 0.62, 0.28, 0.72, 0.2, 0.8, 0.12, 0.88];
-        for (const f of tries) {
-          for (const off of [-8, 12, -16]) {
-            const p = path.getPointAtLength(L * f);
-            t.setAttribute('x', p.x + 6); t.setAttribute('y', p.y + off);
-            const nb = t.getBBox();
-            if (!clash(nb)) { placed.push(nb); return; }
-          }
+        const x0 = +t.getAttribute('x'), y0 = +t.getAttribute('y'), cx = b.x + b.width / 2 - x0, cy = b.y + b.height / 2 - y0; // anchor → centre
+        const fr = [0.5]; for (let s = 0.05; s <= 0.45; s += 0.05) fr.push(0.5 - s, 0.5 + s);
+        for (const k of [1, -1, 1.7, -1.7, 2.6, -2.6]) for (const f of fr) {
+          const p = path.getPointAtLength(L * f), q = path.getPointAtLength(Math.min(L, L * f + 2));
+          let tx = q.x - p.x, ty = q.y - p.y; const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+          const nx = -ty, ny = tx;
+          const clear = Math.abs(nx) * b.width / 2 + Math.abs(ny) * b.height / 2 + 4; // centre-to-line distance so the box clears the line
+          const px = p.x + nx * clear * k, py = p.y + ny * clear * k;
+          t.setAttribute('x', (px - cx).toFixed(1)); t.setAttribute('y', (py - cy).toFixed(1));
+          const nb = box(t);
+          if (nb && !clash(nb)) { placed.push(nb); return; }
         }
       }
-      t.style.display = 'none'; // still available as the arrow's tooltip
+      t.style.display = 'none'; // the arrow keeps its meaning (marker, dash, colour) and its tooltip
+    };
+    /** Put a change badge (↑, ↓↓ …) at the first corner of its box that no line crosses.
+     *  cx, cy = box centre in svg units; ox, oy = offset of the badge's coordinate origin from that centre. */
+    const badge = (b, cx, cy, w, hh, o = {}) => {
+      const ox = o.ox || 0, oy = o.oy || 0, below = o.below || 0, bw = 24, bh = 14;
+      const own = (r) => cx > r.x && cx < r.x + r.w && cy > r.y && cy < r.y + r.h;
+      const cands = [[w / 2 - 2, -hh / 2 - 4, 'end'], [-w / 2 + 2, -hh / 2 - 4, 'start'], [w / 2 + 4, 5, 'start'], [-w / 2 - 4, 5, 'end'], [w / 2 - 2, hh / 2 + 14 + below, 'end'], [-w / 2 + 2, hh / 2 + 14 + below, 'start']];
+      [0.3, -0.3, 0.12, -0.12].forEach((f) => cands.push([w * f, -hh / 2 - 4, 'middle'], [w * f, hh / 2 + 14 + below, 'middle']));
+      [0.45, 0, -0.45].forEach((f) => cands.push([w * f, -hh / 2 - 18, 'middle'], [w * f, hh / 2 + 28 + below, 'middle']));
+      cands.push([w / 2 + 30, 5, 'start'], [-w / 2 - 30, 5, 'end']);
+      for (const [x, y, an] of cands) {
+        const r = { x: an === 'end' ? cx + x - bw : an === 'middle' ? cx + x - bw / 2 : cx + x, y: cy + y - 11, width: bw, height: bh };
+        if (onLine(r) || boxes.some((q) => !own(q) && r.x < q.x + q.w && r.x + r.width > q.x && r.y < q.y + q.h && r.y + r.height > q.y) || placed.some((q) => ov(r, q))) continue;
+        b.setAttribute('x', x + ox); b.setAttribute('y', y + oy); b.setAttribute('text-anchor', an); placed.push(r); return;
+      }
+    };
+    return { fit, hits, onLine, box, placed, badge };
+  };
+
+  /** Declutter pathway / network diagrams: edge labels, +/− glyphs and compartment titles. */
+  EP.declutter = function (svg, boxes) {
+    const { fit, hits, onLine, box, badge } = EP.labelFitter(svg, boxes, 'path.edge');
+    svg.querySelectorAll('g.node').forEach((g) => {
+      const b = g.querySelector('text.badge'), shape = g.firstElementChild; if (!b || !shape || !g.transform.baseVal.length) return;
+      const m = g.transform.baseVal[0].matrix, sb = box(shape); if (!sb) return;
+      badge(b, m.e, m.f, sb.width, sb.height, { below: g.querySelector('.meter') ? 16 : 0 });
     });
+    svg.querySelectorAll('text.edge-label').forEach((t) => fit(t, t.parentNode && t.parentNode.querySelector('path.edge')));
+    svg.querySelectorAll('text.edge-glyph').forEach((t) => fit(t, t.parentNode && t.parentNode.querySelector('path.edge')));
     svg.querySelectorAll('text.comp-label').forEach((t) => {
-      let b; try { b = t.getBBox(); } catch (e) { return; }
-      if (!hits(b)) return;
+      const b = box(t); if (!b) return;
+      if (!hits(b) && !onLine(b)) return;
       const r = t.__comp; if (!r) return;
-      const cand = [[r.x + 12, r.y + r.h - 8, 'start'], [r.x + r.w - 12, r.y + 20, 'end'], [r.x + r.w - 12, r.y + r.h - 8, 'end']];
-      for (const [x, y, a] of cand) { t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', a); if (!hits(t.getBBox())) return; }
+      const cand = [[r.x + 12, r.y + 20, 'start'], [r.x + 12, r.y + r.h - 8, 'start'], [r.x + r.w - 12, r.y + 20, 'end'], [r.x + r.w - 12, r.y + r.h - 8, 'end']];
+      for (let x = r.x + 32; x < r.x + r.w - 40; x += 20) cand.push([x, r.y + 20, 'start'], [x, r.y + r.h - 8, 'start']);
+      for (let y = r.y + 38; y < r.y + r.h - 20; y += 18) cand.push([r.x + 12, y, 'start'], [r.x + r.w - 12, y, 'end']);
+      for (const [x, y, a] of cand) { t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', a); const nb = box(t); if (nb && !hits(nb) && !onLine(nb)) return; }
       t.style.display = 'none';
     });
   };
@@ -369,7 +411,13 @@
         if (c.label) g.appendChild(Object.assign(c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label), { __comp: c }));
         gComp.appendChild(g);
       });
-      const routeBoxes = pw.route ? pw.nodes.filter(nodeVisible).map((n) => { const [w, hh] = sizeOf(n); return { id: n.id, x: n.x, y: n.y, w, h: hh }; }) : [];
+      const routeBoxes = pw.nodes.filter(nodeVisible).map((n) => { const [w, hh] = sizeOf(n); return { id: n.id, x: n.x, y: n.y, w, h: hh }; });
+      // does a straight line / quadratic curve run through any other box? (then it is routed around instead)
+      const crosses = (p0, q, p1, ids) => {
+        const obs = routeBoxes.filter((r) => !ids.includes(r.id));
+        const P = []; for (let i = 0; i <= 24; i++) { const u = i / 24, v = 1 - u; P.push(q ? [v * v * p0[0] + 2 * v * u * q[0] + u * u * p1[0], v * v * p0[1] + 2 * v * u * q[1] + u * u * p1[1]] : [p0[0] + (p1[0] - p0[0]) * u, p0[1] + (p1[1] - p0[1]) * u]); }
+        return P.slice(1).some((pt, i) => obs.some((r) => EP.segHits(P[i], pt, r, 2)));
+      };
       pw.edges.forEach((e) => {
         if (!edgeVisible(e)) return;
         const a = nodeById[e.from], b = nodeById[e.to];
@@ -377,7 +425,19 @@
         let d, mx, my;
         const ax = a.x + (e.dx1 || 0), ay = a.y + (e.dy1 || 0), bx = b.x + (e.dx2 || 0), by = b.y + (e.dy2 || 0);
         const curveSet = e.curve != null ? e.curve : (type === 'fb' || type === 'fbpos' ? 60 : 0);
-        if (pw.route && !e.via && !curveSet && !e.dx1 && !e.dy1 && !e.dx2 && !e.dy2) {
+        let autoRoute = pw.route && !e.via && !curveSet && !e.dx1 && !e.dy1 && !e.dx2 && !e.dy2;
+        if (!autoRoute && e.via) {
+          const vp = [[ax, ay], ...e.via, [bx, by]];
+          vp[0] = boundary(a, vp[1][0], vp[1][1], 3); vp[vp.length - 1] = boundary(b, vp[vp.length - 2][0], vp[vp.length - 2][1], 6);
+          const obs = routeBoxes.filter((r) => r.id !== a.id && r.id !== b.id);
+          if (vp.slice(1).some((pt, i) => obs.some((r) => EP.segHits(vp[i], pt, r, 2)))) autoRoute = true;
+        }
+        if (!autoRoute && !e.via) {
+          const len = Math.hypot(bx - ax, by - ay) || 1, cv = curveSet;
+          const q = cv ? [(ax + bx) / 2 - (by - ay) / len * cv, (ay + by) / 2 + (bx - ax) / len * cv] : null;
+          if (crosses(boundary(a, q ? q[0] : bx, q ? q[1] : by, 3), q, boundary(b, q ? q[0] : ax, q ? q[1] : ay, 6), [a.id, b.id])) autoRoute = true;
+        }
+        if (autoRoute) {
           // automatic routing around the other boxes (straight or right-angle, rounded corners)
           const bx_ = (n) => { const [w, hh] = sizeOf(n); return { x: n.x, y: n.y, w, h: hh }; };
           const obs = routeBoxes.filter((r) => r.id !== a.id && r.id !== b.id);
@@ -659,7 +719,7 @@
       api.clinicalSelect = sel;
     }
     toolbar.appendChild(h('button.btn.ghost', { onclick: startQuiz, title: 'Hide labels and identify components' }, '✎ Test yourself'));
-    toolbar.appendChild(h('button.btn.ghost', { onclick: () => EP.setMotion(EP.state.paused), title: 'Pause/resume all animations (same as the switch in the top bar)' }, '⏯ Motion'));
+    toolbar.appendChild(EP.animSwitch(root));
     let keyEl = null;
     function buildKey() {
       const types = [...new Set(Object.values(nodeEls).map(({ g }) => (g.getAttribute('class').match(/t-(\w+)/) || [])[1]).filter(Boolean))];

@@ -132,7 +132,7 @@
       am: link('amh', 'mull', 'neg', 'regression'), tw: link('t', 'wolff', '', 'T + AR'), td: link('t', 'dht'), ad: link('adr', 'dht'), de: link('dht', 'ext'),
     };
     const out = h('div.sd-out');
-    el.append(presets, ctl, h('div.card.sd-wrap', svg, EP.colorKey([
+    el.append(presets, ctl, h('div.card.sd-wrap', h('div.anim-bar', EP.animSwitch(svg)), svg, EP.colorKey([
       ['Box colour', [{ fill: 'color-mix(in srgb, var(--c-stim) 14%, var(--panel))', stroke: 'var(--c-stim)', rx: 6, label: 'Hormone made / signal present' }, { fill: 'color-mix(in srgb, #f4c430 18%, var(--panel))', stroke: '#d4a017', rx: 6, label: 'Partial / low' }, { fill: 'var(--panel)', stroke: 'var(--faint)', dash: '5 3', rx: 6, label: 'Absent / regressed' }, { fill: 'color-mix(in srgb, var(--c-drug) 12%, var(--panel))', stroke: 'var(--c-drug)', rx: 6, label: 'Abnormal androgen excess' }, { fill: 'color-mix(in srgb, var(--c-inhib) 12%, var(--panel))', stroke: 'var(--c-inhib)', rx: 6, label: 'Gonadal failure (streak)' }]],
       ['Structures', [{ fill: 'color-mix(in srgb, var(--tr1) 14%, var(--panel))', stroke: 'var(--tr1)', rx: 6, label: 'Male-type structure present' }, { fill: 'color-mix(in srgb, var(--tr3) 14%, var(--panel))', stroke: 'var(--tr3)', rx: 6, label: 'Female-type structure present' }]],
       ['Arrows', [{ line: 'var(--c-stim)', marker: 'stim', label: 'Active signal' }, { line: 'var(--c-inhib)', marker: 'inhib', label: 'AMH causes regression' }, { line: 'var(--faint)', dash: '4 4', label: 'No signal' }, { dot: 'var(--c-hormone)', label: 'Hormone travelling' }]],
@@ -168,7 +168,7 @@
         if (!p.__dot) { p.__dot = s('circle', { r: 4, class: 'sd-dot' }); gD.appendChild(p.__dot); p.__t = Math.random(); }
         p.__t = (p.__t + dt * 0.45) % 1; const pt = p.getPointAtLength(p.__t * p.__len); p.__dot.setAttribute('cx', pt.x); p.__dot.setAttribute('cy', pt.y);
       });
-    });
+    }, { scope: svg });
     EP.onTeardown(stop);
     syncCtl(); upd();
     if (params.p) { const i = PRESETS.findIndex(([l]) => l.toLowerCase().includes(params.p.toLowerCase())); if (i >= 0) presets.children[i].click(); }

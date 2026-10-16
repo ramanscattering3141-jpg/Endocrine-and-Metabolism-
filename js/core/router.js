@@ -81,12 +81,21 @@
       else C.push({ pts: [[A.x, v < A.y ? ay0 - pa : ay1 + pa], [A.x, v], [B.x, v], [B.x, v < B.y ? by0 - pb : by1 + pb]], cost: 70 });
     });
     let best = null;
-    C.forEach((c) => {
+    const consider = (c) => {
       // a path must not run back through its own end boxes
       const self = hits(c.pts.slice(1), [A], -3) + hits(c.pts.slice(0, -1), [B], -3);
       const score = (hits(c.pts, obs, op) + self) * 1000 + len(c.pts) + c.cost;
-      if (!best || score < best.score) best = { pts: c.pts, score, clean: !hits(c.pts, obs, op) };
-    });
+      if (!best || score < best.score) best = { pts: c.pts, score, clean: !hits(c.pts, obs, op) && !self };
+    };
+    C.forEach(consider);
+    if (!best.clean) {
+      // still blocked: try three-bend paths through one vertical and one horizontal lane
+      const xs = lanes.filter((l) => l[0] === 'x').map((l) => l[1]), ys = lanes.filter((l) => l[0] === 'y').map((l) => l[1]);
+      xs.forEach((x) => ys.forEach((y) => {
+        consider({ pts: [[x < A.x ? ax0 - pa : ax1 + pa, A.y], [x, A.y], [x, y], [B.x, y], [B.x, y < B.y ? by0 - pb : by1 + pb]], cost: 90 });
+        consider({ pts: [[A.x, y < A.y ? ay0 - pa : ay1 + pa], [A.x, y], [x, y], [x, B.y], [x < B.x ? bx0 - pb : bx1 + pb, B.y]], cost: 90 });
+      }));
+    }
     return best;
   };
 

@@ -89,5 +89,11 @@
   J('brown1993', 'Brown 1993', 'Brown EM, et al. Cloning and characterization of an extracellular Ca²⁺-sensing receptor from bovine parathyroid. Nature. 1993;366(6455):575-80.', '8255296', '10.1038/366575a0');
   J('martin2012', 'Martin, David & Quarles 2012', 'Martin A, David V, Quarles LD. Regulation and function of the FGF23/klotho endocrine pathways. Physiol Rev. 2012;92(1):131-55.', '22298654', '10.1152/physrev.00002.2011');
   J('blaine2015', 'Blaine 2015', 'Blaine J, Chonchol M, Levi M. Renal control of calcium, phosphate, and magnesium homeostasis. Clin J Am Soc Nephrol. 2015;10(7):1257-72.', '25287933', '10.2215/CJN.09750913');
+  J('pope2014', 'Pope 2014 (Endocrine Society)', 'Pope HG Jr, Wood RI, Rogol A, Nyberg F, Bowers L, Bhasin S. Adverse health consequences of performance-enhancing drugs: an Endocrine Society scientific statement. Endocr Rev. 2014;35(3):341-75.', '24423981', '10.1210/er.2013-1058');
+  J('bhasin2018', 'Bhasin 2018 (Endocrine Society)', 'Bhasin S, et al. Testosterone therapy in men with hypogonadism: an Endocrine Society clinical practice guideline. J Clin Endocrinol Metab. 2018;103(5):1715-1744.', '29562364', '10.1210/jc.2018-00229');
+  J('rahnema2014', 'Rahnema 2014', 'Rahnema CD, Lipshultz LI, Crosnoe LE, Kovac JR, Kim ED. Anabolic steroid-induced hypogonadism: diagnosis and treatment. Fertil Steril. 2014;101(5):1271-9.', '24636400', '10.1016/j.fertnstert.2014.02.002');
+  J('bhasin1996', 'Bhasin 1996', 'Bhasin S, et al. The effects of supraphysiologic doses of testosterone on muscle size and strength in normal men. N Engl J Med. 1996;335(1):1-7.', '8637535', '10.1056/NEJM199607043350101');
+  J('liu2006', 'Liu 2006', 'Liu PY, Swerdloff RS, Christenson PD, Handelsman DJ, Wang C. Rate, extent, and modifiers of spermatogenic recovery after hormonal male contraception: an integrated analysis. Lancet. 2006;367(9520):1412-20.', '16650651', '10.1016/S0140-6736(06)68614-5');
+  J('basaria2010', 'Basaria 2010', 'Basaria S. Androgen abuse in athletes: detection and consequences. J Clin Endocrinol Metab. 2010;95(4):1533-43.', '20139230', '10.1210/jc.2009-1579');
   J('boyle2003', 'Boyle 2003', 'Boyle WJ, Simonet WS, Lacey DL. Osteoclast differentiation and activation. Nature. 2003;423(6937):337-42.', '12748652', '10.1038/nature01658');
 })();

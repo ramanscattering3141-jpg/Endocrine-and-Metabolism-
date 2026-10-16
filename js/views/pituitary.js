@@ -72,7 +72,7 @@
     // stalk annotation
     svg.appendChild(s('text', { x: (COL.hyp.x + COL.hyp.w + COL.cells.x) / 2, y: H - 12, class: 'pm-note', 'text-anchor': 'middle' }, 'portal blood · stalk axons'));
     svg.appendChild(s('text', { x: (COL.horm.x + COL.horm.w + COL.sys.x) / 2, y: H - 12, class: 'pm-note', 'text-anchor': 'middle' }, 'systemic circulation'));
-    host.appendChild(svg);
+    host.append(h('div.anim-bar', EP.animSwitch(svg)), svg);
     host.appendChild(EP.colorKey([
       ['Band colour = axis', AX.map((a, i) => ({ band: `var(--tr${i})`, label: p.axisNames[a] }))],
       ['Arrows', [{ line: 'var(--tr2)', marker: 'stim', label: 'Within an axis: releasing hormone → cell → hormone' }, { line: 'var(--tr0)', dash: '4 3', label: 'Inhibitory hypothalamic hormone (somatostatin, dopamine)' }, { line: 'var(--tr4)', w: 1.6, label: 'Hormone → organ system (axis colour)' }, { line: 'var(--c-stim)', dash: '6 4', label: 'Cross-axis: stimulates' }, { line: 'var(--c-inhib)', dash: '6 4', label: 'Cross-axis: inhibits' }]],
@@ -81,7 +81,7 @@
 
     // ---- dynamic layer
     let dots = [];
-    const stop = EP.loop((dt) => dots.forEach((d) => { d.t = (d.t + dt * d.v) % 1; const pt = d.p.getPointAtLength(d.t * d.len); d.c.setAttribute('cx', pt.x); d.c.setAttribute('cy', pt.y); }));
+    const stop = EP.loop((dt) => dots.forEach((d) => { d.t = (d.t + dt * d.v) % 1; const pt = d.p.getPointAtLength(d.t * d.len); d.c.setAttribute('cx', pt.x); d.c.setAttribute('cy', pt.y); }), { scope: svg });
     EP.onTeardown && EP.onTeardown(stop);
     function addLive(d, cls, color, n, label) {
       const el = s('path', { d, class: 'pm-link ' + cls, style: `--ax:${color}`, 'marker-end': cls.includes('neg') ? 'url(#pm-tee)' : 'url(#pm-arr)' });

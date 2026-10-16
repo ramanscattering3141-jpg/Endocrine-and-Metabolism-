@@ -76,7 +76,7 @@
       EP.networks.hpa.circadian = false;
       const clock = h('span.kbd', '');
       extra.append(h('label.chk', chk, ' Run 24-h circadian clock (SCN drive; morning cortisol peak — Oster 2017) '), clock);
-      const stop = EP.loop(() => { clock.textContent = EP.networks.hpa.circadian ? String(Math.floor(EP.networks.hpa.clockHour || 7)).padStart(2, '0') + ':00' : ''; });
+      const stop = EP.loop(() => { clock.textContent = EP.networks.hpa.circadian ? String(Math.floor(EP.networks.hpa.clockHour || 7)).padStart(2, '0') + ':00' : ''; }, { always: true });
       EP.onTeardown(stop);
       EP.onTeardown(() => { EP.networks.hpa.circadian = false; });
     }

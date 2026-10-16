@@ -22,7 +22,8 @@
       b.__t = t; return b;
     });
     const bPlay = h('button.btn', { onclick: () => { st.auto = !st.auto; if (st.auto && st.step >= def.steps.length - 1) { st.step = 0; st.tStep = 0; } sync(); } });
-    const controls = h('div.g4-controls', ...togBtns, h('span', { style: { width: '8px' } }),
+    const motion = EP.animSwitch(root);
+    const controls = h('div.g4-controls', motion, ...togBtns, h('span', { style: { width: '8px' } }),
       h('button.btn.ghost', { onclick: () => go(st.step - 1) }, '◀ step'), bPlay, h('button.btn.ghost', { onclick: () => go(st.step + 1) }, 'step ▶'),
       h('label.chk', h('input', { type: 'checkbox', onchange: (ev) => { st.speed = ev.target.checked ? 0.4 : 1; } }), 'slow motion'),
       h('button.btn.ghost', { onclick: () => { go(0); st.auto = true; api.reset && api.reset(); sync(); } }, '⟲ reset'));
@@ -70,7 +71,7 @@
     function go(i) { st.step = clamp(i, 0, def.steps.length - 1); st.tStep = 0; st.auto = false; sync(); }
     function sync() {
       togBtns.forEach((b) => { b.textContent = (st.tog[b.__t.id] ? '✓ ' : '') + b.__t.label; b.classList.toggle('primary', !!st.tog[b.__t.id]); });
-      bPlay.textContent = st.auto ? '❚❚ pause' : '▶ play';
+      bPlay.textContent = st.auto ? '❚❚ hold this step' : '▶ auto-advance steps';
       [...stepList.children].forEach((li, i) => { li.classList.toggle('done', i < st.step); li.classList.toggle('cur', i === st.step); });
       cap.innerHTML = EP.md(api.caption ? api.caption(st) || def.steps[st.step][1] : def.steps[st.step][1]);
       api.sync && api.sync(st);
@@ -101,7 +102,7 @@
         place(d);
       }
       if (api.readout) readout.innerHTML = api.readout(st);
-    });
+    }, { scope: root });
     EP.onTeardown && EP.onTeardown(stop);
     sync();
     return { st, sync };
@@ -160,7 +161,7 @@
         lbl(P, 255, 548, 'ANTERIOR LOBE (adenohypophysis)', 'a-head');
         lbl(P, 575, 548, 'POSTERIOR LOBE (neurohypophysis)', 'a-head');
         lbl(P, 492, 300, 'stalk', 'a-note', 'start');
-        lbl(P, 470, 222, 'median eminence', 'a-note', 'start');
+        lbl(P, 476, 249, 'median eminence', 'a-note', 'start');
         // arteries/plexus
         P.path('M20,236 C120,236 240,240 330,236', 'a-artery', 'bg');
         lbl(P, 30, 254, 'superior hypophyseal a.', 'a-note', 'start');
@@ -170,7 +171,7 @@
         portal.forEach((d) => P.path(d, 'a-portal', 'bg'));
         const portalEls = [...L.bg.querySelectorAll('.a-portal')];
         // secondary plexus
-        P.path('M175,400 q20,-14 40,0 q20,14 40,0 q20,-14 40,0 q20,14 40,0 M160,470 q25,-14 50,0 q25,14 50,0 q25,-14 50,0 q25,14 50,0', 'a-plexus', 'bg');
+        P.path('M175,400 q20,-14 40,0 q20,14 40,0 q20,-14 40,0 q20,14 40,0 M160,470 q25,-14 50,0 q25,14 50,0 q12,-7 25,0', 'a-plexus', 'bg');
         // systemic vein out
         const vein = 'M255,553 C300,570 700,570 880,560';
         P.path(vein, 'a-vein', 'bg');
@@ -178,7 +179,7 @@
         // feedback path
         const fbD = 'M880,545 C900,420 900,250 760,212 C650,190 520,205 470,215';
         const fbPath = P.path(fbD, 'a-fb', 'bg');
-        lbl(P, 885, 380, 'feedback', 'a-note fbtxt', 'end');
+        lbl(P, 868, 380, 'feedback', 'a-note fbtxt', 'end');
         // cells
         const cellEls = {};
         Object.entries(CELLS).forEach(([k, [x, y, name, col]]) => {
@@ -226,7 +227,7 @@
         const postCap = P.path('M480,500 C540,470 610,500 690,470', 'a-plexus', 'bg');
         lbl(P, 690, 500, 'inferior hypophyseal capillaries', 'a-note', 'end');
         const postOut = P.path('M600,485 C640,520 700,540 760,556 L880,560', 'a-route');
-        lbl(P, 640, 140, 'ADH · oxytocin (+ neurophysin)', 'a-small');
+        lbl(P, 664, 132, 'ADH · oxytocin (+ neurophysin)', 'a-small', 'start');
         // osmoreceptor
         const ovlt = s('g', { class: 'a-neuron osm' }); ovlt.append(s('circle', { cx: 780, cy: 80, r: 10 })); L.fg.appendChild(ovlt);
         lbl(P, 780, 60, 'OVLT osmoreceptors', 'a-small');

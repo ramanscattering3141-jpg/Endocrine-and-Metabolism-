@@ -19,7 +19,7 @@
     const P = (k) => pos[O[k] && O[k].alias ? O[k].alias : k];
     const svg = s('svg', { class: 'bodymap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ cross-talk map' });
     svg.appendChild(EP.svgDefs());
-    container.appendChild(svg);
+    container.append(h('div.anim-bar', EP.animSwitch(svg)), svg);
     container.appendChild(EP.colorKey([
       ['Line colour = type of message', [{ line: 'var(--c-hormone)', dash: '10 5', label: 'Hormone' }, { line: 'var(--c-transport)', label: 'Metabolite / fuel' }, { line: 'var(--c-tf)', dash: '3 3', label: 'Adipokine / cytokine' }, { line: 'var(--accent2)', dash: '1 4', label: 'Neural' }]],
       ['Organs', [{ fill: 'color-mix(in srgb, var(--c-hormone) 18%, var(--panel))', stroke: 'var(--c-hormone)', sw: 2.4, label: 'Selected (source)' }, { fill: 'color-mix(in srgb, var(--accent) 14%, var(--panel))', stroke: 'var(--accent)', sw: 2.4, label: 'Partner organ' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: 'Not involved (faded)' }]],
@@ -46,7 +46,7 @@
     // trim a curve end so arrows stop at the pill edge
     const edgePoint = (k, toward) => { const [x, y] = P(k); const w = pillW[O[k].alias || k] / 2 + 4, hh = 19; const dx = toward[0] - x, dy = toward[1] - y; const t = Math.min(w / Math.abs(dx || 1e-9), hh / Math.abs(dy || 1e-9)); return [x + dx * t, y + dy * t]; };
     const parts = [];
-    const stop = EP.loop((dt) => parts.forEach((pt) => { pt.t = (pt.t + dt * 0.28) % 1; try { const p = pt.path.getPointAtLength(pt.t * pt.len); pt.c.setAttribute('cx', p.x); pt.c.setAttribute('cy', p.y); } catch (e) { /* noop */ } }));
+    const stop = EP.loop((dt) => parts.forEach((pt) => { pt.t = (pt.t + dt * 0.28) % 1; try { const p = pt.path.getPointAtLength(pt.t * pt.len); pt.c.setAttribute('cx', p.x); pt.c.setAttribute('cy', p.y); } catch (e) { /* noop */ } }), { scope: svg });
     EP.onTeardown(stop);
     function highlight({ organs = [], src = null, links = [], labels = true }) {
       EP.clear(gL); EP.clear(gT); EP.clear(gP); parts.length = 0;
@@ -73,14 +73,36 @@
           const txt = pr.mols.join(' · ');
           const tw = EP.textWidth(txt, 10.5, 600) + 14;
           const tg = s('g', { class: 'ltag k-' + pr.kind, transform: `translate(${q.x},${q.y})` });
+          tg.__path = p; tg.__f = f; tg.__w = tw;
           tg.appendChild(s('rect', { x: -tw / 2, y: -9, width: tw, height: 18, rx: 9 }));
           tg.appendChild(s('text', { x: 0, y: 4, 'text-anchor': 'middle' }, txt));
           tg.addEventListener('click', () => opts.onLink && opts.onLink(pr.links[0]));
           gT.appendChild(tg);
         }
       });
-      // nudge overlapping label pills apart
+      // label pills sit beside their own arrow, never on an arrow, an organ or another pill
       const tags = [...gT.children];
+      {
+        const pts = [];
+        [...gL.querySelectorAll('path.blink')].forEach((pa) => { const L = pa.getTotalLength(); for (let d = 0; d <= L; d += 3) { const q = pa.getPointAtLength(d); pts.push(q.x, q.y); } });
+        const organs = Object.values(orgEls).map((g) => { const m = g.transform.baseVal[0].matrix, b = g.getBBox(); return { x: m.e + b.x - 3, y: m.f + b.y - 3, w: b.width + 6, h: b.height + 6 }; });
+        const placed = [];
+        const free = (r) => !organs.some((o) => r.x < o.x + o.w && r.x + r.w > o.x && r.y < o.y + o.h && r.y + r.h > o.y) && !placed.some((o) => r.x < o.x + o.w + 3 && r.x + r.w + 3 > o.x && r.y < o.y + o.h + 3 && r.y + r.h + 3 > o.y) &&
+          !(() => { for (let i = 0; i < pts.length; i += 2) if (pts[i] > r.x - 2 && pts[i] < r.x + r.w + 2 && pts[i + 1] > r.y - 2 && pts[i + 1] < r.y + r.h + 2) return true; return false; })() && r.x > 2 && r.y > 2 && r.x + r.w < W - 2 && r.y + r.h < H - 2;
+        tags.forEach((tg) => {
+          const pa = tg.__path, L = pa.getTotalLength(), w = tg.__w, hh = 18;
+          const fr = [tg.__f]; for (let s2 = 0.06; s2 <= 0.6; s2 += 0.06) fr.push(tg.__f - s2, tg.__f + s2);
+          for (const k of [1, -1, 1.8, -1.8]) for (const f of fr.filter((x) => x > 0.08 && x < 0.92)) {
+            const p0 = pa.getPointAtLength(L * f), p1 = pa.getPointAtLength(Math.min(L, L * f + 2));
+            let tx = p1.x - p0.x, ty = p1.y - p0.y; const tl = Math.hypot(tx, ty) || 1; const nx = -ty / tl, ny = tx / tl;
+            const c = Math.abs(nx) * w / 2 + Math.abs(ny) * hh / 2 + 5;
+            const cx = p0.x + nx * c * k, cy = p0.y + ny * c * k;
+            const r = { x: cx - w / 2, y: cy - hh / 2, w, h: hh };
+            if (free(r)) { placed.push(r); tg.setAttribute('transform', `translate(${cx.toFixed(1)},${cy.toFixed(1)})`); return; }
+          }
+          const m = tg.transform.baseVal[0].matrix; placed.push({ x: m.e - w / 2, y: m.f - hh / 2, w, h: hh }); // no free spot: keep it (nudged below)
+        });
+      }
       for (let it = 0; it < 30; it++) {
         let moved = false;
         for (let i = 0; i < tags.length; i++) for (let j = i + 1; j < tags.length; j++) {
@@ -216,7 +238,9 @@
     el.appendChild(h('h2', 'Leydig and Sertoli cells'));
     EP.mountPathway(el, 'testis', { height: 460, focus: params.focus });
     el.appendChild(h('p', h('a', { href: '#/hpgm' }, 'HPG axis (male): feedback, exogenous testosterone, Klinefelter →')));
+    EP.exoAndrogen(el);
     el.appendChild(EP.sources(['kovacs9', 'molina8', 'miller2011']));
+    if (params.section === 'exogenous') setTimeout(() => { const x = el.querySelector('#exogenous'); if (x) x.scrollIntoView(); }, 60);
   };
 
   // ------------------------------------------------------------------ menstrual cycle

@@ -35,6 +35,7 @@
     const bMode = h('button.btn.ghost', { onclick: () => { st.mode = st.mode === 'muscle' ? 'adipose' : 'muscle'; buildCell(); sync(); } });
     const bPlay = h('button.btn', { onclick: () => { st.auto = !st.auto; sync(); }, title: 'Auto-advance the insulin cascade' });
     const controls = h('div.g4-controls',
+      EP.animSwitch(root),
       bIns, opts.lockRoute === 'insulin' ? null : bEx, bIR, bMode,
       h('span', { style: { width: '10px' } }),
       h('button.btn.ghost', { title: 'Step back', onclick: () => { st.auto = false; st.ins = true; st.step = Math.max(0, st.step - 1); sync(); } }, '◀ step'),
@@ -82,7 +83,8 @@
       gStatic.appendChild(s('rect', { x: 30, y: 112, width: W - 60, height: H - 130, rx: 30, fill: 'color-mix(in srgb, var(--panel2) 75%, transparent)', stroke: 'var(--c-hormone)', 'stroke-width': 5, 'stroke-opacity': 0.55 }));
       gStatic.appendChild(s('text', { x: 50, y: H - 30, class: 'comp-label' }, st.mode === 'muscle' ? 'Skeletal muscle fibre' : 'Adipocyte'));
       if (st.mode === 'muscle') {
-        for (let x = 60; x < W - 60; x += 26) gStatic.appendChild(s('line', { x1: x, y1: 400, x2: x, y2: 520, stroke: 'var(--line)', 'stroke-width': 6, opacity: 0.35 }));
+        // striations stop short of the mitochondria and glycogen (and their labels) so no line runs under text
+        for (let x = 60; x < W - 60; x += 26) gStatic.appendChild(s('line', { x1: x, y1: 400, x2: x, y2: x < 170 ? 440 : x > 228 && x < 305 ? 456 : 520, stroke: 'var(--line)', 'stroke-width': 6, opacity: 0.35 }));
         gStatic.appendChild(s('text', { x: 560, y: 535, class: 'comp-label' }, 'sarcomeres · SR Ca²⁺ stores'));
         // glycogen granules
         const gg = s('g', { transform: 'translate(250,470)' });
@@ -101,7 +103,7 @@
       gStatic.appendChild(rec);
       nodes.recP = s('text', { x: 172, y: 150, class: 'badge', fill: 'var(--c-stim)', style: 'opacity:0' }, 'P  P');
       gStatic.appendChild(nodes.recP);
-      gStatic.appendChild(s('text', { x: 92, y: 96, class: 'edge-label' }, 'insulin receptor'));
+      gStatic.appendChild(s('text', { x: 128, y: 100, class: 'edge-label', 'text-anchor': 'end' }, 'insulin receptor'));
       nodes.insBound = s('path', { d: 'M138,80 L162,80 L168,90 L162,100 L138,100 L132,90 Z', fill: 'var(--c-hormone)', style: 'opacity:0' });
       gStatic.appendChild(nodes.insBound);
       // cascade pills
@@ -142,7 +144,7 @@
       bEx.textContent = st.ex ? '🏃 Contraction: ON' : '🏃 Contraction: off'; bEx.classList.toggle('primary', st.ex);
       bIR.textContent = st.ir ? '🧱 Insulin resistance: ON' : '🧱 Insulin resistance: off'; bIR.classList.toggle('primary', st.ir);
       bMode.textContent = st.mode === 'muscle' ? 'Cell: muscle ⇄' : 'Cell: adipocyte ⇄';
-      bPlay.textContent = st.auto ? '⏸ auto' : '▶ auto';
+      bPlay.textContent = st.auto ? '❚❚ hold this step' : '▶ auto-advance steps';
       paintCascade();
     }
     function paintCascade() {
@@ -237,13 +239,13 @@
         const hx = s('path', { d: 'M-7,-5 L7,-5 L10,0 L7,5 L-7,5 L-10,0 Z', fill: 'var(--c-hormone)', opacity: 0.8 });
         const p = { c: hx, x: -10, y: 50 + Math.random() * 40, ins: true };
         gParticles.appendChild(hx);
-        const mv = EP.loop((d) => { p.x += d * 90 * st.speed; hx.setAttribute('transform', `translate(${p.x},${p.y})`); if (p.x > W + 20) { hx.remove(); mv(); } });
+        const mv = EP.loop((d) => { p.x += d * 90 * st.speed; hx.setAttribute('transform', `translate(${p.x},${p.y})`); if (p.x > W + 20) { hx.remove(); mv(); } }, { scope: root });
       }
       // fate bars
       const tot = Object.values(fateCount).reduce((a, b) => a + b, 0) || 1;
       Object.keys(fateEls).forEach((k) => { if (fateEls[k].i && fateCount[k] != null) { fateEls[k].i.style.width = (100 * fateCount[k] / tot).toFixed(0) + '%'; fateEls[k].n.textContent = Math.round(100 * fateCount[k] / tot) + '%'; } });
       if (fateEls.rate) { fateEls.rate.style.width = EP.clamp(uptakeRate / 16 * 100, 2, 100) + '%'; const rr = uptakeRate / basal; fateEls.rateN.textContent = rr < 1.5 ? 'basal' : rr < 5 ? '↑' : '↑↑'; }
-    });
+    }, { scope: root });
     EP.onTeardown(stop);
     buildCell(); sync();
     return { st, sync, setIns, setEx: (v) => { st.ex = v; sync(); } };

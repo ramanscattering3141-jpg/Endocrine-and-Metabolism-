@@ -84,6 +84,8 @@
       grpBar = h('div.fd-groups');
       bar.appendChild(grpBar);
     }
+    // moving dashes (edges with anim: true) get their own pause/play button
+    if ((spec.edges || []).some((e) => e.anim)) bar.appendChild(h('span.fd-anim', EP.animSwitch(root)));
     root.append(bar, stage);
 
     // ---- step-through
@@ -267,6 +269,23 @@
         svg.appendChild(t);
       });
       svg.appendChild(gL);
+      // once laid out: keep every edge label and zone title off all lines (slide beside its own arrow if needed)
+      const fdBoxes = Object.values(box).map((B) => ({ x: B.x - B.w / 2, y: B.y - B.h / 2, w: B.w, h: B.h }));
+      let tries = 0;
+      const tidy = () => {
+        if (!svg.isConnected) { if (tries++ < 120) requestAnimationFrame(tidy); return; }
+        const F = EP.labelFitter(svg, fdBoxes, 'path.fd-ep');
+        gL.querySelectorAll('text.fd-el').forEach((tx) => { const pe = gE.querySelector(`[data-e="${tx.getAttribute('data-e')}"] path`); F.fit(tx, pe); });
+        svg.querySelectorAll('text.fd-zl').forEach((tx) => {
+          const b = F.box(tx); if (!b || (!F.onLine(b) && !F.hits(b))) return;
+          const r = tx.parentNode.querySelector('rect'); const x = +r.getAttribute('x'), y = +r.getAttribute('y'), w = +r.getAttribute('width'), hh = +r.getAttribute('height');
+          for (const [cx, cy, an] of [[x + 12, y + 18, 'start'], [x + w - 12, y + 18, 'end'], [x + 12, y + hh - 8, 'start'], [x + w - 12, y + hh - 8, 'end'], [x + w / 2, y + 18, 'middle'], [x + w / 2, y + hh - 8, 'middle']]) {
+            tx.setAttribute('x', cx); tx.setAttribute('y', cy); tx.setAttribute('text-anchor', an);
+            const nb = F.box(tx); if (nb && !F.onLine(nb) && !F.hits(nb)) return;
+          }
+        });
+      };
+      requestAnimationFrame(tidy);
       // state overlay
       if (st) {
         Object.entries(st.n || {}).forEach(([nid, v]) => {
