@@ -98,6 +98,7 @@ p { margin: 0 0 .8em; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .cols { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.cols.cols-wide { grid-template-columns: minmax(0, 1fr); }
 .keypoints { margin: 0; padding-left: 18px; } .keypoints li { margin-bottom: 6px; }
 .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
 .tabs button { background: none; border: 1px solid transparent; padding: 6px 12px; border-radius: 8px; cursor: pointer; color: var(--muted); }
@@ -205,6 +206,9 @@ select.btn { padding: 6px 8px; }
 .net-story { font-size: .9rem; background: var(--panel2); border-radius: 10px; padding: 8px 12px; margin-top: 6px; min-height: 20px; }
 .net-story:empty { display: none; }
 .net-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 14px; }
+.net-wide .net-body { grid-template-columns: minmax(0, 1fr); }
+.net-wide .net-side { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0 24px; align-items: start; }
+.net-wide .net-side > h4 { grid-column: 1 / -1; }
 .net-diagram { min-width: 0; }
 .net-svg { background: var(--bg); border-radius: 12px; border: 1px solid var(--line); height: auto; max-height: 600px; cursor: default; }
 .meter .m-bg { fill: var(--panel2); stroke: var(--line); } .meter .m-ref { stroke: var(--muted); stroke-width: 1.5; }
@@ -801,10 +805,21 @@ select.btn { max-width: 100%; }
   .pw-svg { height: auto; touch-action: pan-x pan-y pinch-zoom; cursor: default; }
   .zoom-ctl { display: none; }
   .net-svg { max-height: none; }
-  .chip, .btn, .fd-tog, .fd-btn, .seg button, .levels button, .iconbtn, .whatif-btn, .walkbar button, .anim-btn, .irv-tile { min-height: 34px; }
+  .chip, .btn, .fd-tog, .fd-btn, .seg button, .levels button, .iconbtn, .whatif-btn, .walkbar button, .anim-btn, .irv-tile, summary { min-height: 34px; }
+  .levels button, .iconbtn, .whatif-btn, .walkbar button, .fd-btn { min-width: 34px; }
+  summary { line-height: 22px; }
   .chip, .btn, .fd-tog, .fd-btn { display: inline-flex; align-items: center; justify-content: center; }
   select, input[type="search"] { min-height: 34px; }
-  .chk { min-height: 34px; }
+  input[type="range"] { min-height: 28px; }
+  .chk, .lockchk { min-height: 34px; }
+  .casc-o .linkish, .cmp-table .linkish, .labs .linkish { display: inline-block; padding-top: 7px; padding-bottom: 7px; }
   .nav-sec li a { padding: 8px 10px; }
   .nav-sec > button { min-height: 38px; }
 }
+
+/* ---------- keyboard focus: always visible ---------- */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.search input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+svg :focus-visible { outline: none; }
+.node:focus-visible > :first-child, .fd-n:focus-visible > rect, .casc-node:focus-visible > rect, .cnode:focus-visible > rect, .borgan:focus-visible > rect,
+.fd-stub:focus-visible > rect, .fd-ctab:focus-visible > rect, .casc-band:focus-visible > rect, .pm-node:focus-visible rect { stroke: var(--accent); stroke-width: 3.5; }

@@ -119,16 +119,16 @@
       wolff: box('wolff', 915, 155, 175, 72, 'Wolffian ducts'),
       ext: box('ext', 915, 285, 175, 72, 'External genitalia'),
     };
-    const link = (a, b, cls, label) => {
+    const link = (a, b, cls, label, ldy) => {
       const A = B[a], Bb = B[b];
       const x1 = A.x + A.w, y1 = A.y + A.h / 2, x2 = Bb.x, y2 = Bb.y + Bb.h / 2, mx = (x1 + x2) / 2;
       const p = s('path', { d: `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`, class: 'sd-link ' + (cls || ''), 'marker-end': cls === 'neg' ? 'url(#m-inhib)' : 'url(#m-stim)' });
       gL.appendChild(p);
-      if (label) gL.appendChild(s('text', { x: mx, y: (y1 + y2) / 2 - 6, class: 'sd-llab', 'text-anchor': 'middle' }, label));
+      if (label) gL.appendChild(s('text', { x: mx, y: (y1 + y2) / 2 + (ldy || -6), class: 'sd-llab', 'text-anchor': 'middle' }, label));
       p.__len = p.getTotalLength(); return p;
     };
     const L = {
-      cg: link('chrom', 'gonad', '', 'SRY'), ga: link('gonad', 'amh'), gt: link('gonad', 't', '', 'hCG/LH'),
+      cg: link('chrom', 'gonad', '', 'SRY'), ga: link('gonad', 'amh'), gt: link('gonad', 't', '', 'hCG/LH', 16),
       am: link('amh', 'mull', 'neg', 'regression'), tw: link('t', 'wolff', '', 'T + AR'), td: link('t', 'dht'), ad: link('adr', 'dht'), de: link('dht', 'ext'),
     };
     const out = h('div.sd-out');

@@ -136,7 +136,7 @@
     const dBtns = DEFECTS.map((d) => { const b = h('button.chip', { onclick: () => setDefect(d, b) }, d.label); defBar.appendChild(b); return b; });
     const treat = h('input', { type: 'checkbox', onchange: () => { exoGC = treat.checked ? 1 : 0; draw(); } });
     el.append(h('div.card', h('h4', 'Enzyme deficiency mode'), defBar, h('label.chk', treat, ' Treat with glucocorticoid (suppresses ACTH)'), h('p.small.muted', 'Or click any enzyme box on the map to cycle normal → partial → deficient.')));
-    const grid = h('div.cols'); const left = h('div'); const right = h('div.sim-panel');
+    const grid = h('div.cols.cols-wide'); const left = h('div'); const right = h('div.sim-panel'); // map full width: its labels stay legible
     grid.append(left, right); el.appendChild(grid);
     const story = h('div.net-story'); left.appendChild(story);
     const W = 1210, H = 800;

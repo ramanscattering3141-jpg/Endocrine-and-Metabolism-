@@ -391,7 +391,7 @@
     id: 'betacell', title: 'β-cell glucose sensing and insulin secretion', view: { w: 1200, h: 640 },
     compartments: [
       { x: 10, y: 10, w: 1180, h: 80, label: 'Islet interstitium / blood', kind: 'blood' },
-      { x: 10, y: 98, w: 1180, h: 44, label: 'Plasma membrane', kind: 'membrane' },
+      { x: 10, y: 98, w: 1180, h: 44, label: 'Plasma membrane', kind: 'membrane', lx: 662 },
       { x: 10, y: 150, w: 1180, h: 480, label: 'β-cell cytosol', kind: 'cytosol' },
     ],
     inputs: [

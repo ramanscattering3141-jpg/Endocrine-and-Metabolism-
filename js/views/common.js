@@ -44,8 +44,10 @@
     const pw = EP.pathways[id];
     el.appendChild(EP.pageHeader(pw.title, opts.q, { section: EP.pages[EP.pageForPathway[id]] ? EP.pages[EP.pageForPathway[id]].section : '' }));
     if (opts.anim && EP.anim[opts.anim]) { el.appendChild(h('h2', opts.animTitle || 'Animated cell')); EP.anim[opts.anim](el); el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Pathway map')); }
-    const api = EP.mountPathway(el, id, { height: opts.height || Math.min(640, Math.round(pw.view.h * 0.78)), focus: params.focus });
-    (opts.more || []).forEach((mid) => { el.appendChild(h('h2', EP.pathways[mid].title)); EP.mountPathway(el, mid, { height: Math.round(EP.pathways[mid].view.h * 0.7), focus: params.focus }); });
+    // stage height that lets the diagram use the full column width (a short stage would shrink its labels)
+    const fitH = (v, cap) => Math.min(cap, Math.round(v.h * Math.min(1, (el.clientWidth || 1000) / v.w)));
+    const api = EP.mountPathway(el, id, { height: opts.height || fitH(pw.view, 760), focus: params.focus });
+    (opts.more || []).forEach((mid) => { el.appendChild(h('h2', EP.pathways[mid].title)); EP.mountPathway(el, mid, { height: fitH(EP.pathways[mid].view, 700), focus: params.focus }); });
     (opts.cascade ? [].concat(opts.cascade) : []).forEach((cid) => { el.appendChild(h('h2', { style: { marginTop: '18px' } }, 'Signaling network: ' + EP.cascades[cid].title)); EP.mountCascade(el, cid, { sources: false }); });
     if (opts.after) opts.after(el, params);
     if (opts.net) {
@@ -273,7 +275,7 @@
     // half-life
     el.appendChild(h('h2', 'Clearance: sourced plasma half-lives'));
     const hl = [['Epinephrine', 2, 'Molina Ch6 (<2 min)'], ['Insulin', 5, 'Molina Ch7 (3–8 min)'], ['Glucagon', 7.5, 'Molina Ch7 (5–10 min)'], ['PTH', 4, 'Kovacs Ch14 (<5 min)'], ['Aldosterone', 17.5, 'Molina Ch6 (~15–20 min)'], ['Cortisol', 80, 'Kovacs Ch13 (70–90 min)'], ['T3', 0.75 * 1440, 'Kovacs Ch1 (0.75 day)'], ['T4', 6.7 * 1440, 'Kovacs Ch1 (6.7 days)']];
-    const cv2 = h('canvas.chart', { width: 1000, height: 260 });
+    const cv2 = h('canvas.chart', { width: 1000, height: 290 });
     const hlKey = h('div');
     const sel = h('div.statebar', hl.map(([n2], i) => h('button.chip' + (i < 6 ? '.on' : ''), { onclick: (ev) => { ev.target.classList.toggle('on'); draw2(); } }, n2)));
     el.append(h('div.card', sel, cv2, hlKey, h('p.small.muted', 'Fraction remaining after secretion stops (log time axis), computed from the textbook half-lives shown in the legend (midpoints of reported ranges). Short half-lives allow minute-to-minute control; T4\'s long half-life buffers thyroid status for weeks.')));
@@ -283,13 +285,17 @@
       const on = [...sel.querySelectorAll('button')].map((b) => b.classList.contains('on'));
       const tmax = Math.log10(30 * 1440), tmin = Math.log10(0.5);
       ctx.strokeStyle = css.getPropertyValue('--grid'); ctx.fillStyle = css.getPropertyValue('--muted'); ctx.font = '11px Inter, sans-serif';
-      [[1, '1 min'], [10, '10 min'], [60, '1 h'], [1440, '1 day'], [10080, '1 wk']].forEach(([m, l]) => { const x = 50 + (Math.log10(m) - tmin) / (tmax - tmin) * (W - 70); ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, H - 20); ctx.stroke(); ctx.fillText(l, x - 12, H - 6); });
+      const PB = H - 46, Y = (f) => 10 + (1 - f) * (PB - 10); // plot bottom; fraction → y
+      [[1, '1 min'], [10, '10 min'], [60, '1 h'], [1440, '1 day'], [10080, '1 wk']].forEach(([m, l]) => { const x = 50 + (Math.log10(m) - tmin) / (tmax - tmin) * (W - 70); ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, PB); ctx.stroke(); ctx.textAlign = 'center'; ctx.fillText(l, x, PB + 15); });
+      [[1, '100%'], [0.5, '50%'], [0, '0%']].forEach(([f, l]) => { ctx.beginPath(); ctx.moveTo(50, Y(f)); ctx.lineTo(W - 20, Y(f)); ctx.stroke(); ctx.textAlign = 'right'; ctx.fillText(l, 44, Y(f) + 4); });
+      ctx.font = '600 11px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('Time after secretion stops (log scale)', 50 + (W - 70) / 2, H - 8);
+      ctx.save(); ctx.translate(12, Y(0.5)); ctx.rotate(-Math.PI / 2); ctx.fillText('Remaining', 0, 0); ctx.restore(); ctx.textAlign = 'left'; ctx.font = '11px Inter, sans-serif';
       let k = 0; const keyItems = [];
       hl.forEach(([name, t12, src], i) => {
         if (!on[i]) return;
         const col = css.getPropertyValue('--tr' + (k % 6)); k++;
         ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.beginPath();
-        for (let j = 0; j <= 300; j++) { const lt = tmin + (j / 300) * (tmax - tmin); const t = Math.pow(10, lt); const f = Math.pow(0.5, t / t12); const x = 50 + (j / 300) * (W - 70); const y = 10 + (1 - f) * (H - 40); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        for (let j = 0; j <= 300; j++) { const lt = tmin + (j / 300) * (tmax - tmin); const t = Math.pow(10, lt); const f = Math.pow(0.5, t / t12); const x = 50 + (j / 300) * (W - 70); const y = Y(f); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
         ctx.stroke(); keyItems.push({ line: `var(--tr${(k - 1) % 6})`, label: `${name} — t½ from ${src}` });
       });
       EP.clear(hlKey); hlKey.appendChild(EP.colorKey([['Lines (fraction of hormone remaining after secretion stops)', keyItems]], { compact: true }));

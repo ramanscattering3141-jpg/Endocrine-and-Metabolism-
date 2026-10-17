@@ -223,7 +223,7 @@
   // ------------------------------------------------------------------ calcium page
   V.calciumPage = function (el, params) {
     el.appendChild(EP.pageHeader('Calcium, phosphate, PTH, vitamin D & FGF23', 'Change serum calcium, PTH, vitamin D, phosphate or FGF23: how do bone, kidney and gut respond — and which effects are direct versus mediated by calcitriol?', { section: 'Calcium, Bone & Mineral', lede: 'Arrows labelled **direct** are PTH1R actions in kidney and bone; arrows labelled **via 1,25-D** reach the gut only through calcitriol.' }));
-    const api = EP.mountNetwork(el, 'calcium');
+    const api = EP.mountNetwork(el, 'calcium', { wide: true }); // full width: the map has many labelled arrows
     if (params.preset) api.choose(params.preset);
     el.appendChild(h('h2', 'Nephron & enterocyte detail'));
     EP.mountPathway(el, 'kidneymineral', { height: 480, focus: params.focus });
@@ -246,8 +246,8 @@
   // ------------------------------------------------------------------ menstrual cycle
   V.cycle = function (el, params) {
     el.appendChild(EP.pageHeader('Ovary & the menstrual cycle', 'Move through the cycle: which follicle or corpus luteum dominates, which feedback mode is active, and what does the endometrium do?', { section: 'Reproductive' }));
-    const cv = h('canvas.chart', { width: 1000, height: 300 });
-    const day = h('input', { type: 'range', min: 1, max: 28, value: 8 });
+    const cv = h('canvas.chart', { width: 1000, height: 320 });
+    const day = h('input', { type: 'range', min: 1, max: 28, value: 8, 'aria-label': 'Cycle day' });
     const phase = h('span.phase-pill', '');
     const info = h('div.grid2');
     el.append(h('div.card', h('div.daybar', h('strong', 'Day'), day, phase), cv, EP.colorKey([['Hormones (each on its own relative scale)', ['LH', 'FSH', 'Estradiol', 'Progesterone', 'Inhibin B'].map((k, i) => ({ line: `var(--tr${i})`, label: k }))], ['Background & marker', [{ fill: 'rgba(255,107,125,.25)', label: 'Menses' }, { fill: 'rgba(110,168,255,.22)', label: 'Luteal phase' }, { line: 'var(--text)', w: 1.2, dash: '4 4', label: 'Selected day' }]]], { compact: true }), h('p.small.muted', 'Schematic curve shapes summarising Kovacs Ch8 / Molina Ch9 (relative scale for each hormone; not measured concentrations). The real cycle length and amplitudes vary.'), info));
@@ -262,18 +262,21 @@
     function draw() {
       const ctx = cv.getContext('2d'); const W = cv.width, H = cv.height; ctx.clearRect(0, 0, W, H);
       const css = getComputedStyle(document.body);
-      const X = (d) => 40 + (d - 1) / 27 * (W - 60);
-      ctx.fillStyle = 'rgba(255,107,125,.08)'; ctx.fillRect(X(1), 10, X(5) - X(1), H - 40);
-      ctx.fillStyle = 'rgba(110,168,255,.06)'; ctx.fillRect(X(15), 10, X(28) - X(15), H - 40);
-      ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = css.getPropertyValue('--muted');
-      ctx.fillText('menses', X(1.5), 24); ctx.fillText('follicular phase', X(6), 24); ctx.fillText('ovulation', X(13.3), 24); ctx.fillText('luteal phase', X(19), 24);
+      const X = (d) => 44 + (d - 1) / 27 * (W - 64);
+      const PT = 34, PB = H - 46, Y = (v) => PB - v / 1.15 * (PB - PT); // phase names sit above the plot, never on a curve
+      ctx.fillStyle = 'rgba(255,107,125,.08)'; ctx.fillRect(X(1), 8, X(5) - X(1), PB - 8);
+      ctx.fillStyle = 'rgba(110,168,255,.06)'; ctx.fillRect(X(15), 8, X(28) - X(15), PB - 8);
+      ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = css.getPropertyValue('--muted'); ctx.textAlign = 'center';
+      ctx.fillText('menses', X(3), 22); ctx.fillText('follicular phase', X(9.5), 22); ctx.fillText('ovulation', X(14), 22); ctx.fillText('luteal phase', X(21.5), 22);
       Object.keys(curves).forEach((k, i) => {
         ctx.strokeStyle = css.getPropertyValue('--tr' + i); ctx.lineWidth = 2.4; ctx.beginPath();
-        for (let d = 1; d <= 28; d += 0.1) { const y = H - 30 - curves[k](d) * (H - 70); d === 1 ? ctx.moveTo(X(d), y) : ctx.lineTo(X(d), y); }
+        for (let d = 1; d <= 28; d += 0.1) { const y = Y(curves[k](d)); d === 1 ? ctx.moveTo(X(d), y) : ctx.lineTo(X(d), y); }
         ctx.stroke();
       });
-      const dd = +day.value; ctx.strokeStyle = css.getPropertyValue('--text'); ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(dd), 10); ctx.lineTo(X(dd), H - 30); ctx.stroke(); ctx.setLineDash([]);
-      for (let d = 1; d <= 28; d += 3) ctx.fillText(String(d), X(d) - 4, H - 12);
+      const dd = +day.value; ctx.strokeStyle = css.getPropertyValue('--text'); ctx.lineWidth = 1; ctx.setLineDash([4, 4]); ctx.beginPath(); ctx.moveTo(X(dd), PT - 4); ctx.lineTo(X(dd), PB); ctx.stroke(); ctx.setLineDash([]);
+      for (let d = 1; d <= 28; d += 3) ctx.fillText(String(d), X(d), PB + 16);
+      ctx.font = '600 11px Inter, sans-serif'; ctx.fillText('Cycle day', X(14.5), H - 8);
+      ctx.save(); ctx.translate(14, (PT + PB) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('Relative level', 0, 0); ctx.restore(); ctx.textAlign = 'left';
     }
     function upd() {
       const d = +day.value; draw();

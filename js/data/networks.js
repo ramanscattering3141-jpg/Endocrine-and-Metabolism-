@@ -152,7 +152,7 @@
       { id: 'foll', label: 'Dominant follicle', input: true, x: 790, y: 160, type: 'cell', w: 140 },
       { id: 'e2', label: 'Granulosa: estradiol', ent: 'estradiol', x: 590, y: 370, w: 170, tau: 0.6, terms: [T('andro', 0.6, 'Theca androgens are the substrate (two-cell, two-gonadotropin model).'), T('fsh', 0.6, 'FSH induces granulosa aromatase.', { endo: true }), T('foll', 1, 'Granulosa cell mass of the growing dominant follicle.')] },
       { id: 'inhibin', label: 'Inhibins (A + B)', ent: 'inhibin', x: 790, y: 300, tau: 0.5, terms: [T('fsh', 0.4, 'FSH stimulates granulosa inhibin secretion.'), T('foll', 0.5, 'Granulosa mass: small antral follicles make inhibin B (early follicular); the dominant follicle makes inhibin A (late follicular).'), T('cl', 0.4, 'The corpus luteum secretes inhibin A, helping keep FSH low in the luteal phase.')] },
-      { id: 'cl', label: 'Corpus luteum', input: true, x: 790, y: 440, type: 'cell', w: 130 },
+      { id: 'cl', label: 'Corpus luteum', input: true, x: 790, y: 414, type: 'cell', w: 130 },
       { id: 'prog', label: 'Progesterone', ent: 'progesterone', x: 780, y: 520, tau: 0.6, terms: [T('cl', 1, 'Corpus luteum (LH-supported) secretes progesterone.'), T('lh', 0.3, 'LH supports the corpus luteum.')] },
       { id: 'endo', label: 'Endometrium\n(proliferation)', x: 400, y: 515, type: 'process', w: 150, h: 44, tau: 1, terms: [T('e2', 1, 'Estradiol → ERα → endometrial proliferation.')] },
     ],

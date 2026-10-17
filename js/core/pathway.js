@@ -418,12 +418,15 @@
     const nodeEls = {}, edgeEls = {};
     function render() {
       EP.clear(gComp); EP.clear(gEdge); EP.clear(gNode);
+      // forget nodes/edges hidden by the new level or branch settings (else they linger as phantom obstacles)
+      Object.keys(nodeEls).forEach((k) => delete nodeEls[k]); Object.keys(edgeEls).forEach((k) => delete edgeEls[k]);
       (pw.compartments || []).forEach((c) => {
         if ((c.lv || 1) > lv()) return;
         if (c.layer && layerOn[c.layer] === false) return;
         const g = s('g', { class: 'comp k-' + (c.kind || 'cytosol') });
         g.appendChild(s('rect', { x: c.x, y: c.y, width: c.w, height: c.h, rx: c.kind === 'membrane' ? 6 : 18 }));
-        if (c.label) g.appendChild(Object.assign(c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label), { __comp: c }));
+        if (c.label) g.appendChild(Object.assign(c.lx != null ? s('text', { x: c.lx, y: c.ly != null ? c.ly : c.y + (c.kind === 'membrane' ? c.h / 2 + 4 : 20), class: 'comp-label', 'text-anchor': c.la || 'start' }, c.label)
+          : c.kind === 'membrane' ? s('text', { x: c.x + c.w - 12, y: c.y + c.h / 2 + 4, class: 'comp-label', 'text-anchor': 'end' }, c.label) : s('text', { x: c.x + 12, y: c.y + 20, class: 'comp-label' }, c.label), { __comp: c }));
         gComp.appendChild(g);
       });
       const routeBoxes = pw.nodes.filter(nodeVisible).map((n) => { const [w, hh] = sizeOf(n); return { id: n.id, x: n.x, y: n.y, w, h: hh }; });

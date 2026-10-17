@@ -412,8 +412,8 @@
     run();
   }
   function cmpGlut4(el) {
-    const grid = h('div.grid2'); el.appendChild(grid);
-    const A = h('div', h('h3', 'Insulin route')), B = h('div', h('h3', 'Contraction route'));
+    const grid = h('div.cmp-stack'); el.appendChild(grid);
+    const A = h('div.card', h('h3', 'A · Insulin route')), B = h('div.card', h('h3', 'B · Contraction route'));
     grid.append(A, B);
     EP.mountGlut4(A, { insulin: true, compact: true, lockRoute: 'insulin' });
     EP.mountGlut4(B, { exercise: true, compact: true });

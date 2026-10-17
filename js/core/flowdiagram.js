@@ -297,10 +297,14 @@
         gN.querySelectorAll('.fd-n').forEach((g) => {
           const bg = g.querySelector('.fd-badge'); const B = box[g.dataset.n]; if (!bg || !B) return;
           const bw = +bg.querySelector('rect').getAttribute('width');
-          for (const [dx, dy] of [[B.w / 2 - 2, -B.h / 2 + 1], [-B.w / 2 + 2, -B.h / 2 + 1], [B.w / 2 - 2, B.h / 2 - 1], [-B.w / 2 + 2, B.h / 2 - 1], [B.w / 2 + bw / 2 + 2, 0], [-B.w / 2 - bw / 2 - 2, 0]]) {
+          // the box's own label (in svg units) must stay readable: a wide badge must not sit on it
+          const lab = [...g.querySelectorAll(':scope > text')].map((t) => F.box(t)).filter(Boolean).reduce((a, b) => (a ? { x: Math.min(a.x, b.x), y: Math.min(a.y, b.y), x1: Math.max(a.x1, b.x + b.width), y1: Math.max(a.y1, b.y + b.height) } : { x: b.x, y: b.y, x1: b.x + b.width, y1: b.y + b.height }), null);
+          const cands = [[B.w / 2 - 2, -B.h / 2 + 1], [-B.w / 2 + 2, -B.h / 2 + 1], [B.w / 2 + bw / 2 + 3, 0], [-B.w / 2 - bw / 2 - 3, 0], [B.w / 2 - 2, B.h / 2 - 1], [-B.w / 2 + 2, B.h / 2 - 1], [0, -B.h / 2 - 10], [0, B.h / 2 + 10]];
+          for (const [dx, dy] of cands) {
             const r = { x: B.x + dx - bw / 2, y: B.y + dy - 9, width: bw, height: 18 };
             const others = fdBoxes.some((q) => !(Math.abs(q.x + q.w / 2 - B.x) < 0.5 && Math.abs(q.y + q.h / 2 - B.y) < 0.5) && r.x < q.x + q.w && r.x + r.width > q.x && r.y < q.y + q.h && r.y + r.height > q.y);
-            if (!F.onLine(r) && !others) { bg.setAttribute('transform', `translate(${dx},${dy})`); return; }
+            const onLab = lab && r.x < B.x + lab.x1 && r.x + r.width > B.x + lab.x && r.y < B.y + lab.y1 && r.y + r.height > B.y + lab.y;
+            if (!F.onLine(r) && !others && !onLab && !F.placed.some((q) => ovr(r, q))) { bg.setAttribute('transform', `translate(${dx},${dy})`); F.placed.push(r); return; }
           }
         });
       };

@@ -162,7 +162,7 @@
       t2d: { label: 'Type 2 diabetes', hep: 0.45, adip: 0.45, gngUp: 1.3, glyDn: 0.7, text: 'Raised HGP is **all gluconeogenesis**; glycogen is lower. Direct and indirect suppression both impaired.' },
     };
     const c = chart(560, 270, { l: 50, b: 42 });
-    const bars = chart(300, 270, { l: 44, b: 42 });
+    const bars = chart(300, 270, { l: 50, b: 42 });
     const X = (t) => c.P.l + t / 48 * c.iw, Y = (v) => c.P.t + (1 - v / 16) * c.ih;
     const info = h('div.irl-read');
     const tS = slider('Hours since last meal', 4, 48, 1, 12, (v) => v + ' h', (v) => { st.t = v; draw(); });
@@ -181,19 +181,21 @@
       const area = (top, bot, col) => s('path', { d: 'M' + top.map((p) => p.join(',')).join('L') + 'L' + bot.slice().reverse().map((p) => p.join(',')).join('L') + 'Z', style: `fill:color-mix(in srgb, ${col} 50%, transparent);stroke:${col};stroke-width:1.5` });
       c.g.appendChild(area(a, a.map((p) => [p[0], Y(0)]), 'var(--tr1)'));
       c.g.appendChild(area(b, a, 'var(--tr0)'));
-      c.g.appendChild(text(X(30), Y(gng(30)) + 22, 'Gluconeogenesis', 'fill:var(--text);font-weight:700', 'middle'));
-      c.g.appendChild(text(X(9), Y(gng(9) + gly(9) / 2) + 4, 'Glycogenolysis', 'fill:var(--text);font-weight:700', 'middle'));
+      c.g.appendChild(text(st.t > 22 && st.t < 38 ? X(12) : X(30), Y(gng(30)) + 22, 'Gluconeogenesis', 'fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px', 'middle'));
+      // glycogen label sits in the widest part of its wedge that the time cursor does not cross
+      const gx = st.t < 22 ? Math.max(st.t + 1.5, 4.5) : 5;
+      c.g.appendChild(text(X(gx), Y(gng(gx + 4) + gly(gx + 4) / 2) + 4, 'Glycogenolysis', 'fill:var(--text);font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px', 'start'));
       c.g.appendChild(s('line', { x1: X(st.t), x2: X(st.t), y1: c.P.t, y2: c.P.t + c.ih, style: 'stroke:var(--text);stroke-width:1.5' }));
       const G0 = gly(st.t), N0 = gng(st.t);
       const lip = S.drug ? 1 : S.adip, indirect = S.block ? 0 : 0.75 * lip;
       const G1 = G0 * (1 - S.hep), N1 = N0 * (1 - indirect);
       const BY = (v) => bars.P.t + (1 - v / 16) * bars.ih, bw = 70;
-      axes(bars, [[bars.P.l + 60, 'Basal'], [bars.P.l + 170, '+ insulin']], [0, 4, 8, 12, 16].map((v) => [BY(v), String(v)]), 'Insulin clamp', '');
+      axes(bars, [[bars.P.l + 60, 'Basal'], [bars.P.l + 170, '+ insulin']], [0, 4, 8, 12, 16].map((v) => [BY(v), String(v)]), 'Insulin clamp', 'µmol·kg⁻¹·min⁻¹');
       [[60, G0, N0], [170, G1, N1]].forEach(([x, g, n]) => {
         const x0 = bars.P.l + x - bw / 2;
         bars.g.appendChild(s('rect', { x: x0, y: BY(n), width: bw, height: BY(0) - BY(n), style: 'fill:color-mix(in srgb, var(--tr1) 60%, transparent);stroke:var(--tr1)' }));
         bars.g.appendChild(s('rect', { x: x0, y: BY(n + g), width: bw, height: BY(0) - BY(g), style: 'fill:color-mix(in srgb, var(--tr0) 60%, transparent);stroke:var(--tr0)' }));
-        bars.g.appendChild(text(x0 + bw / 2, BY(n + g) - 5, (n + g).toFixed(1), 'fill:var(--text);font-weight:600', 'middle'));
+        bars.g.appendChild(text(x0 + bw / 2, BY(n + g) - 5, (n + g).toFixed(1), 'fill:var(--text);font-weight:600;paint-order:stroke;stroke:var(--bg);stroke-width:3px', 'middle'));
       });
       const sup = 1 - (G1 + N1) / (G0 + N0);
       const share = G0 / (G0 + N0);

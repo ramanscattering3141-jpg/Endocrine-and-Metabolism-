@@ -15,7 +15,7 @@
     const byId = model.byId;
     let preset = null;
 
-    const root = h('div.network');
+    const root = h('div.network' + (opts.wide ? '.net-wide' : ''));
     const top = h('div.net-top');
     const left = h('div.net-diagram');
     const right = h('div.net-side');
@@ -136,7 +136,7 @@
     {
       const types = [...new Set(drawNodes.map((n) => n.type || 'hormone'))];
       const etypes = [...new Set(svg.querySelectorAll('path.edge').length ? [...svg.querySelectorAll('path.edge')].map((p) => (p.getAttribute('class').match(/e-(\w+)/) || [])[1]) : [])].filter(Boolean);
-      const EL = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', endo: 'Hormone travels in blood', fb: 'Negative feedback (curved, dashed)', fbpos: 'Positive feedback', transport: 'Moves / is transported', rxn: 'Is converted to' };
+      const EL = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', endo: 'Hormone travels in blood', fb: 'Negative feedback (dashed)', fbpos: 'Positive feedback', transport: 'Moves / is transported', rxn: 'Is converted to' };
       const meterSw = (pos) => { const sv = EP.s('svg', { width: 34, height: 20, viewBox: '0 0 34 20', class: 'ck-sw' }); const g = EP.s('g', { class: 'meter', transform: 'translate(2,7)' }); g.append(EP.s('rect', { width: 30, height: 7, rx: 3.5, class: 'm-bg' }), EP.s('line', { x1: 15, x2: 15, y1: -2, y2: 9, class: 'm-ref' }), EP.s('rect', { height: 7, rx: 3.5, x: pos ? 15 : 4, width: 11, class: 'm-bar ' + (pos ? 'pos' : 'neg') })); sv.appendChild(g); return sv; };
       const k = EP.colorKey([
         ['Box colour = kind of signal', types.map((x) => ({ node: x, label: EP.TYPE_LABEL[x] || x }))],

@@ -251,7 +251,7 @@
     return { st, sync, setIns, setEx: (v) => { st.ex = v; sync(); } };
   };
 
-  // ------------------------------------------------------------------ insulin page (prototype module)
+  // ------------------------------------------------------------------ insulin page
   V.insulin = function (el, params) {
     el.appendChild(EP.pageHeader('Insulin: from receptor to whole body', 'What happens when insulin increases? Follow it from receptor binding to GLUT4, glycogen, gluconeogenesis and lipolysis.', { section: 'Pancreas & Glucose', lede: 'Three linked views of the same physiology: (1) an animated cell, (2) the signaling pathway with live organ effects, (3) a whole-body read-out from the metabolic model. Change insulin in any of them.' }));
     el.appendChild(h('h2', '1 · Animated cell: GLUT4 translocation'));
