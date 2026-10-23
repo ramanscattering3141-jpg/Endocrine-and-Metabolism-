@@ -139,7 +139,7 @@
       const EL = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', endo: 'Hormone travels in blood', fb: 'Negative feedback (dashed)', fbpos: 'Positive feedback', transport: 'Moves / is transported', rxn: 'Is converted to' };
       const meterSw = (pos) => { const sv = EP.s('svg', { width: 34, height: 20, viewBox: '0 0 34 20', class: 'ck-sw' }); const g = EP.s('g', { class: 'meter', transform: 'translate(2,7)' }); g.append(EP.s('rect', { width: 30, height: 7, rx: 3.5, class: 'm-bg' }), EP.s('line', { x1: 15, x2: 15, y1: -2, y2: 9, class: 'm-ref' }), EP.s('rect', { height: 7, rx: 3.5, x: pos ? 15 : 4, width: 11, class: 'm-bar ' + (pos ? 'pos' : 'neg') })); sv.appendChild(g); return sv; };
       const k = EP.colorKey([
-        ['Box colour = kind of signal', types.map((x) => ({ node: x, label: EP.TYPE_LABEL[x] || x }))],
+        ['Box color = kind of signal', types.map((x) => ({ node: x, label: EP.TYPE_LABEL[x] || x }))],
         ['Arrows', etypes.map((x) => ({ edge: x, label: EL[x] || x }))],
         ['Level vs. normal', [{ node: 'hormone', cls: 'up', label: 'Brighter fill + ↑ badge = above normal' }, { node: 'hormone', cls: 'dn', label: 'Pale, dashed = below normal' }]],
       ]);
@@ -203,7 +203,7 @@
     // traces
     const traceIds = net.traces || drawNodes.filter((n) => n.type !== 'organ' && n.type !== 'process').map((n) => n.id).slice(0, 5);
     const cv = h('canvas.trace', { width: 520, height: 170 });
-    const traceWrap = h('div.trace-wrap', h('div.trace-head', h('span', 'Time course'), h('span.muted.small', 'log scale · relative to normal · arbitrary time units')), cv, h('div.trace-legend', h('span.tl-title', 'Line colours:'), traceIds.map((id, i) => h('span.tl-item', { style: { '--c': `var(--tr${i % 6})` } }, byId[id].label.replace(/\n/g, ' ')))));
+    const traceWrap = h('div.trace-wrap', h('div.trace-head', h('span', 'Time course'), h('span.muted.small', 'log scale · relative to normal · arbitrary time units')), cv, h('div.trace-legend', h('span.tl-title', 'Line colors:'), traceIds.map((id, i) => h('span.tl-item', { style: { '--c': `var(--tr${i % 6})` } }, byId[id].label.replace(/\n/g, ' ')))));
     (opts.traceInto || left).appendChild(traceWrap);
     const hist = traceIds.map(() => []);
     const traceLabels = traceIds.map((id) => byId[id].label.replace(/\n/g, ' ').replace(/ \/.*$/, ''));

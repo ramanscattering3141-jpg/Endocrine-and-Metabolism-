@@ -96,7 +96,7 @@
       e('mtorc1', 'srebp1c', 'stim', { lv: 3, w: 0.4, why: 'mTORC1 promotes SREBP-1c processing and lipogenic gene expression.' }),
       e('insulin', 'srebp1c', 'stim', { ghost: true, lv: 3, w: 0.6, via: [[200, 60], [200, 98], [715, 98], [715, 610]], why: '**Portal hyperinsulinemia keeps SREBP-1c on.** In insulin resistance, insulin fails to suppress glucose output yet still drives lipogenesis ("selective" hepatic insulin resistance; Brown & Goldstein 2008). Petersen & Shulman (2018) attribute this to the very high portal insulin reaching the liver plus substrate supply rather than to a true split in the pathway. Either way, hepatic de novo lipogenesis is ~2–3× higher in insulin-resistant people (Petersen 2007, Lambert 2014).' }),
       e('akt', 'pde3b', 'stim', { lv: 2, why: 'Insulin activates PDE3B. Akt phosphorylates it (Ser273), but that site and Akt2 itself are dispensable for antilipolysis; insulin seems to act by assembling PDE3B signaling complexes, and also activates PP2A (HSL) and PP1 (perilipin) phosphatases (Petersen & Shulman 2018).' }),
-      e('pde3b', 'camp', 'inhib', { lv: 2, why: 'PDE3B hydrolyses cAMP → ↓ PKA activity.' }),
+      e('pde3b', 'camp', 'inhib', { lv: 2, why: 'PDE3B hydrolyzes cAMP → ↓ PKA activity.' }),
       e('camp', 'pka', 'stim', { lv: 2, why: 'cAMP activates PKA.' }),
       e('dag', 'pkce', 'stim', { lv: 4, why: 'sn-1,2-diacylglycerol at the plasma membrane (not total triglyceride, not ceramide in most human data) recruits and activates novel PKCs: PKCε in liver, PKCθ in muscle (Petersen & Shulman 2018).' }),
       e('pkce', 'ir', 'inhib', { lv: 3, why: 'PKCε phosphorylates IR Thr1160 (liver); PKCθ serine-phosphorylates IRS-1 (muscle) — lipid-induced insulin resistance (Petersen & Shulman 2018).' }),
@@ -141,10 +141,10 @@
     ],
     clinical: [
       { id: 'ir', label: 'Insulin resistance (lipid-induced)', inputs: { dag: 2.2, insulin: 2.5 }, desc: 'Plasma-membrane sn-1,2-DAG activates **PKCε in liver** (→ INSR Thr1160 phosphorylation, ↓ receptor kinase) and **PKCθ in muscle** (→ IRS-1 Ser1101, ↓ PI3K). β-cells compensate (insulin set to ~2.5× here), which only partly restores Akt. Muscle takes up less glucose and diverts it to the liver, where it and the **high insulin** drive **de novo lipogenesis up** (SREBP-1c, ChREBP) even though glucose output is not suppressed. Adipose insulin resistance raises lipolysis, driving hepatic acetyl-CoA and gluconeogenesis. Drag insulin back to basal to see how much worse signaling is without compensation.', chain: ['ectopic sn-1,2-DAG → PKCε (liver) / PKCθ (muscle)', 'impaired INSR / IRS-1 → PI3K/Akt', '↓ GLUT4 translocation; ↓ suppression of HGP', '↑ adipose lipolysis → ↑ hepatic acetyl-CoA → ↑ gluconeogenesis', 'compensatory hyperinsulinemia → ↑ SREBP-1c + diverted glucose → ↑ hepatic lipogenesis, steatosis, ↑ VLDL', 'eventual β-cell failure → T2D'], highlight: ['dag', 'pkce', 'ir', 'irs', 'akt', 'glut4', 'm_uptake', 'srebp1c', 'l_dnl'] },
-      { id: 'tbc', label: 'TBC1D4 loss-of-function', caps: { rab: 0.3 }, desc: 'A truncating TBC1D4 variant impairs insulin-stimulated GLUT4 translocation in muscle → postprandial hyperglycemia (Petersen & Shulman).', chain: ['TBC1D4 truncation', '↓ GLUT4 translocation', '↓ muscle glucose uptake', 'postprandial hyperglycemia'], highlight: ['as160', 'rab', 'glut4', 'm_uptake'] },
+      { id: 'tbc', label: 'TBC1D4 loss-of-function', caps: { rab: 0.3 }, desc: 'A truncating TBC1D4 variant impairs insulin-stimulated glucose uptake in muscle → postprandial hyperglycemia (Moltke 2014).', chain: ['TBC1D4 truncation', '↓ GLUT4 translocation', '↓ muscle glucose uptake', 'postprandial hyperglycemia'], highlight: ['as160', 'rab', 'glut4', 'm_uptake'] },
       { id: 't1d', label: 'Insulin deficiency (T1D)', inputs: { insulin: 0.12 }, desc: 'With almost no insulin every branch reverses: GLUT4 stays inside, FOXO1 drives gluconeogenesis, lipolysis is unrestrained (→ ketogenesis).', chain: ['↓↓ insulin', '↓ Akt', '↑ FOXO1, ↑ PKA/lipolysis', 'hyperglycemia + ketosis'] },
     ],
-    refs: ['petersen2018', 'petersen2007', 'brown2008', 'lambert2014', 'sano2003', 'matsumoto2007', 'perry2015', 'shulman1990', 'saxton2017', 'molina7', 'kovacs15'],
+    refs: ['petersen2018', 'petersen2007', 'brown2008', 'lambert2014', 'sano2003', 'moltke2014', 'matsumoto2007', 'perry2015', 'shulman1990', 'saxton2017', 'molina7', 'kovacs15'],
   };
 
   // ======================================================================
@@ -317,7 +317,7 @@
       e('gs', 'ac', 'stim', { lv: 2, why: 'Gαs-GTP activates adenylyl cyclase.' }),
       e('ac', 'camp', 'rxn', { lv: 2, label: 'ATP → cAMP', why: 'Each cyclase makes many cAMP molecules — signal amplification.' }),
       e('insulin', 'pde3b', 'stim', { lv: 3, why: 'Insulin activates phosphodiesterases and phosphatases that oppose cAMP/PKA signaling in the liver.' }),
-      e('pde3b', 'camp', 'inhib', { lv: 3, why: 'PDE hydrolyses cAMP.' }),
+      e('pde3b', 'camp', 'inhib', { lv: 3, why: 'PDE hydrolyzes cAMP.' }),
       e('insulin', 'pka', 'inhib', { lv: 2, lvMax: 2, via: [[90, 390]], why: 'Insulin opposes glucagon by lowering cAMP and activating phosphatases (PP1) that reverse PKA phosphorylations.' }),
       e('camp', 'pka', 'stim', { why: 'cAMP releases PKA catalytic subunits.' }),
       e('pka', 'phk', 'stim', { lv: 2, straight: true, why: 'PKA phosphorylates phosphorylase kinase.' }),
@@ -330,7 +330,7 @@
       e('f26bp', 'glycolysis', 'stim', { lv: 2, why: 'F-2,6-BP is the main activator of PFK-1; when it falls, glycolysis slows and FBPase-1 (gluconeogenesis) is disinhibited.' }),
       e('f26bp', 'gng', 'inhib', { lv: 2, why: 'F-2,6-BP inhibits FBPase-1; its fall releases gluconeogenesis.' }),
       e('pka', 'lpk', 'inhib', { lv: 3, why: 'PKA phosphorylates L-pyruvate kinase, preventing PEP from being recycled to pyruvate.' }),
-      e('lpk', 'glycolysis', 'stim', { lv: 3, why: 'L-PK catalyses the last glycolytic step.' }),
+      e('lpk', 'glycolysis', 'stim', { lv: 3, why: 'L-PK catalyzes the last glycolytic step.' }),
       e('pka', 'creb', 'stim', { lv: 2, via: [[450, 390], [450, 130]], why: 'PKA phosphorylates CREB and activates CRTC2 (dephosphorylation via SIK inhibition).' }),
       e('creb', 'pgc1a', 'stim', { lv: 3, why: 'CREB induces PGC-1α.' }),
       e('creb', 'pepck', 'stim', { lv: 2, why: 'CRE elements in PCK1 and G6PC promoters.' }),

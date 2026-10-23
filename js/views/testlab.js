@@ -1,7 +1,7 @@
 /* Endocrine testing lab: order static and dynamic tests on a patient and reach a diagnosis.
  * Logic follows Kovacs Ch4 (stimulation/suppression principles), Molina Ch2 (water deprivation),
  * Molina Ch6 (dexamethasone, metyrapone, CRH tests), Kovacs Ch3/14 (PTH infusion in PHP).
- * Results are qualitative — no invented reference values. */
+ * Results are qualitative; the only numbers shown are diagnostic cut-offs quoted from the cited guidelines. */
 (function () {
   'use strict';
   const EP = window.EP;
@@ -27,7 +27,7 @@
     { id: 'c8', dx: 'ghd', stem: 'An 8-year-old is far below the growth curve with slow growth velocity, normal proportions and delayed bone age. Thyroid tests are normal.' },
     { id: 'c9', dx: 'cdi', stem: 'After a head injury, a 28-year-old passes large volumes of dilute urine and is constantly thirsty, preferring ice water.' },
     { id: 'c10', dx: 'ndi', stem: 'A 55-year-old who has taken lithium for years has polyuria and nocturia with dilute urine.' },
-    { id: 'c11', dx: 'polyd', stem: 'A 30-year-old drinks several litres of water daily "to stay healthy" and has polyuria. Plasma sodium is low-normal.' },
+    { id: 'c11', dx: 'polyd', stem: 'A 30-year-old drinks several liters of water daily "to stay healthy" and has polyuria. Plasma sodium is low-normal.' },
     { id: 'c12', dx: 'hypopara', stem: 'Two days after total thyroidectomy, a patient has perioral tingling and carpopedal spasm.' },
     { id: 'c13', dx: 'php', stem: 'A teenager with short stature, round face and short fourth metacarpals has hypocalcemia and hyperphosphatemia.' },
     { id: 'c14', dx: 'hypo1', stem: 'A 52-year-old woman has fatigue, cold intolerance, constipation, weight gain and dry skin; there is a firm goiter.' },
@@ -45,15 +45,15 @@
       ectopic: R('Cortisol high · ACTH very high', 'Strongly ACTH-dependent.', 1),
       adenoma: R('Cortisol high · ACTH suppressed', 'ACTH-independent: the adrenal is autonomous and feedback suppresses ACTH.', 1),
     }[d] || R('Both normal', 'A single value is not diagnostic: cortisol is pulsatile and circadian.')) },
-    { group: 'Adrenal', id: 'ufc', name: '24-hour urinary free cortisol', run: (d) => (['cushpit', 'ectopic', 'adenoma'].includes(d) ? R('Elevated', 'Integrates cortisol secretion over 24 h — the preferred way to confirm hypercortisolism (Molina Ch6).', 1) : ['addison', 'secai'].includes(d) ? R('Low', 'Low total daily cortisol production.', 1) : R('Normal', 'No hypercortisolism.')) },
-    { group: 'Adrenal', id: 'lddst', name: 'Low-dose dexamethasone suppression', run: (d) => (['cushpit', 'ectopic', 'adenoma'].includes(d) ? R('Cortisol NOT suppressed', 'Failure to suppress = autonomous secretion of cortisol or ACTH (Kovacs Ch4).', 1) : ['addison', 'secai'].includes(d) ? R('Not informative', 'Cortisol is already low; suppression tests are for suspected excess.') : R('Cortisol suppressed', 'Intact negative feedback.')) },
+    { group: 'Adrenal', id: 'ufc', name: '24-hour urinary free cortisol', run: (d) => (['cushpit', 'ectopic', 'adenoma'].includes(d) ? R('Elevated', 'Integrates cortisol secretion over 24 h. One of the recommended first-line tests (with late-night salivary cortisol and the 1 mg overnight dexamethasone test); collect at least two (Nieman 2008).', 1) : ['addison', 'secai'].includes(d) ? R('Low', 'Low total daily cortisol production.', 1) : R('Normal', 'No hypercortisolism.')) },
+    { group: 'Adrenal', id: 'lddst', name: 'Low-dose dexamethasone suppression', run: (d) => (['cushpit', 'ectopic', 'adenoma'].includes(d) ? R('Cortisol NOT suppressed', 'Failure to suppress = autonomous secretion of cortisol or ACTH (Kovacs Ch4). After 1 mg dexamethasone at 11 p.m., an 8 a.m. cortisol above 50 nmol/L (1.8 µg/dL) is abnormal (Nieman 2008).', 1) : ['addison', 'secai'].includes(d) ? R('Not informative', 'Cortisol is already low; suppression tests are for suspected excess.') : R('Cortisol suppressed', 'Intact negative feedback.')) },
     { group: 'Adrenal', id: 'hddst', name: 'High-dose dexamethasone suppression', run: (d) => ({
       cushpit: R('Cortisol partly suppressed', 'Most corticotroph adenomas retain some responsiveness to glucocorticoid feedback (Molina Ch6).', 1),
       ectopic: R('NOT suppressed', 'Ectopic ACTH-producing tumors do not respond to glucocorticoid feedback (Molina Ch6).', 1),
       adenoma: R('NOT suppressed', 'Cortisol is independent of ACTH, which is already suppressed.', 1),
-    }[d] || R('Not indicated', 'Used only to localize established ACTH-dependent hypercortisolism.')) },
+    }[d] || R('Not indicated', 'Used only to localize established ACTH-dependent hypercortisolism; MRI and inferior petrosal sinus sampling now do most of this work.')) },
     { group: 'Adrenal', id: 'crh', name: 'CRH stimulation', run: (d) => ({
-      cushpit: R('Exaggerated ACTH & cortisol rise (~2-fold)', 'Pituitary corticotroph adenomas respond to CRH; ectopic sources rarely do (Molina Ch6).', 1),
+      cushpit: R('ACTH & cortisol rise', 'Pituitary corticotroph adenomas respond to CRH; ectopic sources rarely do (Molina Ch6).', 1),
       ectopic: R('No ACTH response', 'Ectopic tumors rarely respond to CRH.', 1),
       adenoma: R('No ACTH response', 'Corticotrophs are suppressed by autonomous cortisol.', 1),
       addison: R('ACTH (already high) rises; cortisol does not', 'Pituitary intact, adrenal failed.', 1),
@@ -63,7 +63,7 @@
       addison: R('No cortisol rise', 'The adrenal cannot respond — primary failure.', 1),
       secai: R('Blunted cortisol rise', 'Chronic ACTH lack causes adrenal atrophy, so the adrenal under-responds to a supraphysiological ACTH dose. (Very recent ACTH deficiency may still give a normal result.)', 1),
       cushpit: R('Cortisol rises (often exaggerated)', 'Not a test for excess.'), ectopic: R('Cortisol rises', 'Not a test for excess.'),
-    }[d] || R('Normal cortisol rise', 'Adrenal reserve intact. Cosyntropin tests only the adrenal, with a supraphysiological stimulus (Kovacs Ch4).')) },
+    }[d] || R('Normal cortisol rise', 'Adrenal reserve intact. Cosyntropin tests only the adrenal, with a supraphysiological stimulus (Kovacs Ch4). After 250 µg, a peak cortisol (30 or 60 min) below 500 nmol/L (18 µg/dL) indicates adrenal insufficiency (Bornstein 2016); with newer specific immunoassays or LC-MS/MS the cut-off is lower, about 14–15 µg/dL (≈390–415 nmol/L) (Javorsky 2021).')) },
     { group: 'Adrenal', id: 'mety', name: 'Metyrapone (11β-hydroxylase block)', run: (d) => ({
       addison: R('No rise in 11-deoxycortisol', 'The adrenal cannot respond to the ACTH rise.', 1),
       secai: R('No ACTH or 11-deoxycortisol rise', 'The pituitary cannot increase ACTH when cortisol falls (Molina Ch6).', 1),
@@ -76,14 +76,14 @@
     { group: 'Adrenal', id: 'renin', name: 'Renin & aldosterone', run: (d) => ({
       addison: R('Aldosterone low · renin high', 'The whole cortex is destroyed, so mineralocorticoid is lost too (salt wasting, hyperkalemia).', 1),
       secai: R('Aldosterone normal · renin normal', 'Aldosterone is regulated by Ang II and K⁺, not ACTH — preserved in secondary insufficiency.'),
-      conn: R('Aldosterone high · renin suppressed', 'Autonomous aldosterone → volume expansion suppresses renin.', 1),
+      conn: R('Aldosterone high · renin suppressed', 'Autonomous aldosterone → volume expansion suppresses renin. A high aldosterone-to-renin ratio is the screening test; current guidance suggests screening everyone with hypertension (Adler 2025).', 1),
       ectopic: R('Aldosterone low-normal · renin suppressed', 'Massive cortisol overwhelms 11β-HSD2 and acts on MR (hypokalemia, hypertension) without aldosterone excess.', 1),
     }[d] || R('Normal', 'RAAS intact.')) },
-    { group: 'Adrenal', id: 'salt', name: 'Salt loading (aldosterone suppression)', run: (d) => (d === 'conn' ? R('Aldosterone NOT suppressed', 'Salt loading should suppress aldosterone; aldosterone-producing tumors keep secreting (Kovacs Ch4).', 1) : R('Aldosterone suppressed', 'Normal RAAS feedback.')) },
+    { group: 'Adrenal', id: 'salt', name: 'Salt loading (aldosterone suppression)', run: (d) => (d === 'conn' ? R('Aldosterone NOT suppressed', 'Salt loading should suppress aldosterone; autonomous production (adenoma or bilateral hyperplasia) continues (Kovacs Ch4). Suppression testing is used when the result changes management (Adler 2025).', 1) : R('Aldosterone suppressed', 'Normal RAAS feedback.')) },
     { group: 'GH', id: 'igf1', name: 'IGF-1', run: (d) => (d === 'acro' ? R('Elevated', 'Integrates GH secretion over time.', 1) : d === 'ghd' ? R('Low', 'Consistent with GH deficiency (also low in malnutrition and liver disease).', 1) : R('Normal for age', '')) },
-    { group: 'GH', id: 'ogtt', name: 'Oral glucose → GH (suppression)', run: (d) => (d === 'acro' ? R('GH NOT suppressed', 'Oral glucose suppresses GH normally but not in GH-secreting tumors (Kovacs Ch4).', 1) : R('GH suppressed', 'Normal glucose feedback on GH.')) },
+    { group: 'GH', id: 'ogtt', name: 'Oral glucose → GH (suppression)', run: (d) => (d === 'acro' ? R('GH NOT suppressed', 'Oral glucose suppresses GH normally but not in GH-secreting tumors (Kovacs Ch4). A GH nadir of 1 µg/L or more after 75 g glucose, with a high IGF-1, confirms acromegaly; cut-offs depend on the assay (Katznelson 2014).', 1) : R('GH suppressed', 'Normal glucose feedback on GH.')) },
     { group: 'Water', id: 'wd', name: 'Water deprivation → desmopressin', run: (d) => ({
-      cdi: R('Urine stays dilute; concentrates after desmopressin · plasma ADH low', 'No ADH, but the kidney responds to it — central DI.', 1),
+      cdi: R('Urine stays dilute; concentrates after desmopressin · plasma ADH low', 'No ADH, but the kidney responds to it — central DI. Copeptin (a stable fragment of the ADH precursor) is now often measured instead: after hypertonic saline, copeptin above 4.9 pmol/L points to primary polydipsia rather than central DI (Fenske 2018).', 1),
       ndi: R('Urine stays dilute; no response to desmopressin · plasma ADH high', 'ADH present, kidney resistant — nephrogenic DI (e.g., lithium).', 1),
       polyd: R('Urine concentrates (may be submaximal); starts with low-normal plasma osmolality', 'ADH secretion and action are intact; chronic overdrinking can wash out the medullary gradient.', 1),
     }[d] || R('Urine concentrates; little extra response to desmopressin', 'If urine concentrates maximally, osmosensing, ADH secretion, V2 receptors and post-receptor events are all intact (Kovacs Ch4).')) },
@@ -149,7 +149,7 @@
       conn: 'Key: **high aldosterone with suppressed renin**, failing to suppress with salt loading.',
       acro: 'Key: **high IGF-1** and **GH not suppressed by oral glucose**.',
       ghd: 'Key: **low IGF-1** and **no GH rise to a provocative stimulus** (e.g., insulin hypoglycemia).',
-      cdi: 'Key: dilute urine during water deprivation that **concentrates after desmopressin**; low ADH.',
+      cdi: 'Key: dilute urine during water deprivation that **concentrates after desmopressin**; low ADH (or copeptin).',
       ndi: 'Key: dilute urine that **does not respond to desmopressin**; high ADH.',
       polyd: 'Key: urine **concentrates** with deprivation; plasma osmolality starts low-normal.',
       hypopara: 'Key: low Ca²⁺, high phosphate, **low PTH**; normal response to infused PTH.',
@@ -159,6 +159,6 @@
       graves: 'Key: **suppressed TSH, high free T4, positive TSH-receptor antibodies**.',
     };
     load(params.c && CASES.find((c) => c.id === params.c) ? params.c : 'c1');
-    el.appendChild(EP.sources(['kovacs4', 'kovacs3', 'kovacs5', 'kovacs12', 'kovacs13', 'kovacs14', 'molina1', 'molina2', 'molina6']));
+    el.appendChild(EP.sources(['kovacs4', 'kovacs3', 'kovacs5', 'kovacs12', 'kovacs13', 'kovacs14', 'molina1', 'molina2', 'molina6', 'nieman2008', 'bornstein2016', 'javorsky2021', 'adler2025', 'katznelson2014', 'fenske2018']));
   };
 })();

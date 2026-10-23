@@ -36,7 +36,7 @@
           ],
         }),
         IRV.lipidInfusion(),
-        IRV.pts([['⚖️', 'Randle **does** operate in the first ~3 h (G6P ↑, glycolysis ↓) and governs fuel choice. Glucose returns the favour via **malonyl-CoA ⊣ CPT-1**.'], ['📈', 'Even high-physiological NEFA (0.75 mM) causes muscle IR — but only after **several hours**.']]),
+        IRV.pts([['⚖️', 'Randle **does** operate in the first ~3 h (G6P ↑, glycolysis ↓) and governs fuel choice. Glucose returns the favor via **malonyl-CoA ⊣ CPT-1**.'], ['📈', 'Even high-physiological NEFA (0.75 mM) causes muscle IR — but only after **several hours**.']]),
         IRV.cards([
           { t: '💉 Acute lipid–heparin infusion', p: 'Full control of dose and timing; no obesity, inflammation or hyperinsulinemia confounders. But acute, IV, static and often supraphysiological.', v: ['m', 'mechanism studies'] },
           { t: '🧈 High-fat-fed rodent', p: 'Starts metabolically normal → can catch the **earliest** defects. Rodents get liver IR in days, muscle IR only after weeks (humans: muscle first).', v: ['y', 'best for "first hit"'] },
@@ -179,7 +179,7 @@
         ])));
 
       // ---- ceramide & acylcarnitine (Fig. 17)
-      b.appendChild(IRV.fig('Fig. 17 · V-C/D', 'Three proposed lipid mechanisms in muscle', 'DAG acts at the **top** of the cascade; ceramides at **AKT**; acylcarnitines/ROS are vaguer. Typical IR shows **proximal** defects — which favours DAG.',
+      b.appendChild(IRV.fig('Fig. 17 · V-C/D', 'Three proposed lipid mechanisms in muscle', 'DAG acts at the **top** of the cascade; ceramides at **AKT**; acylcarnitines/ROS are vaguer. Typical IR shows **proximal** defects — which favors DAG.',
         EP.flow({
           w: 940, h: 360,
           zones: [{ x: 10, y: 10, w: 300, h: 340, label: 'A · DAG / PKCθ', col: 'var(--tr3)' }, { x: 320, y: 10, w: 300, h: 340, label: 'B · Ceramide / AKT', col: 'var(--tr4)' }, { x: 630, y: 10, w: 300, h: 340, label: 'C · Acylcarnitine / ROS', col: 'var(--tr5)' }],
@@ -254,7 +254,7 @@
             N('over', 100, 60, 'Overnutrition\n(saturated FA)', 'bad'), N('mis', 340, 60, 'Misfolded proteins', 'process'), N('bip', 560, 60, 'BiP/GRP78 lets go', 'kinase'),
             N('perk', 360, 135, 'PERK (eIF2α-P)', 'kinase'), N('ire1', 540, 135, 'IRE1', 'kinase'), N('atf6', 710, 135, 'ATF6', 'tf'),
             N('jnk', 300, 230, 'JNK', 'kinase', { info: 'Proposed to phosphorylate IRS1 (Ser307). But liver Jnk⁻/⁻ mice get **more** steatosis and IR, and IRS1 Ser307Ala mice are **more** insulin-resistant.' }),
-            N('xbp1', 540, 230, 'XBP1s', 'tf', { info: 'Spliced XBP1 switches on the de novo lipogenic programme.' }),
+            N('xbp1', 540, 230, 'XBP1s', 'tf', { info: 'Spliced XBP1 switches on the de novo lipogenic program.' }),
             N('lipin', 750, 230, 'Lipin-2 ↑', 'enzyme'),
             N('dnl', 540, 300, 'De novo lipogenesis', 'process'), N('dag', 750, 300, 'DAG → PKCε', 'lipid'), N('insr', 880, 230, 'INSR', 'bad'),
           ],
@@ -274,7 +274,7 @@
           nodes: [
             N('over', 120, 60, 'Chronic lipid oversupply', 'bad'),
             N('fao', 420, 60, '↑ FAO capacity (adaptive)\nbut ATP demand fixed', 'process', { info: 'Weeks of HFD raise muscle FAO capacity. Even forcing FAO (AMPK activators, ACC2 KO) does not prevent HFD muscle IR — ATP demand, not substrate, sets oxidation.' }),
-            N('inc', 740, 60, 'Incomplete oxidation →\nacylcarnitines + H₂O₂', 'bad', { info: 'H₂O₂ production rises within 3 days of HFD; GSH/GSSG falls (also in obese human muscle). Oxidised cysteines may favour inhibitory Ser/Thr phosphorylation.' }),
+            N('inc', 740, 60, 'Incomplete oxidation →\nacylcarnitines + H₂O₂', 'bad', { info: 'H₂O₂ production rises within 3 days of HFD; GSH/GSSG falls (also in obese human muscle). Oxidized cysteines may favor inhibitory Ser/Thr phosphorylation.' }),
             N('dmg', 820, 190, 'Mitochondrial\ndamage', 'bad'),
             N('atp', 600, 300, '↓ Mitochondrial ATP synthesis', 'process', { info: '³¹P-MRS: ↓ ATP synthesis in the elderly, lean insulin-resistant offspring of T2D parents and prediabetics.' }),
             N('imcl', 330, 300, 'IMCL ↑ → DAG/PKCθ', 'lipid'), N('ir', 100, 300, 'Muscle insulin\nresistance', 'bad'),
@@ -284,7 +284,7 @@
           edges: [E('over', 'fao', 'bad'), E('fao', 'inc', 'bad'), E('inc', 'dmg', 'bad'), E('dmg', 'atp', 'bad'), E('atp', 'imcl', 'bad', 'less fat burned'), E('fao', 'imcl', 'flow', 'excess stored', { lo: [-48, 0] }), E('imcl', 'ir', 'bad'),
             E('gen', 'atp', 'bad'), E('mcat', 'dmg', 'inh'), E('inc', 'ir', 'bad', '? ROS / acylcarnitines', { via: [[740, 140], [100, 140]], col: 'var(--faint)' })],
           steps: [
-            { n: ['over', 'fao'], cap: 'Lipid oversupply: muscle raises its capacity to oxidise fat, but can\'t raise **ATP demand**.' },
+            { n: ['over', 'fao'], cap: 'Lipid oversupply: muscle raises its capacity to oxidize fat, but can\'t raise **ATP demand**.' },
             { n: ['fao', 'imcl', 'ir'], cap: 'Unburned fat is stored: IMCL ↑ → DAG/PKCθ → insulin resistance.' },
             { n: ['fao', 'inc', 'dmg'], cap: 'Oxidation outpaces demand → incomplete oxidation, **H₂O₂** (the electron "release valve") → mitochondrial damage.' },
             { n: ['dmg', 'atp', 'imcl'], cap: '↓ ATP synthesis → even less fat burned → more IMCL. **Vicious cycle.**' },

@@ -81,7 +81,7 @@
       gStatic.appendChild(s('rect', { x: 0, y: 0, width: W, height: 112, class: 'g4-blood', fill: 'color-mix(in srgb, #ff6b6b 7%, transparent)' }));
       gStatic.appendChild(s('text', { x: 14, y: 22, class: 'comp-label' }, 'Interstitial fluid / capillary'));
       gStatic.appendChild(s('rect', { x: 30, y: 112, width: W - 60, height: H - 130, rx: 30, fill: 'color-mix(in srgb, var(--panel2) 75%, transparent)', stroke: 'var(--c-hormone)', 'stroke-width': 5, 'stroke-opacity': 0.55 }));
-      gStatic.appendChild(s('text', { x: 50, y: H - 30, class: 'comp-label' }, st.mode === 'muscle' ? 'Skeletal muscle fibre' : 'Adipocyte'));
+      gStatic.appendChild(s('text', { x: 50, y: H - 30, class: 'comp-label' }, st.mode === 'muscle' ? 'Skeletal muscle fiber' : 'Adipocyte'));
       if (st.mode === 'muscle') {
         // striations stop short of the mitochondria and glycogen (and their labels) so no line runs under text
         for (let x = 60; x < W - 60; x += 26) gStatic.appendChild(s('line', { x1: x, y1: 400, x2: x, y2: x < 170 ? 440 : x > 228 && x < 305 ? 456 : 520, stroke: 'var(--line)', 'stroke-width': 6, opacity: 0.35 }));
@@ -308,7 +308,7 @@
         ['After exercise', '—', '↑ insulin sensitivity for hours (glycogen resynthesis)']].map((r) => `<tr><th>${r[0]}</th><td>${EP.md(r[1])}</td><td>${EP.md(r[2])}</td></tr>`).join('') }),
       h('p.small.muted', { html: EP.md('{{ref:richter2013}} {{ref:sylow2017}} {{ref:petersen2018}}') })));
     el.appendChild(h('h2', 'In the whole body'));
-    el.appendChild(h('p', 'Open the ', h('a', { href: '#/flux?preset=exercise' }, 'flux simulator in the Exercise state'), ': muscle glucose uptake rises ~3–4× while insulin falls (α2-adrenergic suppression) — the contraction route at work.'));
+    el.appendChild(h('p', 'Open the ', h('a', { href: '#/flux?preset=exercise' }, 'flux simulator in the Exercise state'), ': in the model, muscle glucose uptake rises about 3–4× while insulin falls slightly (α2-adrenergic suppression) — the contraction route at work.'));
     el.appendChild(EP.sources(['richter2013', 'sylow2017', 'petersen2018', 'hardie2012']));
   };
 

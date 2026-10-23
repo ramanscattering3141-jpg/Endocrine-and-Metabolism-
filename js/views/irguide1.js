@@ -11,7 +11,7 @@
   // ================================================================== I. INTRODUCTION
   IRV.chapter({
     rn: 'I', id: 'intro', col: 'var(--tr5)', title: 'The big picture', tile: 'Three target tissues, direct vs indirect action',
-    sub: 'What insulin does in muscle, liver and fat, and how the review is organised.',
+    sub: 'What insulin does in muscle, liver and fat, and how the review is organized.',
     build(b) {
       b.appendChild(IRV.fig('Overview', 'One hormone, three tissues, two ways of acting',
         'Insulin acts **directly** on muscle, liver and fat, and **indirectly** through cross-talk between them, mainly fat → liver.',
@@ -30,7 +30,7 @@
             N('rm', 160, 152, 'INSR', 'receptor'), N('rl', 460, 152, 'INSR', 'receptor'), N('rw', 760, 152, 'INSR', 'receptor'),
             N('m1', 160, 200, 'GLUT4 → glucose uptake', 'process'), N('m2', 160, 240, 'Net glycogen synthesis', 'process'), N('m3', 160, 280, 'Glycolysis / oxidation', 'process'),
             N('m4', 160, 322, 'lactate & alanine → liver', 'note'),
-            N('l1', 460, 200, 'Net glycogen synthesis', 'process'), N('l3', 460, 240, '↓ G6PC/PCK1 genes (slow)', 'process'), N('l4', 460, 280, '↑ Lipogenesis — DNL (slow)', 'process', { info: 'Insulin switches on the lipogenic genes, but **de novo lipogenesis is a small source of liver fat** (~10% of liver TG output in healthy people, ~25% in NAFLD). Most liver fat comes from re-esterified plasma fatty acids.' }),
+            N('l1', 460, 200, 'Net glycogen synthesis', 'process'), N('l3', 460, 240, '↓ G6PC/PCK1 genes (slow)', 'process'), N('l4', 460, 280, '↑ Lipogenesis — DNL (slow)', 'process', { info: 'Insulin switches on the lipogenic genes, but **de novo lipogenesis is a small source of liver fat** (~10% of liver TG output with low liver fat, ~25% in NAFLD). Most liver fat comes from re-esterified plasma fatty acids.' }),
             N('l2', 460, 322, '↓ Gluconeogenesis (fast)', 'process', { info: 'The fast fall in gluconeogenesis is mostly an **indirect** effect, routed through fat (Section III).' }),
             N('w2', 760, 200, 'Glucose uptake', 'process'), N('w3', 760, 240, 'Fat storage (esterification)', 'process'), N('w4', 760, 280, 'Adipogenesis (PPARγ)', 'process'),
             N('w1', 760, 322, '⊣ Lipolysis — most sensitive', 'process', { info: 'Half-maximal suppression of lipolysis at ~20 µU/mL insulin vs ~60 µU/mL for whole-body glucose uptake.' }),
@@ -88,7 +88,7 @@
             N('ins', 460, 30, 'Insulin', 'hormone', { info: 'At physiological levels **one insulin binds one receptor** — binding at one site lowers affinity at the other (negative cooperativity).' }),
             N('insr', 460, 87, 'INSR (α₂β₂) · pTyr1162 → 1158 → 1163', 'receptor', { info: 'Binding relieves autoinhibition; β-subunits trans-autophosphorylate the activation loop (Tyr1162, 1158, 1163 in that order), then Tyr972, which docks substrates. **INSR-B** (liver, muscle, fat) does the metabolic work; **INSR-A** (exon 11 spliced out) dominates in the fetus and binds IGF-2.' }),
             N('cea', 190, 87, 'CEACAM1', 'kinase', { g: 'fb', info: 'An INSR substrate that drives receptor **internalization** — slow attenuation.' }),
-            N('grb10', 745, 87, 'GRB10', 'kinase', { g: 'fb', info: 'Binds the phosphorylated activation loop and **inhibits INSR**. mTORC1 stabilises it → negative feedback. Muscle Grb10 knockout → more insulin-sensitive, larger muscles.' }),
+            N('grb10', 745, 87, 'GRB10', 'kinase', { g: 'fb', info: 'Binds the phosphorylated activation loop and **inhibits INSR**. mTORC1 stabilizes it → negative feedback. Muscle Grb10 knockout → more insulin-sensitive, larger muscles.' }),
             N('aps', 170, 165, 'SH2B2 / APS', 'kinase', { info: 'Helps start the metabolic response in some cells (e.g. the PI3K-independent TC10 route in adipocytes, Fig. 5).' }),
             N('irs', 345, 165, 'IRS1 / IRS2', 'kinase', { info: 'Dock on INSR pTyr972 (PTB domain) and get tyrosine-phosphorylated. >70 Ser/Thr sites tune them — the target of feedback and of many proposed IR mechanisms. Losing **both** IRS1 and IRS2 in muscle or liver = losing INSR.' }),
             N('giv', 530, 165, 'GIV / Girdin', 'kinase', { info: 'INSR tyrosine-phosphorylates GIV, which **amplifies** PI3K–AKT (feed-forward). PKCθ can switch it off (Ser1689; Section V).' }),
@@ -102,7 +102,7 @@
             N('pdk1', 230, 410, 'PDK1', 'kinase'), N('mtorc2', 460, 410, 'mTORC2', 'kinase'),
             N('akt', 345, 482, 'AKT · pThr308 + pSer473', 'kinase', { info: 'Hub kinase. **Ser473** is the most popular readout, yet how insulin drives it is unclear (partly IRS-independent) and many nutrients feed into it. A partial loss-of-function AKT2 variant (~1% of Finns) causes insulin resistance.' }),
             N('out', 720, 482, 'Tissue-specific effects →', 'process'),
-            N('mtorc1', 640, 445, 'mTORC1 → S6K1', 'kinase', { g: 'fb', info: 'Downstream of AKT (and amino acids). **S6K1 phosphorylates IRS1** on Ser (↓ activity, ↑ degradation) and mTORC1 **stabilises GRB10** → negative feedback.' }),
+            N('mtorc1', 640, 445, 'mTORC1 → S6K1', 'kinase', { g: 'fb', info: 'Downstream of AKT (and amino acids). **S6K1 phosphorylates IRS1** on Ser (↓ activity, ↑ degradation) and mTORC1 **stabilizes GRB10** → negative feedback.' }),
           ],
           edges: [
             E('ins', 'insr', 'act', 'binds'), E('insr', 'irs', 'act', 'pTyr972', { lo: [-18, -2] }), E('insr', 'aps', 'act'), E('insr', 'giv', 'act'),
@@ -112,7 +112,7 @@
             E('pdk1', 'akt', 'act', 'Thr308', { lo: [-26, 0] }), E('mtorc2', 'akt', 'act', 'Ser473', { lo: [26, 0] }), E('akt', 'out', 'act'),
             E('insr', 'nox4', 'act', null, { g: 'fb' }), E('nox4', 'ptp1b', 'inh', null, { g: 'fb' }), E('ptp1b', 'insr', 'fb', 'dephos', { g: 'fb', via: [[250, 128]] }),
             E('cea', 'insr', 'fb', 'internalize', { g: 'fb' }), E('grb10', 'insr', 'fb', null, { g: 'fb' }),
-            E('akt', 'mtorc1', 'act', null, { g: 'fb' }), E('mtorc1', 'irs', 'fb', 'S6K1 Ser-P', { g: 'fb', via: [[640, 208], [420, 208]] }), E('mtorc1', 'grb10', 'act', 'stabilises', { g: 'fb', lo: [-44, 60] }),
+            E('akt', 'mtorc1', 'act', null, { g: 'fb' }), E('mtorc1', 'irs', 'fb', 'S6K1 Ser-P', { g: 'fb', via: [[640, 208], [420, 208]] }), E('mtorc1', 'grb10', 'act', 'stabilizes', { g: 'fb', lo: [-44, 60] }),
           ],
           steps: [
             { n: ['ins', 'insr'], cap: 'Insulin binds INSR — **one insulin per receptor**.' },
@@ -142,9 +142,9 @@
             N('irs1', 110, 140, 'IRS1', 'kinase', { info: 'IRS1 (not IRS2) is the main substrate in muscle: knocking down IRS1, not IRS2, blocks glucose transport.' }),
             N('pi3k', 110, 205, 'PI3K', 'kinase', { info: 'Wortmannin abolishes insulin-stimulated uptake; deleting p85 subunits impairs (but does not abolish) it.' }),
             N('akt2', 110, 275, 'AKT2', 'kinase', { info: 'AKT2, not AKT1: Akt2⁻/⁻ mice are severely glucose-intolerant; AKT2 knockdown abolishes uptake in human myotubes.' }),
-            N('rac1', 290, 150, 'RAC1 → PAK', 'kinase', { g: 'glut', info: 'Second PI3K route: RAC1-GTP → PAK → **cortical actin remodelling**. Muscle RAC1 knockout blocks uptake even with normal AKT; active RAC1 moves GLUT4 without insulin.' }),
+            N('rac1', 290, 150, 'RAC1 → PAK', 'kinase', { g: 'glut', info: 'Second PI3K route: RAC1-GTP → PAK → **cortical actin remodeling**. Muscle RAC1 knockout blocks uptake even with normal AKT; active RAC1 moves GLUT4 without insulin.' }),
             N('actin', 470, 150, 'Cortical actin\nremodelling', 'process', { g: 'glut' }),
-            N('as160', 290, 220, 'AS160 / TBC1D4\n(+ TBC1D1)', 'kinase', { g: 'glut', info: 'A Rab-GAP that keeps Rabs OFF. AKT phosphorylation (**Thr649**) stops it — insulin "releases the brake". Thr649Ala knock-in mice are glucose-intolerant; a human TBC1D4 truncation causes severe IR; Tbc1d1/Tbc1d4 double KO abolishes uptake.' }),
+            N('as160', 290, 220, 'AS160 / TBC1D4\n(+ TBC1D1)', 'kinase', { g: 'glut', info: 'A Rab-GAP that keeps Rabs OFF. AKT phosphorylation (**Thr649** in mice, Thr642 in humans) stops it — insulin "releases the brake". Thr649Ala knock-in mice are glucose-intolerant; a human TBC1D4 truncation causes severe IR; Tbc1d1/Tbc1d4 double KO abolishes uptake.' }),
             N('rab', 470, 220, 'Rab-GTP\n(RAB8 · 10 · 14)', 'kinase', { g: 'glut' }),
             N('gsv', 640, 185, 'GLUT4 vesicle (GSV)', 'transporter', { g: 'glut' }),
             N('glcO', 660, 28, 'Glucose', 'glc'), N('glut4', 790, 79, 'GLUT4', 'transporter'),
@@ -171,7 +171,7 @@
           steps: [
             { n: ['ins', 'insr', 'irs1', 'pi3k', 'akt2'], cap: 'INSR → **IRS1** → PI3K → **AKT2** (the muscle isoforms that matter).' },
             { n: ['akt2', 'as160', 'rab', 'gsv'], open: ['glut'], cap: 'AKT2 phosphorylates **AS160 (Thr649)** → its GAP turns off → **Rab-GTP** rises → vesicles move.' },
-            { n: ['pi3k', 'rac1', 'actin', 'gsv'], open: ['glut'], cap: 'Parallel route: **RAC1 → actin remodelling** helps vesicles reach the membrane.' },
+            { n: ['pi3k', 'rac1', 'actin', 'gsv'], open: ['glut'], cap: 'Parallel route: **RAC1 → actin remodeling** helps vesicles reach the membrane.' },
             { n: ['gsv', 'glut4', 'glcO', 'g6p'], cap: 'GLUT4 fuses into the membrane → glucose enters → **G6P**.' },
             { n: ['g6p', 'gs', 'gp', 'glycogen'], open: ['glyc'], cap: '**G6P is the main switch:** activates glycogen synthase, inhibits phosphorylase.' },
             { n: ['akt2', 'gsk3', 'pp1', 'phk', 'gs', 'gp'], open: ['glyc'], cap: 'Insulin also dephosphorylates GS & phosphorylase (PP1, ⊣ phosphorylase kinase, ⊣ GSK3) → **net** synthesis.' },
@@ -218,11 +218,11 @@
             N('mtorc1', 320, 355, 'mTORC1 → S6K', 'kinase', { g: 'dnl', info: 'AKT activates mTORC1 by inhibiting TSC2 / PRAS40. S6K is required for SREBP-1c processing. mTORC1 also integrates amino acids.' }),
             N('srebp', 500, 355, 'SREBP-1c', 'tf', { g: 'dnl', info: 'Master lipogenic TF. Insulin ↑ its transcription and cleavage. Slow: nuclear SREBP-1 appears ~8 h after insulin. Liver SREBP-1c overexpression → steatosis; liver Akt2⁻/⁻ ob/ob mice get no steatosis.' }),
             N('dnlg', 680, 355, 'ACC · FAS · GPAT1', 'enzyme', { g: 'dnl', info: 'Acute too: insulin dephosphorylates **ACC Ser79** (maybe via ⊣ AMPK) within minutes. ACC Ser79/212Ala knock-in → constitutive lipogenesis.' }),
-            N('dnl', 860, 355, 'De novo\nlipogenesis', 'process', { g: 'dnl', info: 'A **minor** source of liver fat: ~10% of fasting liver TG output in healthy people, ~25% in NAFLD (vs ~60% re-esterified plasma fatty acid, ~15% diet). Rises with carbohydrate/fructose intake and hyperinsulinemia.' }),
+            N('dnl', 860, 355, 'De novo\nlipogenesis', 'process', { g: 'dnl', info: 'A **minor** source of liver fat: ~10% of fasting liver TG output with low liver fat, ~25% in NAFLD (vs ~60% re-esterified plasma fatty acid, ~15% diet). Rises with carbohydrate/fructose intake and hyperinsulinemia.' }),
             N('prot', 320, 425, 'Protein synthesis\n(S6K · 4E-BP1/2)', 'process', { g: 'prot', info: 'mTORC1 drives translation of 5′-TOP mRNAs and phosphatidylcholine for VLDL.' }),
             N('foxo1', 330, 520, 'FOXO1 (+ PGC1α)', 'tf', { g: 'foxo', info: 'AKT phosphorylates Thr24, Ser256, Ser319 → nuclear exclusion. Liver FOXO1 KO → fasting hypoglycemia. Deleting Foxo1 **rescues** HGP in liver INSR, IRS1/2 or AKT1/2 knockouts.' }),
             N('genes', 700, 520, 'G6PC · PCK1\n(gluconeogenic capacity)', 'gene', { g: 'foxo', info: 'Slow: 2 h of insulin does not change G6pc protein. Control analysis suggests non-transcriptional mechanisms dominate day-to-day.' }),
-            N('crtc2', 330, 570, 'CREB · CRTC2', 'tf', { g: 'foxo', info: 'Drives the **early-fasting** gene programme (FOXO1/PGC1α takes over later). Insulin → SIK2 → CRTC2 Ser171-P → exported & degraded. CRTC2 KO → fasting hypoglycemia.' }),
+            N('crtc2', 330, 570, 'CREB · CRTC2', 'tf', { g: 'foxo', info: 'Drives the **early-fasting** gene program (FOXO1/PGC1α takes over later). Insulin → SIK2 → CRTC2 Ser171-P → exported & degraded. CRTC2 KO → fasting hypoglycemia.' }),
             N('sik2', 95, 570, 'SIK2', 'kinase', { g: 'foxo' }),
           ],
           edges: [
@@ -242,7 +242,7 @@
             { n: ['glc', 'glut2', 'gck', 'g6p', 'gys2', 'glycogen', 'akt'], open: ['gly'], cap: '**Fast:** insulin ↑ glucokinase; G6P allosterically turns on **GYS2**.' },
             { n: ['pp1', 'gp', 'gys2', 'glycogen', 'glut2', 'gsk3', 'akt'], open: ['gly'], cap: 'PP1 flips GS on / phosphorylase off; **glucose itself** inhibits phosphorylase.' },
             { n: ['akt', 'foxo1', 'genes', 'gck'], open: ['foxo'], cap: '**Slow:** AKT expels FOXO1 from the nucleus → ↓ G6PC/PCK1, ↑ GCK.' },
-            { n: ['akt', 'sik2', 'crtc2', 'genes'], open: ['foxo'], cap: 'CRTC2 runs the early-fasting programme; insulin → SIK2 shuts it off.' },
+            { n: ['akt', 'sik2', 'crtc2', 'genes'], open: ['foxo'], cap: 'CRTC2 runs the early-fasting program; insulin → SIK2 shuts it off.' },
             { n: ['akt', 'mtorc1', 'srebp', 'dnlg', 'dnl', 'g6p'], open: ['dnl'], cap: '**Slow:** AKT + mTORC1 → **SREBP-1c** → ACC/FAS/GPAT1 → de novo lipogenesis (GCK adds substrate push).' },
             { n: ['mtorc1', 'prot'], open: ['prot'], cap: 'mTORC1 also drives protein synthesis — and feeds back on IRS1/INSR (Fig. 1).' },
             { n: ['note'], cap: 'But the **fast** drop in gluconeogenesis is mostly **indirect**, via fat (Section III).' },
@@ -255,7 +255,7 @@
               h('div.hd', '↑ Glucose'), h('div.n', 'helps'), h('div.y', 'Necessary & sufficient')),
             IRV.cap('**Net** glycogen storage needs **both** high insulin and high glucose. Insulin is permissive; portal glucose is the driver.')),
           h('div', h('h4', 'Where liver triglyceride comes from'), lipidSources(),
-            IRV.cap('**DNL is a minor route.** ~10% of liver TG output in healthy fasting people (Lambert 2014), ~25% in NAFLD (Donnelly 2005); it roughly doubles after carbohydrate meals in insulin-resistant people (Petersen 2007). Most liver fat is **re-esterified plasma fatty acid**. Insulin also lowers plasma TG within 15 min.'))),
+            IRV.cap('**DNL is a minor route.** ~10% of fasting VLDL-TG in people with low liver fat (Lambert 2014), ~25% in NAFLD (Donnelly 2005); it roughly doubles after carbohydrate meals in insulin-resistant people (Petersen 2007). Most liver fat is **re-esterified plasma fatty acid**. Insulin also lowers plasma TG within 15 min.'))),
         IRV.fig('Fig. 3', 'Where glucose output comes from during a fast', 'Glycogenolysis decays exponentially; gluconeogenesis stays flat for ~48 h. Plasma glucose during a fast signals how much liver glycogen is left.',
           h('div.irv-31', IRV.mini({
             w: 520, h: 230, x: [4, 48], y: [0, 14], xt: [[4, '4'], [12, '12'], [24, '24'], [36, '36'], [48, '48 h']], yt: [[0, '0'], [5, '5'], [10, '10']], xl: 'Fasting duration (h)', yl: 'HGP (µmol/kg/min)',
@@ -330,8 +330,8 @@
     },
   });
   function lipidSources() {
-    // Healthy: ~10% of fasting VLDL-TG palmitate from DNL (Lambert 2014). NAFLD: 59% plasma NEFA, 26% DNL, 15% diet (Donnelly 2005).
-    const W = 470, rows = [['Healthy', [['Plasma fatty acids + diet', 90, 'var(--m-fat)'], ['DNL', 10, 'var(--tr3)']]], ['NAFLD', [['Re-esterified plasma fatty acids', 59, 'var(--m-fat)'], ['DNL', 26, 'var(--tr3)'], ['Diet', 15, 'var(--tr5)']]]];
+    // Low liver fat (metabolically matched controls): ~10% of fasting VLDL-TG palmitate from DNL (Lambert 2014). NAFLD: 59% plasma NEFA, 26% DNL, 15% diet (Donnelly 2005).
+    const W = 470, rows = [['Control', [['Plasma fatty acids + diet', 90, 'var(--m-fat)'], ['DNL', 10, 'var(--tr3)']]], ['NAFLD', [['Re-esterified plasma fatty acids', 59, 'var(--m-fat)'], ['DNL', 26, 'var(--tr3)'], ['Diet', 15, 'var(--tr5)']]]];
     const svg = EP.s('svg', { class: 'irv-mini', viewBox: `0 0 ${W} 112` });
     rows.forEach(([name, segs], r) => {
       const y = 4 + r * 56, x0 = 62, bw = W - x0;
@@ -455,7 +455,7 @@
             N('hyp', 640, 50, 'Compensatory\nhyperinsulinemia', 'hormone', { info: 'Also from ↓ hepatic insulin clearance. Chronic hyperinsulinemia itself worsens IR (e.g. receptor downregulation).' }),
             N('beta', 570, 190, 'β-cell stress\n(glucose & lipid toxicity)', 'bad'),
             N('t2d', 805, 190, 'β-cell failure →\nfasting hyperglycemia = T2D', 'bad'),
-            N('wl', 330, 190, 'Weight loss /\nhypocaloric diet', 'good', { info: 'Reverses insulin resistance even in T2D (e.g. ~8 kg loss normalised liver fat and hepatic insulin sensitivity).' }),
+            N('wl', 330, 190, 'Weight loss /\nhypocaloric diet', 'good', { info: 'Reverses insulin resistance even in T2D (e.g. ~8 kg loss normalized liver fat and hepatic insulin sensitivity).' }),
           ],
           edges: [E('over', 'ir', 'bad'), E('ir', 'hyp', 'act', 'compensate', { bend: -26 }), E('hyp', 'ir', 'fb', 'worsens', { bend: -26 }), E('hyp', 'beta', 'bad', 'workload', { lo: [34, 0] }), E('beta', 't2d', 'bad'), E('wl', 'ir', 'inh', 'reversible')],
         }),

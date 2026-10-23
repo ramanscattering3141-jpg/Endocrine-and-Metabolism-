@@ -23,7 +23,7 @@
   ];
   D.pit.sys = [
     { id: 'metab', label: 'Liver & glucose' }, { id: 'adipose', label: 'Adipose' }, { id: 'muscle', label: 'Muscle' }, { id: 'bone', label: 'Bone & growth' },
-    { id: 'cv', label: 'Heart & vessels' }, { id: 'kidney', label: 'Kidney & water' }, { id: 'brain', label: 'Brain & behaviour' }, { id: 'immune', label: 'Immune system' },
+    { id: 'cv', label: 'Heart & vessels' }, { id: 'kidney', label: 'Kidney & water' }, { id: 'brain', label: 'Brain & behavior' }, { id: 'immune', label: 'Immune system' },
     { id: 'repro', label: 'Reproduction' }, { id: 'breast', label: 'Breast' }, { id: 'skin', label: 'Skin & hair' },
   ];
   D.pit.axisNames = { gh: 'GH – IGF-1', prl: 'Prolactin', hpa: 'HPA', hpt: 'HPT', hpg: 'HPG', post: 'Posterior pituitary' };
@@ -40,7 +40,7 @@
     E('prl', 'breast', 'Milk protein synthesis, lobuloalveolar development', 'PRL-R → JAK2/STAT5.'),
     E('prl', 'repro', '⊣ GnRH → ↓ LH/FSH → anovulation, ↓ testosterone', 'Prolactin inhibits kisspeptin/GnRH neurons — lactational amenorrhea (Molina Ch3, Kovacs Ch5).'),
     E('prl', 'bone', '↓ bone density (via hypogonadism)', 'Secondary to sex-steroid deficiency.'),
-    E('prl', 'brain', 'Maternal behaviour; short-loop ↑ hypothalamic dopamine', 'PRL receptors on TIDA neurons (Freeman 2000).'),
+    E('prl', 'brain', 'Maternal behavior; short-loop ↑ hypothalamic dopamine', 'PRL receptors on TIDA neurons (Freeman 2000).'),
     E('cort', 'metab', '↑ gluconeogenesis, ↑ glycogen storage, insulin resistance', 'GR → PEPCK/G6Pase; post-receptor insulin antagonism (Molina Ch10).'),
     E('cort', 'adipose', 'Permissive lipolysis; visceral fat with excess', 'Synergy with catecholamines and GH.'),
     E('cort', 'muscle', '↑ proteolysis, proximal myopathy with excess', 'Supplies amino acids for gluconeogenesis.'),

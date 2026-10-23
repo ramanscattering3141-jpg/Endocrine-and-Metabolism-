@@ -102,14 +102,14 @@
       e('glucose', 'beta', 'stim', { why: 'β-cells sense glucose through GLUT/glucokinase metabolism.' }),
       e('glucose', 'alpha', 'inhib', { why: 'Low glucose stimulates α-cells.' }),
       e('glucose', 'hypo', 'inhib', { why: 'Falling glucose activates hypothalamic glucose-sensing neurons.' }),
-      e('glucose', 'neuro', 'inhib', { via: [[120, 528], [920, 528]], why: 'Neuroglycopenia as glucose approaches ~50 mg/dL: confusion, blurred vision, difficulty speaking; then seizures or loss of consciousness (Molina Ch7).' }),
-      e('beta', 'insulin', 'stim', { why: 'The first defense: insulin secretion falls as glucose falls.' }),
-      e('alpha', 'glucagon', 'stim', { why: 'Glucagon release — an immediate counterregulatory response (Molina Ch7).' }),
+      e('glucose', 'neuro', 'inhib', { via: [[120, 528], [920, 528]], why: 'Neuroglycopenic symptoms and measurable cognitive dysfunction begin near 2.8 mmol/L (about 50 mg/dL; Mitrakou 1991): confusion, blurred vision, difficulty speaking; lower still, seizures or loss of consciousness (Molina Ch7).' }),
+      e('beta', 'insulin', 'stim', { why: 'The first defense: insulin secretion falls as glucose falls, while glucose is still in the normal range.' }),
+      e('alpha', 'glucagon', 'stim', { why: 'Glucagon release — an immediate counterregulatory response (Molina Ch7). Glucagon and epinephrine secretion start at about 3.6–3.8 mmol/L (65–69 mg/dL), above the threshold for symptoms (Schwartz 1987; Mitrakou 1991).' }),
       e('insulin', 'glucagon', 'inhib', { w: 0.4, why: 'Intra-islet insulin restrains α-cells; the fall in insulin during hypoglycemia helps release glucagon.' }),
       e('hypo', 'sns', 'stim', { why: 'Sympathetic nervous system activation (Molina Ch7).' }),
       e('sns', 'epinephrine', 'stim', { why: 'Adrenal medullary epinephrine release.' }),
       e('sns', 'glucagon', 'stim', { w: 0.3, why: 'Autonomic input also stimulates glucagon.' }),
-      e('hypo', 'gh', 'stim', { w: 0.5, why: 'GH and cortisol follow, acting over hours (Molina Ch7). Insulin-induced hypoglycemia is used to test GH and ACTH reserve (Kovacs Ch4–5).' }),
+      e('hypo', 'gh', 'stim', { w: 0.5, why: 'GH secretion starts at about 3.7 mmol/L (66 mg/dL) and cortisol at about 3.2 mmol/L (58 mg/dL) (Schwartz 1987), but their effects take hours (Molina Ch7). Insulin-induced hypoglycemia is used to test GH and ACTH reserve (Kovacs Ch4–5).' }),
       e('hypo', 'cortisol', 'stim', { w: 0.5, why: 'Via CRH/ACTH.' }),
       e('glucagon', 'hgo', 'stim', { why: 'Glucagon: rapid glycogenolysis, then gluconeogenesis.' }),
       e('epinephrine', 'hgo', 'stim', { w: 0.5, why: 'Epinephrine stimulates hepatic glucose output (β2, α1).' }),
@@ -120,13 +120,13 @@
       e('epinephrine', 'lipol', 'stim', { w: 0.6, why: 'Catecholamines are the main activators of lipolysis in humans (Kovacs Ch15).' }),
       e('insulin', 'lipol', 'inhib', { w: 0.6, why: 'Removal of insulin inhibition.' }),
       e('gh', 'lipol', 'stim', { w: 0.3 }),
-      e('sns', 'auto', 'stim', { why: 'Autonomic warning symptoms appear as glucose falls to about 54 mg/dL (Molina Ch7).' }),
+      e('sns', 'auto', 'stim', { why: 'Autonomic warning symptoms (tremor, palpitations, sweating, anxiety) begin at about 3.0–3.2 mmol/L (53–58 mg/dL) — below the hormonal thresholds, above the neuroglycopenic one (Schwartz 1987; Mitrakou 1991).' }),
     ],
     steps: [
       { n: ['glucose', 'beta', 'insulin'], t: '**First:** insulin secretion falls.' },
       { n: ['alpha', 'glucagon', 'hgo', 'insulin'], t: '**Then glucagon**, released immediately (helped by the fall in intra-islet insulin) → hepatic glycogenolysis.' },
       { n: ['hypo', 'sns', 'epinephrine', 'hgo', 'muscle', 'lipol', 'auto'], t: '**Sympathoadrenal response:** epinephrine raises hepatic output, limits muscle uptake and drives lipolysis; autonomic symptoms warn the person.' },
-      { n: ['hypo', 'gh', 'cortisol', 'hgo', 'lipol'], t: '**Hours later:** GH and cortisol sustain glucose production and fat mobilization.' },
+      { n: ['hypo', 'gh', 'cortisol', 'hgo', 'lipol'], t: '**Over hours:** GH and cortisol, released at similar thresholds, sustain glucose production and fat mobilization.' },
       { n: ['glucose', 'neuro'], t: '**If defenses fail:** neuroglycopenia.' },
     ],
     clinical: [
@@ -134,7 +134,7 @@
       { id: 'hypopit', label: 'Hypopituitarism / adrenal insufficiency', caps: { gh: 0.1, cortisol: 0.1 }, desc: 'Loss of GH and cortisol impairs prolonged counterregulation; fasting hypoglycemia can occur (Kovacs Ch13).', chain: ['↓ GH, ↓ cortisol', '↓ sustained gluconeogenesis'], highlight: ['gh', 'cortisol', 'hgo'] },
       { id: 'adrenal_med', label: 'Loss of adrenal medulla / sympathetic response', caps: { epinephrine: 0.15, sns: 0.2 }, desc: 'Glucagon still acts, but warning symptoms and epinephrine support are reduced.', chain: ['↓ epinephrine', '↓ warning symptoms'], highlight: ['sns', 'epinephrine', 'auto'] },
     ],
-    refs: ['molina7', 'kovacs15', 'kovacs4', 'kovacs5'],
+    refs: ['molina7', 'kovacs15', 'kovacs4', 'kovacs5', 'schwartz1987', 'mitrakou1991'],
   };
 
   // ======================================================================
@@ -323,7 +323,7 @@
       e('dehyd', 'glucose', 'stim', { w: 0.45, curve: 40, why: 'As volume and GFR fall, less glucose is excreted, so glucose climbs further — a vicious cycle.' }),
       e('ketones', 'acid', 'stim', { w: 0.9, why: 'Acetoacetate and β-hydroxybutyrate are acids.' }),
       e('glucose', 'osm', 'stim', { w: 0.5, why: 'Glucose is osmotically active.' }),
-      e('dehyd', 'osm', 'stim', { w: 0.6, why: 'Lethargy and confusion as osmolality rises past ~300 mOsm/L; coma above ~330 (Molina Ch7).' }),
+      e('dehyd', 'osm', 'stim', { w: 0.6, why: 'Confusion, then stupor and coma, track the rise in effective osmolality (2 × Na⁺ + glucose, both in mmol/L) (Molina Ch7; Umpierrez 2024).' }),
     ],
     steps: [
       { n: ['insulin', 'lipol', 'ffa', 'keto', 'ketones', 'acid'], t: '**Ketosis needs FFA.** Lipolysis is suppressed by very little insulin, so ketoacidosis requires near-absolute insulin deficiency (DKA, usually type 1).' },
@@ -332,11 +332,11 @@
       { n: ['dehyd', 'glucose', 'osm'], t: '**Vicious cycle in HHS:** falling GFR lets glucose climb further; osmolality rises → confusion and coma.' },
     ],
     clinical: [
-      { id: 'dka', label: 'DKA (absolute insulin deficiency, type 1)', inputs: { insulin: 0.03, stress: 4, water: 1 }, desc: 'Absent insulin plus high counterregulatory hormones: unrestrained lipolysis → ketoacidosis, with hyperglycemia and dehydration (Molina Ch7).', chain: ['no insulin', '↑↑ lipolysis → FFA', '↑↑ ketogenesis', 'ketoacidosis'], highlight: ['insulin', 'lipol', 'ffa', 'keto', 'ketones', 'acid'] },
-      { id: 'hhs', label: 'HHS (relative insulin deficiency, type 2, poor water intake)', inputs: { insulin: 0.7, stress: 1.5, water: 0.25 }, desc: 'Enough insulin to restrain lipolysis, so ketones stay modest, but hyperglycemia and water loss become extreme: hyperosmolar, "nonketotic" state (Kovacs Ch15; Molina Ch7).', chain: ['some insulin', 'lipolysis restrained', 'hyperglycemia + water deficit', 'hyperosmolality → coma'], highlight: ['glucose', 'diuresis', 'dehyd', 'osm', 'water'] },
+      { id: 'dka', label: 'DKA (severe insulin deficiency, usually type 1)', inputs: { insulin: 0.03, stress: 4, water: 1 }, desc: 'Absent insulin plus high counterregulatory hormones: unrestrained lipolysis → ketoacidosis, with hyperglycemia and dehydration (Molina Ch7). It also occurs in type 2 diabetes, and with SGLT2 inhibitors glucose may be near normal (euglycemic DKA). **Diagnosis** (2024 consensus): glucose ≥11.1 mmol/L (200 mg/dL) or known diabetes; β-hydroxybutyrate ≥3.0 mmol/L (or urine ketones 2+ or more); pH <7.3 and/or bicarbonate <18 mmol/L (Umpierrez 2024).', chain: ['no insulin', '↑↑ lipolysis → FFA', '↑↑ ketogenesis', 'ketoacidosis'], highlight: ['insulin', 'lipol', 'ffa', 'keto', 'ketones', 'acid'] },
+      { id: 'hhs', label: 'HHS (relative insulin deficiency, type 2, poor water intake)', inputs: { insulin: 0.7, stress: 1.5, water: 0.25 }, desc: 'Enough insulin to restrain lipolysis, so ketones stay modest, but hyperglycemia and water loss become extreme: a hyperosmolar state with little ketosis (Kovacs Ch15; Molina Ch7). **Diagnosis** (2024 consensus): glucose ≥33.3 mmol/L (600 mg/dL); effective osmolality >300 mOsm/kg (or total >320); β-hydroxybutyrate <3.0 mmol/L; pH ≥7.3 and bicarbonate ≥15 mmol/L (Umpierrez 2024). The two can overlap (mixed DKA–HHS).', chain: ['some insulin', 'lipolysis restrained', 'hyperglycemia + water deficit', 'hyperosmolality → coma'], highlight: ['glucose', 'diuresis', 'dehyd', 'osm', 'water'] },
       { id: 'tx', label: 'Treatment: insulin + fluids', inputs: { insulin: 1.6, stress: 1.2, water: 2 }, desc: 'Insulin stops lipolysis and ketogenesis and lowers glucose output; fluids restore volume and GFR. (Insulin also drives K⁺ into cells — see Potassium balance.)', chain: ['insulin + fluids', '↓ ketogenesis', '↓ glucose', 'osmolality normalizes'] },
     ],
-    refs: ['molina7', 'kovacs15'],
+    refs: ['molina7', 'kovacs15', 'umpierrez2024'],
   };
 
   // ======================================================================
@@ -375,7 +375,7 @@
       e('gnrh', 'fsh', 'inhib', { w: 0.3, via: [[515, 80], [515, 300]], why: 'Relatively less FSH at fast pulse frequency → high LH:FSH.' }),
       e('lh', 'theca', 'stim', { w: 0.8, why: 'LH drives theca-cell androgen synthesis.' }),
       e('theca', 'andro', 'stim', { w: 0.85 }),
-      e('andro', 'arrest', 'stim', { w: 0.6, why: 'Ovarian hyperandrogenism with multiple follicular cysts and hyperplastic theca/stroma (Kovacs Ch8).' }),
+      e('andro', 'arrest', 'stim', { w: 0.6, why: 'Ovarian hyperandrogenism with many small arrested antral follicles (the "cysts" of polycystic ovaries) and hyperplastic theca/stroma (Kovacs Ch8).' }),
       e('fsh', 'arrest', 'inhib', { w: 0.5, why: 'FSH is needed for a dominant follicle to mature.' }),
       e('arrest', 'anov', 'stim', { w: 0.85 }),
       e('anov', 'prog', 'inhib', { w: 0.85, why: 'No ovulation → no corpus luteum → little progesterone.' }),
@@ -384,7 +384,7 @@
       e('andro', 'estrone', 'stim', { w: 0.6, via: [[835, 210], [835, 450]], why: 'Much of the estrogen in chronic anovulation is estrone from peripheral aromatization of androstenedione (Kovacs Ch8).' }),
       e('fat', 'estrone', 'stim', { w: 0.5, via: [[135, 475], [835, 475]], why: 'Adipose tissue aromatizes androgens.' }),
       e('fat', 'ir', 'stim', { w: 0.5 }),
-      e('anov', 'mens', 'stim', { w: 0.85, why: 'Chronic anovulation causes >80% of amenorrhea (Kovacs Ch8).' }),
+      e('anov', 'mens', 'stim', { w: 0.85, why: 'Chronic anovulation is a leading cause of oligo-/amenorrhea and infertility (Kovacs Ch8).' }),
     ],
     steps: [
       { n: ['gnrh', 'lh', 'fsh'], t: '**Fast GnRH pulses** favor LH over FSH.' },
@@ -394,10 +394,10 @@
       { n: ['andro', 'hirs', 'estrone', 'fat', 'mens'], t: '**Consequences:** hirsutism, acyclic estrone, menstrual irregularity and infertility.' },
     ],
     clinical: [
-      { id: 'pcos', label: 'PCOS (insulin resistance + adiposity)', inputs: { ir: 3, fat: 2.5 }, desc: 'Oligo-/amenorrhea, high androgens and multiple ovarian cysts; insulin resistance and increased GnRH pulsatility with high LH are frequently associated (Molina Ch9).', chain: ['↑ GnRH pulses, ↑ LH', '↑ theca androgens', 'follicle arrest', 'anovulation', '↓ progesterone'], highlight: ['gnrh', 'lh', 'theca', 'andro', 'arrest', 'anov', 'prog'] },
+      { id: 'pcos', label: 'PCOS (insulin resistance + adiposity)', inputs: { ir: 3, fat: 2.5 }, desc: 'Diagnosed by the Rotterdam criteria — two of three, once other causes are excluded: ovulatory dysfunction (oligo-/amenorrhea), clinical or biochemical hyperandrogenism, and polycystic ovarian morphology on ultrasound or a raised AMH in adults (Teede 2023). Insulin resistance and increased GnRH pulsatility with high LH are frequently associated (Molina Ch9).', chain: ['↑ GnRH pulses, ↑ LH', '↑ theca androgens', 'follicle arrest', 'anovulation', '↓ progesterone'], highlight: ['gnrh', 'lh', 'theca', 'andro', 'arrest', 'anov', 'prog'] },
       { id: 'ocp', label: 'Oral contraceptive', caps: { lh: 0.3, fsh: 0.4, gnrh: 0.4, mens: 0.2 }, autos: { anov: 4, prog: 6 }, desc: 'The pill supplies progestin and suppresses gonadotropins, so ovarian androgen production falls — used to treat ovarian hirsutism (Kovacs Ch8). Ovulation stays suppressed (by design) and bleeding becomes regular withdrawal bleeding.', chain: ['progestin + estrogen', '↓ GnRH/LH', '↓ theca androgens', '↓ hirsutism'], highlight: ['lh', 'theca', 'andro', 'hirs'] },
       { id: 'wt', label: 'Weight loss / insulin sensitization', inputs: { ir: 0.6, fat: 0.7 }, desc: 'Lower insulin and adiposity weaken the androgen drive.', chain: ['↓ insulin', '↓ theca androgens'], highlight: ['ir', 'theca', 'andro'] },
     ],
-    refs: ['molina9', 'kovacs8', 'kovacs5', 'molina3'],
+    refs: ['molina9', 'kovacs8', 'kovacs5', 'molina3', 'teede2023'],
   };
 })();

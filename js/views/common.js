@@ -23,9 +23,9 @@
         h('div.askbox', h('h3', 'Start with a question'), ask.map(([q, href]) => h('a', { href }, q)))),
       h('h2', 'Signature features'),
       h('div.tiles',
-        tile('Simulator', 'Metabolic flux simulator', 'Six organs, live fuel fluxes, 17 knobs, fed/fasting/exercise/stress presets — every change explained.', 'flux'),
+        tile('Simulator', 'Metabolic flux simulator', 'Eight organs, live fuel fluxes, 17 knobs, fed/fasting/exercise/stress presets — every change explained.', 'flux'),
         tile('Global mode', 'What happens if…?', 'Pick a perturbation and get an interactive, mechanism-by-mechanism cascade.', 'whatif'),
-        tile('Prototype', 'Insulin → GLUT4', 'Animated cell: receptor, IRS, PI3K, Akt, AS160, vesicle fusion — plus organ-level effects.', 'insulin'),
+        tile('Animation', 'Insulin → GLUT4', 'Animated cell: receptor, IRS, PI3K, Akt, AS160, vesicle fusion — plus organ-level effects.', 'insulin'),
         tile('Explorer', 'Follow the molecule', 'Click glucose, then follow it to G6P, pyruvate, acetyl-CoA… anywhere it can go.', 'follow'),
         tile('Feedback', 'Endocrine axes', 'HPA, HPT, HPG, GH, prolactin, ADH, RAAS: lesions, tumors and drugs with live time-courses.', 'hpa'),
         tile('Map', 'Steroidogenesis', 'Knock out an enzyme and watch flux re-route across the three cortical zones.', 'steroidogenesis'),
@@ -226,7 +226,7 @@
 
   // ------------------------------------------------------------------ feedback
   V.feedback = function (el) {
-    el.appendChild(EP.pageHeader('Feedback loops', 'Perturb one hormone: which way does the rest of the loop move, and how fast?', { section: 'Endocrine Fundamentals', lede: 'Three canonical motifs, each a live simulation. Long-loop vs short-loop feedback are labelled on the HPA and GH axes; open those pages to see them in a real axis.' }));
+    el.appendChild(EP.pageHeader('Feedback loops', 'Perturb one hormone: which way does the rest of the loop move, and how fast?', { section: 'Endocrine Fundamentals', lede: 'Three canonical motifs, each a live simulation. Long-loop vs short-loop feedback are labeled on the HPA and GH axes; open those pages to see them in a real axis.' }));
     [['motif_neg', 'Negative feedback: the default control mode (Kovacs Ch1)'], ['motif_pos', 'Positive feedback: the oxytocin / Ferguson reflex'], ['motif_ff', 'Feed-forward: incretins']].forEach(([id, t]) => {
       el.appendChild(h('h2', t));
       const api = EP.mountNetwork(el, id);
@@ -348,10 +348,10 @@
     el.appendChild(h('div.card', h('h3', 'How the simulations work — and what they do not claim'), h('ul.keypoints', { html: [
       'All simulators use one engine: each variable\'s target value is a product of its regulators raised to signed exponents (stimulatory > 0, inhibitory < 0). With every input at its reference value every variable equals 1, so all outputs read as **relative to a reference state** (overnight-fasted adult; normal axis).',
       'Exponents encode the **direction and approximate relative strength** of documented regulatory links from the sources. They are not fitted kinetic constants, so outputs are **qualitative**: "↑↑ markedly increased", not "4.2 µmol/kg/min".',
-      'Arrow thickness in the flux simulator shows **modelled regulatory drive** on a pathway. A pathway being activated is not the same as it carrying a particular measured flux; where real human numbers are quoted (half-lives, Shulman 1990, Owen 1967) the source is named.',
+      'Arrow thickness in the flux simulator shows **modeled regulatory drive** on a pathway. A pathway being activated is not the same as it carrying a particular measured flux; where real human numbers are quoted (half-lives, Shulman 1990, Owen 1967) the source is named.',
       'Steady states are found with a damped Newton solver; axis pages integrate first-order dynamics so you can watch the order in which hormones change (time units are arbitrary).',
       'Simplifications are deliberate: e.g. one "hepatic acetyl-CoA" pool, one plasma amino-acid pool, glucagon effects on adipose omitted, menstrual-cycle curves drawn schematically. Where textbooks and newer literature differ (e.g., how much of insulin\'s suppression of gluconeogenesis is indirect via adipose lipolysis; the acute glycogenolytic vs gluconeogenic effect of glucagon), the app presents the modern view and names the source.',
-      'Williams Textbook of Endocrinology was requested as a primary source but was not among the uploaded files; the uploaded Molina *Endocrine Physiology* 5e is used as the second primary textbook instead.',
+      '*Williams Textbook of Endocrinology* is listed as further reading; no statement here is attributed to a specific Williams chapter. Molina *Endocrine Physiology* 5e is the second primary textbook.',
     ].map((t) => `<li>${EP.md(t)}</li>`).join('') })));
   };
 })();

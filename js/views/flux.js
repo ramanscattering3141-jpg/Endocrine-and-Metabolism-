@@ -50,7 +50,7 @@
     filt.appendChild(EP.animSwitch(svg));
     container.appendChild(svg);
     container.appendChild(EP.colorKey([
-      ['Line colour = what is carried (click to filter, above)', Object.values(GROUPS).map((g) => ({ line: g.color, w: 4, dash: g === GROUPS.hor ? '6 4' : null, label: g.label }))],
+      ['Line color = what is carried (click to filter, above)', Object.values(GROUPS).map((g) => ({ line: g.color, w: 4, dash: g === GROUPS.hor ? '6 4' : null, label: g.label }))],
       ['Line style', [{ line: 'var(--m-glc)', w: 7, label: 'Thicker = more flux / signal' }, { line: 'var(--m-glc)', w: 2, label: 'Thin, faded = low' }, { line: 'var(--m-hor)', w: 3, dash: '6 4', label: 'Dashed = hormone signal' }, { dot: 'var(--flowc)', label: 'Moving dots = direction of flow' }]],
       ['Organ process bars', [{ fill: 'color-mix(in srgb, var(--up) 70%, transparent)', label: 'Bar to the right = above reference' }, { fill: 'color-mix(in srgb, var(--dn) 70%, transparent)', label: 'Bar to the left = below reference' }]],
       ['Regions', [{ fill: 'color-mix(in srgb, #e05a6a 12%, var(--panel))', stroke: 'color-mix(in srgb, #e05a6a 45%, var(--line))', label: 'Blood (central vessel)' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: 'Organ' }]],
@@ -99,7 +99,7 @@
         portEls.push({ g, line, flow, tag, bind, grp, organ: k });
       });
     });
-    // stagger tag heights so neighbouring tags never collide
+    // stagger tag heights so neighboring tags never collide
     ['top', 'bottom'].forEach((row) => {
       const list = portEls.filter((p) => (ORG[p.organ].y < BLOOD.y) === (row === 'top')).sort((a, b) => a.tag.transform.baseVal[0].matrix.e - b.tag.transform.baseVal[0].matrix.e);
       let lastRight = -1e9, alt = 0;
@@ -109,7 +109,7 @@
         lastRight = m.e + w / 2;
       });
     });
-    // break each line where it meets a tag (its own, or a wider neighbour's), so no line runs under writing
+    // break each line where it meets a tag (its own, or a wider neighbor's), so no line runs under writing
     portEls.forEach((p) => {
       const d0 = p.line.getAttribute('d').match(/-?[\d.]+/g).map(Number); // [x, y1, x, y2]
       const x = d0[0], ya = d0[1], yb = d0[3], dn = yb > ya;
@@ -287,8 +287,8 @@
       const edges = [];
       // Orthogonal routing that only uses the empty space: the 34-px gutter between columns and
       // the 8-px gap between rows, so no arrow ever runs across a box or its label.
-      const BW = colW - 34, BH = 26, gutter = (x) => x + BW + 17; // centre of the gutter right of a column at x
-      const rowGap = (y) => y + BH + (rowH - BH) / 2;             // centre of the gap below a row at y
+      const BW = colW - 34, BH = 26, gutter = (x) => x + BW + 17; // center of the gutter right of a column at x
+      const rowGap = (y) => y + BH + (rowH - BH) / 2;             // center of the gap below a row at y
       const lane = (a, b, k) => {
         const off = ((k % 5) - 2) * 3;
         const x1 = a[0] + BW, y1 = a[1] + BH / 2, x2 = b[0], y2 = b[1] + BH / 2;
@@ -362,7 +362,7 @@
     const tabs = h('div.tabs'); const slot = h('div');
     const list = [['states', 'Fed vs. fasting (any two states)'], ['hormones', 'Insulin vs. glucagon vs. cortisol'], ['failure', 'Primary vs. secondary failure'], ['glut4', 'Insulin vs. exercise GLUT4']];
     list.forEach(([id, l]) => tabs.appendChild(h('button', { 'data-id': id, onclick: () => show(id) }, l)));
-    el.append(tabs, slot, EP.colorKey([['Mini bars in the tables', [{ fill: 'var(--up)', label: 'Bar to the right of centre = above the overnight-fasted reference' }, { fill: 'var(--dn)', label: 'Bar to the left = below reference' }, { sym: '↑↓', color: 'var(--muted)', label: 'Symbol column = difference between the two states' }]]], { compact: true }));
+    el.append(tabs, slot, EP.colorKey([['Mini bars in the tables', [{ fill: 'var(--up)', label: 'Bar to the right of center = above the overnight-fasted reference' }, { fill: 'var(--dn)', label: 'Bar to the left = below reference' }, { sym: '↑↓', color: 'var(--muted)', label: 'Symbol column = difference between the two states' }]]], { compact: true }));
     function show(id) {
       tabs.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.id === id));
       EP.teardown(); EP.clear(slot);

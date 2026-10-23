@@ -46,16 +46,16 @@
     // AMH
     r.amh = testis && o.amh ? 1 : 0;
     r.mull = r.amh && o.amhr ? 'regressed' : 'present';
-    if (testis && (!o.amh || !o.amhr)) r.notes.push('**AMH or AMH-receptor defect:** müllerian ducts persist (uterus and tubes) in an otherwise virilized male — persistent müllerian duct syndrome.');
+    if (testis && (!o.amh || !o.amhr)) r.notes.push('**AMH or AMH-receptor defect:** Müllerian ducts persist (uterus and tubes) in an otherwise virilized male — persistent Müllerian duct syndrome.');
     // testosterone from testis
     const ts = TSYN[o.tsyn];
     let t = 0;
-    if (testis) { t = o.lhr ? ts.t : 0.21; if (!o.lhr) r.notes.push('**LH-receptor inactivation (Leydig cell hypoplasia):** fetal testosterone production depends on hCG/LH acting on Leydig cells; without the receptor, virilization fails. AMH is normal, so müllerian ducts regress.'); }
+    if (testis) { t = o.lhr ? ts.t : 0.21; if (!o.lhr) r.notes.push('**LH-receptor inactivation (Leydig cell hypoplasia):** fetal testosterone production depends on hCG/LH acting on Leydig cells; without the receptor, virilization fails. AMH is normal, so Müllerian ducts regress.'); }
     if (ts.note && testis) r.notes.push(ts.note);
     r.t = t;
     // adrenal / placental androgens
     let adr = 0;
-    if (o.cah !== 'none') { adr = 0.65; r.notes.push(`**${CAH[o.cah]}:** cortisol synthesis is impaired, ACTH rises, and precursors are diverted to adrenal androgens${o.cah === 'cyp11b1' ? '; 11-deoxycorticosterone excess causes hypertension' : ''}. ${o.k === 'xx' || o.k === 'x0' ? 'In a 46,XX fetus this virilizes the external genitalia; internal female structures are unaltered and wolffian derivatives do not form.' : 'In a 46,XY infant genitalia are male; the risk is adrenal crisis (salt wasting in classic 21-hydroxylase deficiency).'}`); }
+    if (o.cah !== 'none') { adr = 0.65; r.notes.push(`**${CAH[o.cah]}:** cortisol synthesis is impaired, ACTH rises, and precursors are diverted to adrenal androgens${o.cah === 'cyp11b1' ? '; 11-deoxycorticosterone excess causes hypertension' : ''}. ${o.k === 'xx' || o.k === 'x0' ? 'In a 46,XX fetus this virilizes the external genitalia; internal female structures are unaltered and Wolffian derivatives do not form.' : 'In a 46,XY infant genitalia are male; the risk is adrenal crisis (salt wasting in classic 21-hydroxylase deficiency).'}`); }
     if (!o.arom) { adr = Math.max(adr, 0.55); r.notes.push('**Placental aromatase deficiency:** the placenta cannot convert fetal/maternal androgen precursors to estrogens, so a 46,XX fetus (and the mother) are virilized. At puberty: hypergonadotropic hypogonadism, polycystic ovaries and progressive virilization (Kovacs Ch7).'); }
     if (ts.xx && !testis) adr = Math.max(adr, ts.xx * 0.6);
     r.adr = adr;
@@ -68,8 +68,8 @@
     r.dht = (o.srd ? 1 : 0.15) * Math.min(1, andro);
     const ext = r.dht * arv;
     r.ext = ext >= 0.75 ? 'male' : ext >= 0.22 ? 'ambiguous' : 'female';
-    if (!o.srd && testis && t > 0.5) { r.ext = 'ambiguous'; r.extNote = 'predominantly female at birth (small phallus, urogenital sinus); wolffian ducts are normal'; r.notes.push('**5α-reductase 2 deficiency:** testosterone itself virilizes the wolffian ducts, but DHT is required for the external genitalia and prostate. At puberty, virilization progresses (Kovacs Ch7).'); }
-    if (o.ar === 'none' && testis) r.notes.push('**Complete androgen insensitivity:** testosterone is high, but no tissue responds. Wolffian ducts regress (no androgen action) and müllerian ducts regress (AMH acts) → **neither duct system**; female external genitalia with a short blind vagina; testes in abdomen, inguinal canal or labia.');
+    if (!o.srd && testis && t > 0.5) { r.ext = 'ambiguous'; r.extNote = 'predominantly female at birth (small phallus, urogenital sinus); Wolffian ducts are normal'; r.notes.push('**5α-reductase 2 deficiency:** testosterone itself virilizes the Wolffian ducts, but DHT is required for the external genitalia and prostate. At puberty, virilization progresses (Kovacs Ch7).'); }
+    if (o.ar === 'none' && testis) r.notes.push('**Complete androgen insensitivity:** testosterone is high, but no tissue responds. Wolffian ducts regress (no androgen action) and Müllerian ducts regress (AMH acts) → **neither duct system**; female external genitalia with a short blind vagina; testes in abdomen, inguinal canal or labia.');
     if (o.ar === 'partial' && testis) r.notes.push('**Partial androgen insensitivity:** a spectrum from ambiguous genitalia to undervirilized male (hypospadias).');
     // adrenal status
     r.adrenal = 'normal';
@@ -94,7 +94,7 @@
   V.sexdiff = function (el, params) {
     el.appendChild(EP.pageHeader('Sexual differentiation', 'Chromosomal sex → gonadal sex → phenotypic sex: which signal decides each step, and what happens when one fails?', {
       section: 'Reproductive',
-      lede: 'Jost\'s paradigm: the embryo follows the female pathway unless a **testis** forms (SRY) and secretes **AMH** (Sertoli cells: müllerian regression) and **testosterone** (Leydig cells: wolffian ducts; converted to **DHT** for external genitalia and prostate). Female differentiation does not require ovarian hormones (Kovacs Ch7).' }));
+      lede: 'Jost\'s paradigm: the embryo follows the female pathway unless a **testis** forms (SRY) and secretes **AMH** (Sertoli cells: Müllerian regression) and **testosterone** (Leydig cells: Wolffian ducts; converted to **DHT** for external genitalia and prostate). Female differentiation does not require ovarian hormones (Kovacs Ch7).' }));
     const o = Object.assign({}, DEF);
     const presets = h('div.statebar', PRESETS.map(([l, p]) => h('button.chip', { onclick: (ev) => { Object.assign(o, DEF, p); presets.querySelectorAll('.chip').forEach((b) => b.classList.toggle('on', b === ev.target)); syncCtl(); upd(); } }, l)));
     const sel = (key, opts, label) => { const x = h('select.btn', { onchange: () => { o[key] = x.value; upd(); } }, Object.entries(opts).map(([v, t]) => h('option', { value: v }, t))); x.__k = key; return h('label.sd-ctl', h('span', label), x); };
@@ -133,9 +133,9 @@
     };
     const out = h('div.sd-out');
     el.append(presets, ctl, h('div.card.sd-wrap', h('div.anim-bar', EP.animSwitch(svg)), svg, EP.colorKey([
-      ['Box colour', [{ fill: 'color-mix(in srgb, var(--c-stim) 14%, var(--panel))', stroke: 'var(--c-stim)', rx: 6, label: 'Hormone made / signal present' }, { fill: 'color-mix(in srgb, #f4c430 18%, var(--panel))', stroke: '#d4a017', rx: 6, label: 'Partial / low' }, { fill: 'var(--panel)', stroke: 'var(--faint)', dash: '5 3', rx: 6, label: 'Absent / regressed' }, { fill: 'color-mix(in srgb, var(--c-drug) 12%, var(--panel))', stroke: 'var(--c-drug)', rx: 6, label: 'Abnormal androgen excess' }, { fill: 'color-mix(in srgb, var(--c-inhib) 12%, var(--panel))', stroke: 'var(--c-inhib)', rx: 6, label: 'Gonadal failure (streak)' }]],
+      ['Box color', [{ fill: 'color-mix(in srgb, var(--c-stim) 14%, var(--panel))', stroke: 'var(--c-stim)', rx: 6, label: 'Hormone made / signal present' }, { fill: 'color-mix(in srgb, #f4c430 18%, var(--panel))', stroke: '#d4a017', rx: 6, label: 'Partial / low' }, { fill: 'var(--panel)', stroke: 'var(--faint)', dash: '5 3', rx: 6, label: 'Absent / regressed' }, { fill: 'color-mix(in srgb, var(--c-drug) 12%, var(--panel))', stroke: 'var(--c-drug)', rx: 6, label: 'Abnormal androgen excess' }, { fill: 'color-mix(in srgb, var(--c-inhib) 12%, var(--panel))', stroke: 'var(--c-inhib)', rx: 6, label: 'Gonadal failure (streak)' }]],
       ['Structures', [{ fill: 'color-mix(in srgb, var(--tr1) 14%, var(--panel))', stroke: 'var(--tr1)', rx: 6, label: 'Male-type structure present' }, { fill: 'color-mix(in srgb, var(--tr3) 14%, var(--panel))', stroke: 'var(--tr3)', rx: 6, label: 'Female-type structure present' }]],
-      ['Arrows', [{ line: 'var(--c-stim)', marker: 'stim', label: 'Active signal' }, { line: 'var(--c-inhib)', marker: 'inhib', label: 'AMH causes regression' }, { line: 'var(--faint)', dash: '4 4', label: 'No signal' }, { dot: 'var(--c-hormone)', label: 'Hormone travelling' }]],
+      ['Arrows', [{ line: 'var(--c-stim)', marker: 'stim', label: 'Active signal' }, { line: 'var(--c-inhib)', marker: 'inhib', label: 'AMH causes regression' }, { line: 'var(--faint)', dash: '4 4', label: 'No signal' }, { dot: 'var(--c-hormone)', label: 'Hormone traveling' }]],
     ])), out);
     const dots = [];
     function setBox(b, val, sub, cls) { b.v.textContent = val; b.v2.textContent = sub || ''; b.g.setAttribute('class', 'sd-box ' + (cls || '')); }
@@ -155,8 +155,8 @@
       Object.entries(L).forEach(([k, p]) => p.classList.toggle('on', !!act[k]));
       out.innerHTML = `<div class="grid2"><div class="card"><h3>Phenotype</h3><table class="cmp-table small">
         <tr><td>Gonad</td><td><b>${{ testis: 'Testes', ovary: 'Ovaries', streak: 'Streak gonads' }[R.gonad]}</b></td></tr>
-        <tr><td>Internal (müllerian)</td><td>${R.mull === 'present' ? 'Uterus, fallopian tubes, upper vagina' : 'Absent'}</td></tr>
-        <tr><td>Internal (wolffian)</td><td>${R.wolff === 'developed' ? 'Epididymis, vas deferens, seminal vesicles' : R.wolff === 'partial' ? 'Partially developed' : 'Absent'}</td></tr>
+        <tr><td>Internal (Müllerian)</td><td>${R.mull === 'present' ? 'Uterus, fallopian tubes, upper vagina' : 'Absent'}</td></tr>
+        <tr><td>Internal (Wolffian)</td><td>${R.wolff === 'developed' ? 'Epididymis, vas deferens, seminal vesicles' : R.wolff === 'partial' ? 'Partially developed' : 'Absent'}</td></tr>
         <tr><td>External genitalia</td><td><b>${{ male: 'Male', ambiguous: 'Ambiguous', female: 'Female' }[R.ext]}</b>${R.extNote ? ` — ${R.extNote}` : ''}</td></tr>
         <tr><td>Adrenal</td><td>${R.adrenal === 'affected' ? '<span class="bad">Affected — see note</span>' : R.adrenal === 'possible' ? 'Possible insufficiency (SF-1)' : 'Normal'}</td></tr>
         <tr><td>Puberty</td><td>${EP.md(R.puberty)}</td></tr></table></div>

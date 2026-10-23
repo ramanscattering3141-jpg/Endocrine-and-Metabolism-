@@ -301,7 +301,7 @@
       return svg;
     };
     const body = h('div.ck-body', groups.filter((g) => g && g[1] && g[1].length).map(([title, items]) => h('div.ck-group', h('div.ck-title', title), h('div.ck-items', items.map((it) => h('span.ck-item', sw(it), h('span', it.label)))))));
-    return h('details.ckey' + (o.compact ? '.compact' : ''), { open: o.open !== false }, h('summary', o.title || 'Colour key'), body);
+    return h('details.ckey' + (o.compact ? '.compact' : ''), { open: o.open !== false }, h('summary', o.title || 'Color key'), body);
   };
 
   /**
@@ -746,7 +746,7 @@
       const COMP = { blood: 'Blood / extracellular fluid', membrane: 'Plasma membrane', cytosol: 'Cell interior', mito: 'Mitochondrion / specialized compartment', nucleus: 'Nucleus', organ: 'Organ or tissue region' };
       const EDGE = { stim: 'Stimulates (+)', inhib: 'Inhibits (⊣)', rxn: 'Is converted to', transport: 'Moves / is transported', endo: 'Travels in blood', fb: 'Negative feedback', fbpos: 'Positive feedback', bind: 'Binds' };
       const k = EP.colorKey([
-        ['Box colour = kind of molecule', types.filter((x) => x !== 'note').map((x) => ({ node: x, label: TYPE_LABEL[x] || x }))],
+        ['Box color = kind of molecule', types.filter((x) => x !== 'note').map((x) => ({ node: x, label: TYPE_LABEL[x] || x }))],
         ['Arrows', edges.map((x) => ({ edge: x, label: EDGE[x] || x }))],
         ['Shaded regions', comps.map((x) => ({ comp: x, label: COMP[x] || x }))],
         model || opts.extModel ? ['Activity (vs. reference)', [{ node: 'kinase', cls: 'up', label: 'Brighter fill, ↑ badge = more active' }, { node: 'kinase', cls: 'dn', label: 'Pale, dashed = less active' }, { sym: '↑↑', color: 'var(--up)', label: 'marked increase' }, { sym: '↓', color: 'var(--dn)', label: 'decrease' }, { line: 'var(--c-stim)', w: 4.5, label: 'Thick, fast-flowing arrow = more traffic' }]] : null,

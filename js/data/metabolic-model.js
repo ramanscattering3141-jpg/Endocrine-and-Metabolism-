@@ -44,7 +44,7 @@
       T('epi', 0.5, 'β-adrenergic stimulation of α-cells (counter-regulation).'),
       T('insulin', -0.35, 'Insulin (and Zn²⁺, somatostatin) restrains α-cells.'),
       T('fastdur', 0.15, 'Glucagon rises during early fasting (autonomic input, loss of meal-related suppression) and then drifts back as amino-acid supply falls in prolonged starvation.'),
-      T('betacap', -0.3, 'Loss of β-cells removes the very high intra-islet insulin that restrains neighbouring α-cells → hyperglucagonemia despite hyperglycemia (Unger & Cherrington 2012).'),
+      T('betacap', -0.3, 'Loss of β-cells removes the very high intra-islet insulin that restrains neighboring α-cells → hyperglucagonemia despite hyperglycemia (Unger & Cherrington 2012).'),
       T('glp1', -0.2, 'GLP-1 suppresses glucagon (largely via somatostatin/insulin).'),
     ], { ent: 'glucagon' }),
     N('epi', 'Epinephrine', 'adrenal', 'hormone', [
@@ -77,7 +77,7 @@
     N('ffa', 'Plasma free fatty acids', 'systemic', 'systemic', [
       T('lipolysis', 0.85, 'Adipose lipolysis is the source of plasma NEFA.'), T('esterif', -0.25, 'Adipose re-esterification traps fatty acids back as triglyceride (insulin-promoted).'), T('fat', 0.15, 'LPL "spillover" from dietary chylomicrons.'),
     ], { ent: 'ffa' }),
-    N('glycerol', 'Plasma glycerol', 'systemic', 'systemic', [T('lipolysis', 1, 'Every lipolysed triglyceride releases one glycerol (adipocytes cannot re-use it — little glycerol kinase).')], { ent: 'glycerol' }),
+    N('glycerol', 'Plasma glycerol', 'systemic', 'systemic', [T('lipolysis', 1, 'Every lipolyzed triglyceride releases one glycerol (adipocytes cannot re-use it — little glycerol kinase).')], { ent: 'glycerol' }),
     N('ketones', 'Plasma ketone bodies', 'systemic', 'systemic', [T('ketogenesis', 1.4, 'Hepatic production.'), T('fastdur', 0.8, 'Ketones accumulate over days of fasting (production outpaces clearance; Cahill 2006).')], { ent: 'ketones' }),
     N('lactate', 'Plasma lactate', 'systemic', 'systemic', [T('lactrel', 0.8, 'Release from glycolytic tissues (muscle, red cells).'), T('gng', -0.2, 'Hepatic uptake for gluconeogenesis (Cori cycle).')], { ent: 'lactate' }),
     N('aa', 'Plasma amino acids', 'systemic', 'systemic', [
@@ -99,12 +99,12 @@
       T('h_ins', -0.35, 'Insulin opposes cAMP signaling (PDE activation, PP1/PP2A) and counteracts PKA targets.'),
     ], { ent: 'pka' }),
     N('foxo1', 'FOXO1 (nuclear)', 'liver', 'signal', [T('h_ins', -0.8, 'Akt phosphorylates FOXO1 → 14-3-3 binding → nuclear exclusion (Matsumoto 2007).')], { ent: 'foxo1' }),
-    N('creb', 'CREB/CRTC2', 'liver', 'signal', [T('h_pka', 0.8, 'PKA phosphorylates CREB and dephosphorylates/activates CRTC2.')], { ent: 'creb' }),
+    N('creb', 'CREB/CRTC2', 'liver', 'signal', [T('h_pka', 0.8, 'PKA phosphorylates CREB and, by inhibiting salt-inducible kinases, lets CRTC2 become dephosphorylated and active (Koo 2005).')], { ent: 'creb' }),
     N('gngenes', 'PEPCK / G6Pase expression', 'liver', 'enzyme', [
       T('foxo1', 0.45, 'FOXO1 + PGC-1α drive PCK1/G6PC transcription.'), T('creb', 0.45, 'CREB/CRTC2 → PGC-1α and PEPCK/G6Pase (cAMP response elements).'),
       T('cortisol', 0.35, 'Glucocorticoid receptor binds GREs in the PEPCK promoter.'),
     ], { ent: 'pepck', tau: 4 }),
-    N('f26bp', 'Fructose-2,6-bisphosphate', 'liver', 'signal', [T('h_pka', -0.8, 'PKA phosphorylates PFK-2/FBPase-2 → kinase off, phosphatase on (Pilkis & Granner).'), T('h_ins', 0.3, 'Insulin favours the dephosphorylated (kinase-active) form.')], { ent: 'f26bp' }),
+    N('f26bp', 'Fructose-2,6-bisphosphate', 'liver', 'signal', [T('h_pka', -0.8, 'PKA phosphorylates PFK-2/FBPase-2 → kinase off, phosphatase on (Pilkis & Granner).'), T('h_ins', 0.3, 'Insulin favors the dephosphorylated (kinase-active) form.')], { ent: 'f26bp' }),
     N('chrebp', 'ChREBP', 'liver', 'signal', [T('glucose', 1.2, 'Glucose metabolites (xylulose-5-P, G6P) activate ChREBP. In insulin resistance, glucose that muscle fails to take up is diverted to the liver and feeds lipogenesis (Petersen 2007).'), T('carb', 0.15, 'Dietary sugar (especially fructose) reaching the liver via the portal vein.'), T('h_pka', -0.4, 'PKA phosphorylation inactivates ChREBP.')], { ent: 'chrebp' }),
     N('srebp', 'SREBP-1c', 'liver', 'signal', [T('insulin', 0.8, 'Portal insulin → INSR → mTORC1 → SREBP-1c transcription and processing. In insulin resistance compensatory hyperinsulinemia **raises** SREBP-1c and lipogenesis even while insulin fails to suppress glucose production ("selective" hepatic insulin resistance; Brown & Goldstein 2008). Petersen & Shulman (2018) attribute this less to a true branch-point in signaling than to very high portal insulin plus substrate supply (glucose diverted from muscle, FFA).'), T('h_ins', 0.1, 'Akt-dependent component (shared with glycogen synthesis), which is impaired in hepatic insulin resistance.'), T('aa', 0.25, 'Amino acids activate mTORC1 → SREBP-1c independently of insulin (nutrient-driven lipogenesis).')], { ent: 'srebp1c' }),
     N('h_gk', 'Glucokinase activity', 'liver', 'enzyme', [T('h_ins', 0.4, 'Insulin induces GCK transcription.'), T('glucose', 0.8, 'Glucose releases glucokinase from GKRP (nucleus → cytosol).')], { ent: 'gk' }),
@@ -128,7 +128,7 @@
     N('citrate', 'Cytosolic citrate', 'liver', 'signal', [T('h_glycolysis', 0.5, 'Glycolytic carbon → pyruvate → acetyl-CoA → citrate exported when energy is abundant.'), T('pdh_h', 0.3, 'PDH supplies acetyl-CoA for citrate.')], { ent: 'citrate', override: true }),
     N('acc', 'Acetyl-CoA carboxylase', 'liver', 'enzyme', [
       T('h_ins', 0.15, 'Insulin dephosphorylates ACC (Molina Ch7).'), T('h_pka', -0.4, 'PKA phosphorylation inhibits ACC (glucagon).'),
-      T('ampk_h', -0.6, 'AMPK phosphorylates ACC (Ser79/Ser221) — classic energy-stress brake.'), T('citrate', 0.4, 'Citrate allosterically activates (polymerizes) ACC.'), T('srebp', 0.6, 'SREBP-1c increases ACC expression.'), T('chrebp', 0.3, 'ChREBP increases ACC expression.'),
+      T('ampk_h', -0.6, 'AMPK phosphorylates ACC1 (Ser79) and ACC2 — the classic energy-stress brake.'), T('citrate', 0.4, 'Citrate allosterically activates (polymerizes) ACC.'), T('srebp', 0.6, 'SREBP-1c increases ACC expression.'), T('chrebp', 0.3, 'ChREBP increases ACC expression.'),
     ], { ent: 'acc' }),
     N('malonyl', 'Malonyl-CoA', 'liver', 'signal', [T('acc', 1, 'Product of ACC.')], { ent: 'malonylcoa', override: true }),
     N('cpt1', 'CPT-1 (mitochondrial entry)', 'liver', 'enzyme', [T('malonyl', -1, 'Malonyl-CoA inhibits CPT-1 (McGarry 1977) — when making fat, do not burn it.')], { ent: 'cpt1' }),

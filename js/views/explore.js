@@ -10,7 +10,7 @@
   // ------------------------------------------------------------------ body map component
   EP.mountBodyMap = function (container, opts = {}) {
     // Ring layout: organs sit on an ellipse (roughly head-to-toe, clockwise); only the selected
-    // organ's (or hormone's) connections are drawn, bundled through the centre, so lines never tangle.
+    // organ's (or hormone's) connections are drawn, bundled through the center, so lines never tangle.
     const W = 920, H = 640, CX = 460, CY = 318, RX = 350, RY = 252;
     const ORDER = ['brain', 'pituitary', 'thyroid', 'parathyroid', 'heart', 'adrenal', 'medulla', 'kidney', 'bone', 'immune', 'testis', 'muscle', 'adipose', 'gut', 'pancreas', 'liver'];
     const O = D.body.organs;
@@ -21,14 +21,14 @@
     svg.appendChild(EP.svgDefs());
     container.append(h('div.anim-bar', EP.animSwitch(svg)), svg);
     container.appendChild(EP.colorKey([
-      ['Line colour = type of message', [{ line: 'var(--c-hormone)', dash: '10 5', label: 'Hormone' }, { line: 'var(--c-transport)', label: 'Metabolite / fuel' }, { line: 'var(--c-tf)', dash: '3 3', label: 'Adipokine / cytokine' }, { line: 'var(--accent2)', dash: '1 4', label: 'Neural' }]],
+      ['Line color = type of message', [{ line: 'var(--c-hormone)', dash: '10 5', label: 'Hormone' }, { line: 'var(--c-transport)', label: 'Metabolite / fuel' }, { line: 'var(--c-tf)', dash: '3 3', label: 'Adipokine / cytokine' }, { line: 'var(--accent2)', dash: '1 4', label: 'Neural' }]],
       ['Organs', [{ fill: 'color-mix(in srgb, var(--c-hormone) 18%, var(--panel))', stroke: 'var(--c-hormone)', sw: 2.4, label: 'Selected (source)' }, { fill: 'color-mix(in srgb, var(--accent) 14%, var(--panel))', stroke: 'var(--accent)', sw: 2.4, label: 'Partner organ' }, { fill: 'var(--panel)', stroke: 'var(--line)', label: 'Not involved (faded)' }]],
-      ['Labels & dots', [{ dot: 'var(--c-hormone)', label: 'Moving dot = direction of the message (coloured by type)' }, { fill: 'var(--panel)', stroke: 'var(--c-transport)', rx: 9, label: 'Label pill sits next to the receiving organ' }]],
+      ['Labels & dots', [{ dot: 'var(--c-hormone)', label: 'Moving dot = direction of the message (colored by type)' }, { fill: 'var(--panel)', stroke: 'var(--c-transport)', rx: 9, label: 'Label pill sits next to the receiving organ' }]],
     ]));
     const gWeb = s('g', { class: 'web' }), gL = s('g'), gO = s('g'), gT = s('g'), gP = s('g');
     svg.append(gWeb, gL, gO, gT, gP);
     svg.appendChild(s('text', { x: CX, y: CY - 6, 'text-anchor': 'middle', class: 'ring-hint' }, opts.hint || 'Select an organ'));
-    svg.appendChild(s('text', { x: CX, y: CY + 12, 'text-anchor': 'middle', class: 'ring-hint sub' }, 'its signals are drawn through the centre'));
+    svg.appendChild(s('text', { x: CX, y: CY + 12, 'text-anchor': 'middle', class: 'ring-hint sub' }, 'its signals are drawn through the center'));
     const curve = (a, b) => { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2; const qx = CX + (mx - CX) * 0.22, qy = CY + (my - CY) * 0.22; return `M${a[0]},${a[1]} Q${qx},${qy} ${b[0]},${b[1]}`; };
     // faint background web (context only)
     D.body.links.forEach((L) => { if (P(L.from) && P(L.to)) gWeb.appendChild(s('path', { d: curve(P(L.from), P(L.to)), class: 'web-line' })); });
@@ -222,8 +222,8 @@
 
   // ------------------------------------------------------------------ calcium page
   V.calciumPage = function (el, params) {
-    el.appendChild(EP.pageHeader('Calcium, phosphate, PTH, vitamin D & FGF23', 'Change serum calcium, PTH, vitamin D, phosphate or FGF23: how do bone, kidney and gut respond — and which effects are direct versus mediated by calcitriol?', { section: 'Calcium, Bone & Mineral', lede: 'Arrows labelled **direct** are PTH1R actions in kidney and bone; arrows labelled **via 1,25-D** reach the gut only through calcitriol.' }));
-    const api = EP.mountNetwork(el, 'calcium', { wide: true }); // full width: the map has many labelled arrows
+    el.appendChild(EP.pageHeader('Calcium, phosphate, PTH, vitamin D & FGF23', 'Change serum calcium, PTH, vitamin D, phosphate or FGF23: how do bone, kidney and gut respond — and which effects are direct versus mediated by calcitriol?', { section: 'Calcium, Bone & Mineral', lede: 'Arrows labeled **direct** are PTH1R actions in kidney and bone; arrows labeled **via 1,25-D** reach the gut only through calcitriol.' }));
+    const api = EP.mountNetwork(el, 'calcium', { wide: true }); // full width: the map has many labeled arrows
     if (params.preset) api.choose(params.preset);
     el.appendChild(h('h2', 'Nephron & enterocyte detail'));
     EP.mountPathway(el, 'kidneymineral', { height: 480, focus: params.focus });
@@ -250,7 +250,7 @@
     const day = h('input', { type: 'range', min: 1, max: 28, value: 8, 'aria-label': 'Cycle day' });
     const phase = h('span.phase-pill', '');
     const info = h('div.grid2');
-    el.append(h('div.card', h('div.daybar', h('strong', 'Day'), day, phase), cv, EP.colorKey([['Hormones (each on its own relative scale)', ['LH', 'FSH', 'Estradiol', 'Progesterone', 'Inhibin B'].map((k, i) => ({ line: `var(--tr${i})`, label: k }))], ['Background & marker', [{ fill: 'rgba(255,107,125,.25)', label: 'Menses' }, { fill: 'rgba(110,168,255,.22)', label: 'Luteal phase' }, { line: 'var(--text)', w: 1.2, dash: '4 4', label: 'Selected day' }]]], { compact: true }), h('p.small.muted', 'Schematic curve shapes summarising Kovacs Ch8 / Molina Ch9 (relative scale for each hormone; not measured concentrations). The real cycle length and amplitudes vary.'), info));
+    el.append(h('div.card', h('div.daybar', h('strong', 'Day'), day, phase), cv, EP.colorKey([['Hormones (each on its own relative scale)', ['LH', 'FSH', 'Estradiol', 'Progesterone', 'Inhibin B'].map((k, i) => ({ line: `var(--tr${i})`, label: k }))], ['Background & marker', [{ fill: 'rgba(255,107,125,.25)', label: 'Menses' }, { fill: 'rgba(110,168,255,.22)', label: 'Luteal phase' }, { line: 'var(--text)', w: 1.2, dash: '4 4', label: 'Selected day' }]]], { compact: true }), h('p.small.muted', 'Schematic curve shapes summarizing Kovacs Ch8 / Molina Ch9 (relative scale for each hormone; not measured concentrations). The real cycle length and amplitudes vary.'), info));
     const g = (x, m, sd) => Math.exp(-0.5 * Math.pow((x - m) / sd, 2));
     const curves = {
       LH: (d) => 0.12 + 0.95 * g(d, 14, 0.9) + 0.05 * g(d, 7, 5),

@@ -59,7 +59,7 @@
   V.cascades = function (el, params) {
     el.appendChild(EP.pageHeader('Signaling cascades', 'From receptor to result: which branch of a hormone\'s signaling network produces which effect — and how fast?', {
       section: 'Endocrine Fundamentals',
-      lede: 'Each map runs left to right: **receptor → transducer → messenger → kinase → effector → result**. Coloured bands are **branches** (for insulin: PI3K–Akt, mTORC1 and Ras–MAPK). Raise or lower the hormone, or pick a disease, drug or mutation to see which outputs change. Time tags show whether an effect appears in seconds, minutes, hours or days.' }));
+      lede: 'Each map runs left to right: **receptor → transducer → messenger → kinase → effector → result**. Colored bands are **branches** (for insulin: PI3K–Akt, mTORC1 and Ras–MAPK). Raise or lower the hormone, or pick a disease, drug or mutation to see which outputs change. Time tags show whether an effect appears in seconds, minutes, hours or days.' }));
     const list = EP.cascadeOrder;
     const tabs = h('div.statebar', list.map(([id, l]) => h('button.chip', { 'data-id': id, onclick: () => show(id) }, l)));
     const slot = h('div'); let cur = null;

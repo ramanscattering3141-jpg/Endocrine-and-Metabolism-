@@ -128,7 +128,7 @@
     return EP.mountAnim(container, {
       key: [
         ['Releasing hormones (dots on the portal route)', RH.map((r) => ({ dot: r.col, label: r.name + (r.inhib ? ' (inhibits)' : '') + ' → ' + CELLS[r.cell][2] }))],
-        ['Other moving dots', [{ dot: 'var(--c-hormone)', label: 'Trophic hormone leaving a cell (coloured like its cell)' }, { dot: 'var(--c-inhib)', label: 'Target-gland hormone feeding back' }, { dot: 'var(--accent)', label: 'ADH / oxytocin granule (with neurophysin)' }, { dot: 'var(--c-messenger)', label: 'Osmoreceptor signal' }]],
+        ['Other moving dots', [{ dot: 'var(--c-hormone)', label: 'Trophic hormone leaving a cell (colored like its cell)' }, { dot: 'var(--c-inhib)', label: 'Target-gland hormone feeding back' }, { dot: 'var(--accent)', label: 'ADH / oxytocin granule (with neurophysin)' }, { dot: 'var(--c-messenger)', label: 'Osmoreceptor signal' }]],
         ['Vessels & regions', [{ line: '#e05561', w: 3, label: 'Artery / capillary plexus' }, { line: '#b04a8a', w: 4, label: 'Hypophyseal portal veins' }, { line: '#6b7fd6', w: 4, label: 'Venous drainage → systemic blood' }, { line: 'var(--accent)', w: 3, label: 'Magnocellular axons (stalk)' }, { band: 'var(--accent2)', label: 'Hypothalamus / stalk' }, { band: 'var(--c-hormone)', label: 'Anterior lobe' }, { band: 'var(--accent)', label: 'Posterior lobe' }]],
         ['Pituitary cells', [{ fill: 'color-mix(in srgb, var(--tr2) 70%, var(--panel))', stroke: 'var(--tr2)', rx: 9, label: 'Bright = secreting' }, { fill: 'color-mix(in srgb, var(--tr2) 12%, var(--panel))', stroke: 'var(--tr2)', rx: 9, label: 'Faint = quiet' }]],
       ],
@@ -501,7 +501,7 @@
           readout(st) { return st.step >= 5 ? `<div class="why-head">PEPCK protein made</div><div class="a-meter"><i style="width:${Math.round(protein / 24 * 100)}%"></i></div>` : ''; },
           caption(st) {
             if (st.tog.mife && st.step >= 2) return '**Mifepristone** occupies GR but does not trigger the active conformation. The receptor stays cytosolic and genes are not induced.';
-            if (st.tog.dex) return '**Dexamethasone** is not bound by CBG, so far more of it is free and it is a potent GR agonist. It is also not a substrate for 11β-HSD2, so it is used to suppress ACTH (dexamethasone suppression test).';
+            if (st.tog.dex) return '**Dexamethasone** binds CBG poorly, so far more of it is free, and it is a potent GR agonist with little mineralocorticoid activity. It barely cross-reacts in cortisol assays, so it can suppress ACTH while the patient\'s own cortisol is measured (dexamethasone suppression test).';
             return null;
           },
           reset() { P.clearDots(); protein = 0; protEls.forEach((e) => e.remove()); protEls.length = 0; R.forEach((r) => { r.s = 'apo'; r.x = r.hx; r.y = r.hy; }); },

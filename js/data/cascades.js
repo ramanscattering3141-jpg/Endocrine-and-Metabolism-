@@ -1,5 +1,5 @@
 /* Signaling cascade definitions for EP.mountCascade (js/core/cascade.js).
- * Columns are stages; rows are grouped into coloured branches. 'R' is the receptor bar.
+ * Columns are stages; rows are grouped into colored branches. 'R' is the receptor bar.
  * Links: [from, to, '+'|'-', why, {w, fb}] — fb links are drawn but not propagated. */
 (function () {
   const C = window.EP.cascades = window.EP.cascades || {};
@@ -34,7 +34,7 @@
       N('foxo1', 'FOXO1 (nuclear)', 3, 2, 'pi3k', 'tf', { ent: 'foxo1', why: 'Akt phosphorylation → 14-3-3 binding → nuclear exclusion.' }),
       N('pepck', 'PCK1 / G6PC transcription', 4, 2, 'pi3k', 'gene', { ent: 'pepck', why: 'FOXO1 with PGC-1α drives the gluconeogenic genes.' }),
       N('o_gng', 'Gluconeogenic enzyme capacity (liver)', 5, 2, 'pi3k', 'outcome', { time: 'hours', why: 'Slow: transcriptional control matters most during longer fasts (Petersen & Shulman 2018).' }),
-      N('pde3b', 'PDE3B', 3, 3, 'pi3k', 'enzyme', { ent: 'pde3b', why: 'Insulin activates phosphodiesterase 3B, which hydrolyses cAMP. Akt phosphorylates PDE3B Ser273, but that site and Akt2 are dispensable for antilipolysis; signalosome assembly and phosphatases (PP2A → HSL, PP1 → perilipin) also contribute (Petersen & Shulman 2018).' }),
+      N('pde3b', 'PDE3B', 3, 3, 'pi3k', 'enzyme', { ent: 'pde3b', why: 'Insulin activates phosphodiesterase 3B, which hydrolyzes cAMP. Akt phosphorylates PDE3B Ser273, but that site and Akt2 are dispensable for antilipolysis; signalosome assembly and phosphatases (PP2A → HSL, PP1 → perilipin) also contribute (Petersen & Shulman 2018).' }),
       N('pka', 'cAMP → PKA', 4, 3, 'pi3k', 'messenger', { ent: 'pka', why: 'Less cAMP → less PKA. This opposes glucagon and catecholamine signaling.' }),
       N('o_lipol', 'Lipolysis (ATGL, HSL)', 5, 3, 'pi3k', 'outcome', { time: 'minutes', ent: 'hsl', why: 'Antilipolysis is the most insulin-sensitive action in the body; it falls at insulin levels lower than those needed to stimulate glucose uptake.' }),
       N('foxo3', 'FOXO3 (muscle)', 3, 4, 'pi3k', 'tf', { why: 'Akt phosphorylates FOXO3, keeping it out of the nucleus.' }),
@@ -66,7 +66,7 @@
       ['akt', 'as160', '-', 'Akt phosphorylates AS160 (Thr642), inhibiting its GAP activity.'], ['as160', 'rab', '-', 'AS160 keeps Rabs GDP-bound.'], ['rab', 'o_glut4', '+', 'Rab-GTP drives vesicle translocation and fusion.'],
       ['akt', 'gsk3', '-', 'Akt phosphorylates GSK3α/β (Ser21/Ser9).'], ['gsk3', 'gs', '-', 'GSK3 phosphorylates and inhibits glycogen synthase.'], ['gs', 'o_glyc', '+'],
       ['akt', 'foxo1', '-', 'Nuclear exclusion of FOXO1.'], ['foxo1', 'pepck', '+', 'FOXO1/PGC-1α drive PCK1 and G6PC.'], ['pepck', 'o_gng', '+'],
-      ['akt', 'pde3b', '+', 'Insulin activates PDE3B (Akt phosphorylates Ser273, though this site is dispensable).'], ['pde3b', 'pka', '-', 'PDE3B hydrolyses cAMP.'], ['pka', 'o_lipol', '+', 'PKA phosphorylates HSL and perilipin-1.'],
+      ['akt', 'pde3b', '+', 'Insulin activates PDE3B (Akt phosphorylates Ser273, though this site is dispensable).'], ['pde3b', 'pka', '-', 'PDE3B hydrolyzes cAMP.'], ['pka', 'o_lipol', '+', 'PKA phosphorylates HSL and perilipin-1.'],
       ['akt', 'foxo3', '-'], ['foxo3', 'atro', '+'], ['atro', 'o_prot', '+'],
       ['akt', 'gk', '+', 'Hepatic glucokinase expression requires Akt (Petersen & Shulman 2018).'], ['gk', 'o_hglu', '+'],
       ['akt', 'tsc', '-', 'Akt phosphorylates TSC2 (and PRAS40), releasing the brake on mTORC1.'], ['tsc', 'rheb', '-', 'TSC2 is a GAP for Rheb.'], ['rheb', 'mtor', '+'], ['aa', 'mtor', '+', 'Amino acids recruit mTORC1 to the lysosome via Rag GTPases.'],
@@ -80,7 +80,7 @@
       { id: 'downreg', label: 'Receptor down-regulation (chronic hyperinsulinemia)', force: { R: 0.35 }, desc: 'Chronic hyperinsulinemia of obesity increases receptor endocytosis and degradation, lowering receptor number. Calorie restriction lowers insulin, restores receptors and reduces insulin resistance (Kovacs Ch3).' },
       { id: 'irab', label: 'Anti-insulin-receptor autoantibodies', force: { R: 0.1 }, desc: 'Rare autoantibodies block insulin binding (and can mimic insulin). They usually cause desensitization, extreme insulin resistance and hyperinsulinemia; occasionally hypoglycemia (Kovacs Ch3).' },
       { id: 'pi3ki', label: 'PI3Kα inhibitor (e.g., alpelisib)', force: { pi3k: 0 }, desc: 'Blocking PI3K removes GLUT4 translocation, glycogen synthesis and FOXO1 restraint. Hyperglycemia is a characteristic side effect of PI3Kα inhibitors used in cancer therapy.' },
-      { id: 'tbc', label: 'TBC1D4 (AS160) truncation', force: { as160: 0 }, desc: 'AS160 cannot be inhibited by Akt, so GLUT4 stays inside; other Akt outputs are preserved. Associated with postprandial hyperglycemia (Petersen & Shulman 2018).' },
+      { id: 'tbc', label: 'TBC1D4 (AS160) truncation', force: { as160: 0 }, desc: 'AS160 cannot be inhibited by Akt, so GLUT4 stays inside; other Akt outputs are preserved. A truncating human variant causes postprandial hyperglycemia (Moltke 2014).' },
       { id: 'rapa', label: 'Rapamycin (mTORC1 inhibitor)', force: { mtor: 0 }, desc: 'Removes insulin-stimulated protein synthesis and lipogenesis, and autophagy is no longer suppressed. It also removes the S6K1 → IRS-1 negative feedback.' },
       { id: 'mek', label: 'MEK inhibitor', force: { raf: 0 }, desc: 'The mitogenic arm is cut; the metabolic actions (GLUT4, glycogen, antilipolysis) still occur because they use PI3K–Akt.' },
       { id: 'ptp1b', label: 'PTP1B deficiency (basal insulin)', force: { ptp1b: -1 }, desc: 'Set insulin to **basal**: without PTP1B, receptor/IRS phosphorylation persists, so signaling is enhanced — increased insulin sensitivity (Taniguchi 2006).' },
@@ -95,7 +95,7 @@
       { n: ['akt', 'tsc', 'rheb', 'aa', 'mtor', 'o_psyn', 'o_dnl', 'o_auto', 'irs'], t: '**6. mTORC1: build.** With amino acids present, mTORC1 drives protein synthesis and lipogenesis and shuts off autophagy. S6K1 feeds back to dampen IRS-1.' },
       { n: ['R', 'shc', 'grb2', 'ras', 'raf', 'erk', 'o_tx', 'o_prolif', 'o_diff'], t: '**7. Ras–MAPK: grow.** Shc–Grb2–SOS → Ras → Raf → MEK → ERK → transcription → proliferation and differentiation over hours to days.' },
     ],
-    refs: ['taniguchi2006', 'petersen2018', 'saxton2017', 'sano2003', 'matsumoto2007', 'shulman1990', 'kovacs3', 'kovacs15', 'molina7'],
+    refs: ['taniguchi2006', 'petersen2018', 'saxton2017', 'sano2003', 'moltke2014', 'matsumoto2007', 'shulman1990', 'kovacs3', 'kovacs15', 'molina7'],
   };
 
   // =====================================================================
@@ -109,7 +109,7 @@
       BR('gly', 'Glycogen: seconds–minutes', 1, 'PKA phosphorylates **phosphorylase kinase**, which phosphorylates glycogen phosphorylase (b → a). PKA also phosphorylates **glycogen synthase** (inactive) and inhibitor-1 (↓ PP1). Result: rapid glucose release from glycogen without futile cycling (Ramnanan 2011).'),
       BR('gng', 'Glycolysis ↔ gluconeogenesis: minutes', 2, 'PKA phosphorylates the bifunctional **PFK-2/FBPase-2**, switching it to phosphatase mode → **fructose-2,6-bisphosphate falls** → PFK-1 slows, FBPase-1 is released. PKA also inhibits **L-pyruvate kinase**, keeping PEP for gluconeogenesis (Pilkis 1992).'),
       BR('tx', 'Gene transcription: hours', 3, 'PKA phosphorylates **CREB**; PKA-mediated inhibition of salt-inducible kinases lets **CRTC2** (TORC2) dephosphorylate and enter the nucleus. Together they induce PGC-1α, PCK1 and G6PC (Koo 2005). Glucagon also increases hepatic amino-acid uptake and ureagenesis (liver–α-cell axis; Wewer Albrechtsen 2019).'),
-      BR('fat', 'Fat oxidation & ketogenesis', 4, 'PKA (and AMPK) phosphorylate and inhibit **ACC** → malonyl-CoA falls → CPT-1 is disinhibited → more β-oxidation. With low insulin, acetyl-CoA is channelled into ketone bodies (McGarry & Foster).'),
+      BR('fat', 'Fat oxidation & ketogenesis', 4, 'PKA (and AMPK) phosphorylate and inhibit **ACC** → malonyl-CoA falls → CPT-1 is disinhibited → more β-oxidation. With low insulin, acetyl-CoA is channeled into ketone bodies (McGarry & Foster).'),
       BR('gq', 'Gq → InsP3R1 → Ca²⁺', 5, 'GCGR–Gq → PLC → IP₃ → **InsP3R1** Ca²⁺ release (PKA also phosphorylates InsP3R1). In rodents this drives **intrahepatic lipolysis** → acetyl-CoA → pyruvate carboxylase → gluconeogenesis (Perry 2020).'),
     ],
     nodes: [
@@ -162,7 +162,7 @@
       { id: 'insulin', label: 'Insulin present (fed state)', force: { pde: 1 }, desc: 'Insulin activates PDE3B (and PP1), lowering cAMP so every PKA output is **blunted**. The insulin:glucagon ratio, not glucagon alone, sets hepatic flux.' },
       { id: 'gcgra', label: 'Glucagon-receptor antagonist', force: { R: 0 }, desc: 'Blocks every branch. In humans and rodents, GCGR blockade lowers glucose but raises plasma amino acids and glucagon (α-cell hyperplasia) — the liver–α-cell feedback is broken (Wewer Albrechtsen 2019).' },
       { id: 'ip3r1', label: 'Liver InsP3R1 knockdown', force: { ip3r: 0 }, desc: 'In rats, loss of hepatic InsP3R1 abolished glucagon-stimulated intrahepatic lipolysis and its effect on pyruvate carboxylase flux, while PKA → glycogenolysis remained (Perry 2020).' },
-      { id: 'mas', label: 'Constitutively active Gαs', force: { gs: 1 }, desc: 'A Gαs mutation that cannot hydrolyse GTP (McCune–Albright type, Kovacs Ch3) keeps cAMP high **without hormone** — set glucagon to basal to see it.' },
+      { id: 'mas', label: 'Constitutively active Gαs', force: { gs: 1 }, desc: 'A Gαs mutation that cannot hydrolyze GTP (McCune–Albright type, Kovacs Ch3) keeps cAMP high **without hormone** — set glucagon to basal to see it.' },
       { id: 'pdei', label: 'PDE inhibitor (e.g., theophylline)', force: { pde: -1 }, desc: 'cAMP accumulates and amplifies every PKA output.' },
     ],
     steps: [
@@ -597,10 +597,10 @@
     ],
     knock: [
       { id: 'nep', label: 'Neprilysin inhibitor (sacubitril, basal ANP)', force: { R: 0.6 }, desc: 'Neprilysin (neutral endopeptidase) degrades natriuretic peptides; blocking it raises their levels — used in heart failure.' },
-      { id: 'npra', label: 'NPR-A loss', force: { cg: 0 }, desc: 'No cGMP response — salt-sensitive hypertension in animal models.' },
+      { id: 'npra', label: 'NPR-A loss', force: { cg: 0 }, desc: 'No cGMP response to ANP or BNP. Mice lacking NPR-A have hypertension that does not change with salt intake (Lopez 1995).' },
     ],
     steps: [{ n: ['R', 'cg', 'pkg'], t: '**Receptor = enzyme:** cGMP → PKG.' }, { n: ['pkg', 'gfr', 'o_gfr', 'cd', 'o_nat'], t: '**Kidney:** natriuresis.' }, { n: ['pkg', 'ren', 'o_ang', 'zg', 'o_aldo'], t: '**Hormones:** RAAS suppressed.' }, { n: ['pkg', 'vsm', 'o_bp', 'perm', 'o_shift'], t: '**Vessels.**' }],
-    refs: ['kovacs6', 'kovacs3', 'molina10'],
+    refs: ['kovacs6', 'kovacs3', 'molina10', 'lopez1995'],
   };
 
   // =====================================================================

@@ -239,7 +239,7 @@
       }).join('');
       const fb = st.focus ? C.branches.find((b) => b.id === st.focus) : null;
       side.innerHTML = `<div class="why-head">What it results in</div><p class="small muted">${st.lig > 0 ? `When ${EP.esc((C.ligand || 'the hormone').toLowerCase())} rises:` : st.lig < 0 ? `When ${EP.esc((C.ligand || 'the hormone').toLowerCase())} falls:` : 'At basal hormone (changes come only from the selected disorder/drug):'}</p><div class="casc-outs">${rows}</div>
-        ${fb ? `<div class="casc-fdesc"><b>${EP.esc(fb.label)}</b><br>${EP.md(fb.desc || '')}</div>` : '<p class="small muted">Click a coloured band to isolate a branch; click any box for the mechanism. Time tags show how fast each output appears.</p>'}`;
+        ${fb ? `<div class="casc-fdesc"><b>${EP.esc(fb.label)}</b><br>${EP.md(fb.desc || '')}</div>` : '<p class="small muted">Click a colored band to isolate a branch; click any box for the mechanism. Time tags show how fast each output appears.</p>'}`;
       side.querySelectorAll('[data-n]').forEach((a) => a.addEventListener('click', () => info(a.dataset.n)));
     }
 

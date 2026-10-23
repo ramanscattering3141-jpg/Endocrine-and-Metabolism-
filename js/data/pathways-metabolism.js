@@ -128,7 +128,7 @@
       { n: ['malonylcoa', 'cpt1'], t: '**The switch:** malonyl-CoA closes CPT-1, so new fat is not immediately burned.' },
       { n: ['pka', 'gp', 'glycogen', 'g6p', 'g6pase', 'glucose'], t: '**Post-absorptive:** glucagon/PKA activate phosphorylase → glucose exported via G6Pase.' },
       { n: ['ffa', 'facoa', 'cpt1', 'betaox', 'acetylcoa', 'pc', 'oaa', 'pepck', 'pep', 'lactate', 'alanine', 'glycerol', 'gap', 'f16bp', 'fbpase', 'f6p', 'g6p'], t: '**Fasting:** ↓ malonyl-CoA opens CPT-1; β-oxidation supplies acetyl-CoA (activating PC) and ATP/NADH that power gluconeogenesis from lactate, alanine and glycerol.' },
-      { n: ['acetylcoa', 'oaa', 'tca', 'hmgcs2', 'ketones', 'nadh'], t: '**Ketogenesis:** OAA is drawn into gluconeogenesis and high NADH favours malate — acetyl-CoA overflows into HMG-CoA → ketone bodies.' },
+      { n: ['acetylcoa', 'oaa', 'tca', 'hmgcs2', 'ketones', 'nadh'], t: '**Ketogenesis:** OAA is drawn into gluconeogenesis and high NADH favors malate — acetyl-CoA overflows into HMG-CoA → ketone bodies.' },
       { n: ['alanine', 'nh4', 'cps1', 'urea'], t: '**Nitrogen:** amino-acid nitrogen goes to urea; the carbon goes to glucose.' },
     ],
     refs: ['kovacs15', 'pilkis1992', 'mcgarry1977', 'mcgarry1980', 'perry2015', 'rui2014', 'puchalska2017', 'felig1973'],
@@ -338,7 +338,7 @@
     ],
     edges: [
       e('dietfat', 'chylo', 'rxn'), e('chylo', 'lpl', 'transport'), e('insulin', 'lpl', 'stim', { why: 'Insulin increases adipose LPL.' }),
-      e('lpl', 'ffa', 'rxn', { why: 'LPL hydrolyses lipoprotein TG.' }), e('lpl', 'remnant', 'rxn'),
+      e('lpl', 'ffa', 'rxn', { why: 'LPL hydrolyzes lipoprotein TG.' }), e('lpl', 'remnant', 'rxn'),
       e('remnant', 'cholesterol', 'transport', { via: [[860, 200]], why: 'Remnants are cleared by the liver (apoE).' }),
       e('cholesterol', 'vldl', 'rxn'), e('vldl', 'lpl', 'transport', { via: [[820, 280], [500, 160]] }), e('lpl', 'idl', 'rxn', { curve: -30 }), e('idl', 'ldl', 'rxn'),
       e('ldl', 'ldlr', 'transport', { why: 'LDL receptor-mediated endocytosis (liver; also adrenal/gonads for steroidogenesis).' }), e('ldl', 'steroid', 'transport', { lv: 2 }),
