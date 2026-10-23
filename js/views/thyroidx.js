@@ -35,7 +35,7 @@
     const nis = box(270, 120, 130, 46, 'NIS: iodide uptake');
     const tpo = box(430, 120, 140, 46, 'TPO: organification');
     const rel = box(600, 120, 116, 46, 'Release T4/T3');
-    const abBadge = s('g', { class: 'tx-ab' }); abBadge.append(s('circle', { cx: 300, cy: 225, r: 14 }), s('text', { x: 300, y: 230, 'text-anchor': 'middle' }, 'Ab')); svg.appendChild(abBadge);
+    const abBadge = s('g', { class: 'tx-ab' }); abBadge.append(s('circle', { cx: 300, cy: 225, r: 17 }), s('text', { x: 300, y: 229.5, 'text-anchor': 'middle' }, 'Ab')); svg.appendChild(abBadge);
     const abLbl = s('text', { x: 322, y: 230, class: 'tx-lbl' }, ''); svg.appendChild(abLbl);
     const leak = s('text', { x: 640, y: 196, class: 'tx-lbl tx-leak', 'text-anchor': 'end' }, ''); svg.appendChild(leak);
     const tLine = s('path', { d: 'M180,63 C230,63 230,143 270,143', class: 'tx-arrow', 'marker-end': 'url(#m-stim)' }); svg.appendChild(tLine);

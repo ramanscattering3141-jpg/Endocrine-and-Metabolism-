@@ -48,7 +48,7 @@
     const svg = s('svg', { class: 'organmap', viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Organ fuel exchange map' });
     svg.appendChild(EP.svgDefs());
     filt.appendChild(EP.animSwitch(svg));
-    container.appendChild(svg);
+    container.appendChild(h('div.organmap-scroll', svg)); // never narrower than ~960 px: labels stay ≥ 10 px, the rest scrolls sideways
     container.appendChild(EP.colorKey([
       ['Line color = what is carried (click to filter, above)', Object.values(GROUPS).map((g) => ({ line: g.color, w: 4, dash: g === GROUPS.hor ? '6 4' : null, label: g.label }))],
       ['Line style', [{ line: 'var(--m-glc)', w: 7, label: 'Thicker = more flux / signal' }, { line: 'var(--m-glc)', w: 2, label: 'Thin, faded = low' }, { line: 'var(--m-hor)', w: 3, dash: '6 4', label: 'Dashed = hormone signal' }, { dot: 'var(--flowc)', label: 'Moving dots = direction of flow' }]],
@@ -190,12 +190,16 @@
     el.appendChild(EP.modelNote('Click any process or arrow for the mechanism. Click an organ\'s name to isolate its cross-talk.'));
     const model = EP.metabolic.create();
     const grid = h('div.sim');
-    const left = h('div.sim-left'), center = h('div'), right = h('div.sim-panel.sim-why');
-    grid.append(left, center, right);
+    const top = h('div.sim-panel.sim-top'), left = h('div.sim-left'), center = h('div.sim-map'), right = h('div.sim-panel.sim-why');
+    grid.append(top, left, center, right);
     el.appendChild(grid);
     const map = EP.mountOrganMap(center, model, { onPick: (id) => explain(id), onFocus: () => {} });
     const knobs = EP.metabolicKnobs(model, () => { map.update(); ticker(); if (cur) explain(cur, true); }, { preset: params.preset });
     left.appendChild(knobs);
+    // When the map spans the full width (see .sim in app.css), the state buttons sit directly above it.
+    const stacked = window.matchMedia('(max-width: 1599px)');
+    const place = () => { if (stacked.matches) top.appendChild(knobs.stateBlock); else knobs.prepend(knobs.stateBlock); top.hidden = !stacked.matches; };
+    place(); stacked.addEventListener('change', place); EP.onTeardown(() => stacked.removeEventListener('change', place));
     let cur = null;
     const whyBox = h('div'), tick = h('ol.ticker');
     right.append(h('div', h('h4', 'Why?'), whyBox), h('div', h('h4', 'Largest changes vs. reference'), tick));

@@ -124,7 +124,8 @@
       btns.push(b); presetRow.appendChild(b);
     });
     const story = h('p.small.muted', '');
-    wrap.append(h('h4', 'Physiological state'), presetRow, story);
+    wrap.stateBlock = h('div.knob-state', h('h4', 'Physiological state'), presetRow, story); // a page may move this next to its diagram
+    wrap.append(wrap.stateBlock);
     const sliders = {};
     const body = h('div', { style: opts.compact ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '4px 16px' } : {} });
     const group = (title, items) => { body.appendChild(h('h4', { style: opts.compact ? { gridColumn: '1 / -1' } : {} }, title)); items.forEach((it) => body.appendChild(knob(it))); };
